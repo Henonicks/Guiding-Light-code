@@ -1,0 +1,9 @@
+out/
+.vs/
+.vscode/
+.idea/
+tmp/
+cmake-build-debug
+cmake/FindDPP.cmake
+build/
+config.json
