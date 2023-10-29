@@ -1,6 +1,6 @@
-# D++ CMake Template (templatebot)
+# D++ CMake bot, Guiding Light
 
-CMake template for a simple [D++](https://dpp.dev) bot. This template assumes that D++ is already installed.
+This is a Discord bot written in C++ using the [D++](https://dpp.dev) library. It's a JTC voice channels manager. It assumes that fmtlib and D++ are already installed.
 
 ## Compilation
 
@@ -18,13 +18,20 @@ If DPP is installed in a different location you can specify the root directory t
 Create a config.json in the directory above the build directory:
 
 ```json
-{ "tkn": "your bot tkn here" }
+{
+    "BOT_TOKEN": "Bot token here",
+    "BOT_LOGS_ID" : "ID of the logs channel",
+    "BOT_DM_LOGS_ID" : "ID of the channel for DM logs",
+    "MY_ID" : "Creator ID",
+    "MY_GUILD_ID" : "?",
+    "ELGATO" : "Elgato emoji string",
+}
 ```
 
 Start the bot:
 
     cd build
-    ./templatebot
+    ./guidingLight
 
 ## Extending the bot
 
@@ -32,4 +39,4 @@ You can add as many header files and .cpp files into the src and include folders
 
 ## Renaming the bot
 
-To rename the bot, search and replace "templatebot" in the `CMakeLists.txt` with your new bots name and then rename the templatebot folder in include. Rerun `cmake ..` from the `build` directory and rebuild.
+To rename the bot, search and replace "guidingLight" in the `CMakeLists.txt` with your new bots name and then rename the guidingLight folder in include. Rerun `cmake ..` from the `build` directory and rebuild. You might need to re-create the build directory.

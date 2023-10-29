@@ -3,7 +3,7 @@
 using json = nlohmann::json;
 
 std::string elgato, BOT_TOKEN;
-dpp::snowflake bot_logs_copy, bot_dm_logs, my_id, my_guild_id;
+dpp::snowflake bot_logs, bot_dm_logs, my_id, my_guild_id;
 std::ofstream my_logs, other_logs;
 
 void configuration::configure_bot() {
@@ -11,13 +11,13 @@ void configuration::configure_bot() {
     std::ifstream config_file_stream("../config.json");
     config_file_stream >> config;
 
-    bot_logs_copy = (dpp::snowflake) config["BOT_LOGS_COPY_ID"];
+    bot_logs = (dpp::snowflake) config["BOT_LOGS_ID"];
     bot_dm_logs = (dpp::snowflake) config["BOT_DM_LOGS_ID"];
     my_id = (dpp::snowflake) config["MY_ID"];
-    bot_id = (dpp::snowflake) config["BOT_ID"];
     my_guild_id = (dpp::snowflake) config["MY_GUILD_ID"];
     elgato = config["ELGATO"];
     BOT_TOKEN = config["BOT_TOKEN"];
+
     my_logs.open("../logging/my_logs.log");
     other_logs.open("../logging/other_logs.log");
 }

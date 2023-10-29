@@ -8,7 +8,7 @@
 #include "file_namespace.h"
 
 extern std::string elgato, BOT_TOKEN;
-extern dpp::snowflake bot_logs_copy, bot_dm_logs, my_id, bot_id, my_guild_id;
+extern dpp::snowflake bot_logs, bot_dm_logs, my_id, my_guild_id;
 extern std::ofstream my_logs;
 
 namespace configuration {

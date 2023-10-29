@@ -189,7 +189,7 @@ int main() {
             }
         }
         if (event.msg.is_dm()) {
-            if (userid != dpp::snowflake(bot_id)) {
+            if (userid != dpp::snowflake(bot.me.id)) {
                 bot.message_create(dpp::message(bot_dm_logs, "<@" + std::to_string(userid) + "> (" + event.msg.author.format_username() + ") [to me] " + event.msg.content), [&bot, userid](const dpp::confirmation_callback_t& callback) {
                     bot.direct_message_create(userid, dpp::message("Message is received!"), [&bot, userid](const dpp::confirmation_callback_t& callback) {
                         if (callback.is_error()) {
@@ -237,7 +237,7 @@ int main() {
             dpp::snowflake channel_id = event.msg.channel_id;
             std::string reply = "Guild ID:\n```" + std::to_string(guildid) + "```\nChannel ID:\n```" + std::to_string(channel_id) + "```";
             event.reply(reply);
-            bot.message_create(dpp::message(bot_logs_copy, "Server ID:\n```" + std::to_string(guildid) + "```\nChannel ID:\n```" + std::to_string(channel_id) + "```"));
+            bot.message_create(dpp::message(bot_logs, "Server ID:\n```" + std::to_string(guildid) + "```\nChannel ID:\n```" + std::to_string(channel_id) + "```"));
             std::cout << "POV" << '\n';
         }
         if (msg == "!tag me") {
@@ -314,11 +314,11 @@ int main() {
     bot.on_guild_create([&bot](const dpp::guild_create_t& event) -> void {
         all_bot_guilds[event.created->id] = *event.created;
         //bot.set_presence(dpp::presence(dpp::ps_idle, dpp::activity(dpp::activity_type::at_watching, "VCs in " + std::to_string(all_bot_guilds.size()) + " guilds", "", "")));
-        bot.message_create(dpp::message(bot_logs_copy, "I have joined a guild. These are its stats:\nName: `" + event.created->name + "`\nID: `" + std::to_string(event.created->id) + "`"));
+        bot.message_create(dpp::message(bot_logs, "I have joined a guild. These are its stats:\nName: `" + event.created->name + "`\nID: `" + std::to_string(event.created->id) + "`"));
     });
     bot.on_guild_delete([&bot](const dpp::guild_delete_t& event) {
         all_bot_guilds.erase(event.deleted.id);
-        bot.message_create(dpp::message(bot_logs_copy, "I have left a guild. These are its stats:\nName: `" + event.deleted.name + "`\nID: `" + std::to_string(event.deleted.id) + "`"));
+        bot.message_create(dpp::message(bot_logs, "I have left a guild. These are its stats:\nName: `" + event.deleted.name + "`\nID: `" + std::to_string(event.deleted.id) + "`"));
     });
 
     bot.on_voice_state_update([&bot](const dpp::voice_state_update_t& event) -> void {
@@ -396,7 +396,7 @@ int main() {
                            bot.stop_timer(timer);
                        }, 5);
                    });
-                   bot.message_create(dpp::message(bot_logs_copy,
+                   bot.message_create(dpp::message(bot_logs,
                                                    "<@" + std::to_string(userid) +
                                                    "> created <#" + std::to_string(channelid) +
                                                    "> " + std::to_string(channelid)));
