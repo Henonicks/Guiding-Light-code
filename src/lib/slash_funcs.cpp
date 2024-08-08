@@ -98,31 +98,25 @@ dpp::coroutine <void> slash::set::default_values(dpp::cluster &bot, const dpp::s
     if (!event.command.channel.is_dm()) {
         guild = *dpp::find_guild(guildid);
     }
-    if (!(userid == my_id || user.is_team_user())) {
-        bool allowed_to_set = guild.owner_id == userid;
-        const dpp::confirmation_callback_t& confirmation = co_await bot.co_roles_get(guildid);
-        const auto& guild_roles = confirmation.get <dpp::role_map>();
-        dpp::guild_member member = event.command.member;
-        const auto& roles = member.get_roles();
-        if (!allowed_to_set) {
-            for (const auto& x : guild_roles) {
-                if (x.second.has_manage_channels()) {
-                    if (std::find(roles.begin(), roles.end(), x.first) != roles.end()) {
-                        allowed_to_set = true;
-                        break;
-                    }
-                }
-            }
-        }
-        if (!allowed_to_set) {
-            event.reply(dpp::message("You don't have a role that has the MANAGE_CHANNELS permission.").set_flags(dpp::m_ephemeral));
-            co_return;
-        }
-        else {
-            event.reply(dpp::message("This is an in-dev command.").set_flags(dpp::m_ephemeral));
-            co_return;
-        }
-    }
+	bool allowed_to_set = guild.owner_id == userid;
+	const dpp::confirmation_callback_t& confirmation = co_await bot.co_roles_get(guildid);
+	const auto& guild_roles = confirmation.get <dpp::role_map>();
+	dpp::guild_member member = event.command.member;
+	const auto& roles = member.get_roles();
+	if (!allowed_to_set) {
+		for (const auto& x : guild_roles) {
+			if (x.second.has_manage_channels()) {
+				if (std::find(roles.begin(), roles.end(), x.first) != roles.end()) {
+					allowed_to_set = true;
+					break;
+				}
+			}
+		}
+	}
+	if (!allowed_to_set) {
+		event.reply(dpp::message("You don't have a role that has the MANAGE_CHANNELS permission.").set_flags(dpp::m_ephemeral));
+		co_return;
+	}
     std::string channelid = std::get <std::string>(cmd.options[0].options[0].options[1].value);
     if (cmd.options[0].options[0].name == "name") {
         std::string name = std::get <std::string>(cmd.options[0].options[0].options[0].value);

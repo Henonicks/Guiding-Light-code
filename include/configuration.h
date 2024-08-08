@@ -8,8 +8,8 @@
 #include "file_namespace.h"
 
 extern std::string BOT_TOKEN;
-extern dpp::snowflake bot_logs, bot_dm_logs, my_id;
-extern std::ofstream my_logs;
+extern dpp::snowflake bot_dm_logs, my_id;
+extern std::ofstream my_logs, guild_logs;
 
 namespace configuration {
     void configure_bot();

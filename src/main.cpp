@@ -14,23 +14,14 @@
 #pragma ide diagnostic ignored "OCDFAInspection"
 std::unordered_map <dpp::snowflake, dpp::guild> all_bot_guilds;
 
-bool to_print_messages = false;
-
-dpp::command_completion_event_t error_callback([](const dpp::confirmation_callback_t& callback) {
-        if (callback.is_error()) {
-
-        }
-});
-
-
 int main(int argc, char** argv) {
 	std::cout << "starting the bot" << std::endl;
 
 	std::set <std::string> command_list =
 	{"--return", "--noreturn"};
 	std::set <std::string> slashcommand_list =
-	{"--ctype", "--chelp", "--csetup", "--cset", "--cget_emoji",
-	"--dtype", "--dhelp", "--dsetup", "--dset", "--dget_emoji"};
+	{"--chelp", "--csetup", "--cset",
+	"--dhelp", "--dsetup", "--dset"};
 	std::vector <std::string> commands;
 	std::vector <std::string> slashcommands;
 	bool bot_return = false;
@@ -49,24 +40,25 @@ int main(int argc, char** argv) {
 	dpp::cluster bot(BOT_TOKEN, dpp::i_all_intents);
 	configuration::configure_channels(bot);
 
+	auto error_callback = [&bot](const dpp::confirmation_callback_t& callback) -> void {
+		if (callback.is_error()) {
+			bot.log(dpp::loglevel::ll_error, callback.get_error().message);
+		}
+	};
+
 	/* Register slash commands here in on_ready */
-	bot.on_ready([&bot, &commands](const dpp::ready_t& event) {
+	bot.on_ready([&bot, &commands, &error_callback](const dpp::ready_t& event) -> void {
 		if (dpp::run_once <struct register_bot_commands>()) {
 			bot.set_presence(dpp::presence(dpp::ps_idle, dpp::activity(dpp::activity_type::at_watching, "VCs in " + std::to_string(bot.current_user_get_guilds_sync().size()) + " guilds", "", "")));
 
-			dpp::slashcommand type("type", "type", bot.me.id);
 			dpp::slashcommand help("help", "See what I can do!", bot.me.id);
 			dpp::slashcommand setup("setup", "Set up a part of JTC feature", bot.me.id);
 			dpp::slashcommand set("set", "Edit an attribute of the temp VC you are in (or of a JTC).", bot.me.id);
-			dpp::slashcommand get_emoji("get", "Get a list of emoji in a guild (helpful for /type)", bot.me.id);
 
 			dpp::command_option emoji_option(dpp::co_sub_command, "emoji", "Get a list of emoji in a guild (helpful for /type)");
 
 			emoji_option.add_option({dpp::co_string, "emoji-name", "Emoji name to match with. Leave empty to get a complete list of emoji."});
-			emoji_option.add_option({dpp::co_string, "guild-id", "Id of the guild you want to search in. Leave empty for current."});
-
-
-			get_emoji.add_option(emoji_option);
+			emoji_option.add_option({dpp::co_string, "guild-id", "ID of the guild you want to search in. Leave empty for current."});
 
 			set.add_option(
 					dpp::command_option(dpp::co_sub_command, "name", "Change the VC name").
@@ -111,14 +103,7 @@ int main(int argc, char** argv) {
 							add_option(dpp::command_option(dpp::co_sub_command, "channel", "Setup a notification channel"))
 			);
 
-			type.add_option(dpp::command_option(dpp::co_string, "text", "forgor", true));
-			type.add_option(dpp::command_option(dpp::co_string, "replyto", "msg ID", true));
-			type.add_option(dpp::command_option(dpp::co_channel, "channelid", "zabuv"));
-
 			for (const std::string& s : commands) {
-				if (s == "--ctype") {
-					bot.guild_command_create(type, 1083280171622207578, error_callback);
-				}
 				if (s == "--chelp") {
 					bot.global_command_create(help, error_callback);
 				}
@@ -127,12 +112,6 @@ int main(int argc, char** argv) {
 				}
 				if (s == "--cset") {
 					bot.global_command_create(set, error_callback);
-				}
-				if (s == "--cget_emoji") {
-					bot.global_command_create(get_emoji, error_callback);
-				}
-				if (s == "--dtype") {
-					bot.guild_command_create(type, 1083280171622207578, error_callback);
 				}
 				if (s == "--dhelp") {
 					bot.global_command_create(help, error_callback);
@@ -143,18 +122,13 @@ int main(int argc, char** argv) {
 				if (s == "--dset") {
 					bot.global_command_create(set, error_callback);
 				}
-				if (s == "--dget_emoji") {
-					bot.global_command_create(get_emoji, error_callback);
-				}
 			}
 
-			bot.global_bulk_command_create( {setup, set, get_emoji} );
 		}
 	});
 
-	bot.on_message_create([&bot](const dpp::message_create_t& event) {
+	bot.on_message_create([&bot](const dpp::message_create_t& event) -> void {
 		std::string msg = event.msg.content;
-		dpp::snowflake channelid = event.msg.channel_id;
 		std::string prefix;
 		dpp::snowflake userid = event.msg.author.id;
 		const std::string username = event.msg.author.username;
@@ -205,43 +179,6 @@ int main(int argc, char** argv) {
 				prefix += msg[i];
 			}
 		}
-		if (msg == "!id") {
-			dpp::snowflake guildid = event.msg.guild_id;
-			dpp::snowflake channel_id = event.msg.channel_id;
-			std::string reply = "Guild ID:\n```" + std::to_string(guildid) + "```\nChannel ID:\n```" + std::to_string(channel_id) + "```";
-			event.reply(reply);
-			bot.message_create(dpp::message(bot_logs, "Server ID:\n```" + std::to_string(guildid) + "```\nChannel ID:\n```" + std::to_string(channel_id) + "```"));
-			std::cout << "POV" << '\n';
-		}
-		if (msg == "!tag me") {
-			bot.message_create(dpp::message(channelid, str_userid));
-		}
-		else if (msg == "!leave guild") {
-			auto guild_roles = bot.roles_get_sync(event.msg.guild_id);
-			dpp::guild_member member = event.msg.member;
-			const auto& member_roles = member.get_roles();
-			bool can_remove = false;
-			for (const auto& x : guild_roles) {
-				if (x.second.has_kick_members() || x.second.has_ban_members()) {
-					auto begin = member_roles.begin(), end = member_roles.end();
-					if (std::find(begin, end, x.first) != std::end(member_roles)) {
-						can_remove = true;
-						break;
-					}
-				}
-			}
-			if (event.msg.author.id == my_id || can_remove) {
-				event.reply("Leaving!");
-				bot.current_user_leave_guild(event.msg.guild_id);
-			}
-			else {
-				event.reply("You can't make me leave. No perms.");
-			}
-		}
-		else if (msg == "!DM me") {
-			bot.direct_message_create(event.msg.author.id, dpp::message("Hey! As you asked, I DM'd you!"));
-			bot.message_delete(event.msg.id, event.msg.channel_id);
-		}
 	});
 
 	bot.on_channel_update([](const dpp::channel_update_t& event) -> void {
@@ -286,14 +223,13 @@ int main(int argc, char** argv) {
 		}
 	});
 
-	bot.on_guild_create([&bot](const dpp::guild_create_t& event) -> void {
+	bot.on_guild_create([](const dpp::guild_create_t& event) -> void {
 		all_bot_guilds[event.created->id] = *event.created;
-		//bot.set_presence(dpp::presence(dpp::ps_idle, dpp::activity(dpp::activity_type::at_watching, "VCs in " + std::to_string(all_bot_guilds.size()) + " guilds", "", "")));
-		bot.message_create(dpp::message(bot_logs, "I have joined a guild. These are its stats:\nName: `" + event.created->name + "`\nID: `" + std::to_string(event.created->id) + "`"));
+		guild_log("I have joined a guild. These are its stats:\nName: `" + event.created->name + "`\nID: `" + std::to_string(event.created->id) + "`");
 	});
-	bot.on_guild_delete([&bot](const dpp::guild_delete_t& event) {
+	bot.on_guild_delete([](const dpp::guild_delete_t& event) {
 		all_bot_guilds.erase(event.deleted.id);
-		bot.message_create(dpp::message(bot_logs, "I have left a guild. These are its stats:\nName: `" + event.deleted.name + "`\nID: `" + std::to_string(event.deleted.id) + "`"));
+		guild_log("I have left a guild. These are its stats:\nName: `" + event.deleted.name + "`\nID: `" + std::to_string(event.deleted.id) + "`");
 	});
 
 	bot.on_voice_state_update([&bot](const dpp::voice_state_update_t& event) -> void {
@@ -371,10 +307,6 @@ int main(int argc, char** argv) {
 						   bot.stop_timer(timer);
 					   }, 5);
 				   });
-				   bot.message_create(dpp::message(bot_logs,
-												   "<@" + std::to_string(userid) +
-												   "> created <#" + std::to_string(channelid) +
-												   "> " + std::to_string(channelid)));
 				   if (!ntif_chnls[guildid].guildid.empty()) {
 					   std::string description = "A new temporary channel has been created ";
 					   description += (!newchannel.parent_id.empty() ?
@@ -432,15 +364,11 @@ int main(int argc, char** argv) {
 		set_title("``HELP``").
 		set_author("Here is what I can do!\n", "", "").
 		set_description("``/help`` - I don't know, I guess you've just issued the command\n"
-							 "``/setup`` - create a join-to-create (JTC) voice channel. As soon as you join one of those, a temporary one is being created and you get moved to it, unless you've disconnected\n"
-							 "``/edit is a command with 3 subcommands. It changes some of properties of a temporary voice channel. If it wasn't created because of you joining to a JTC voice channel, the command won't work``");
+							 "``/setup`` - create a join-to-create (JTC) voice channel. As soon as you join one of those, a temporary one is being created, and you get moved to it, unless you've disconnected\n"
+							 "``/edit is a command with 3 subcommands. It changes some of the properties of a temporary voice channel. If it wasn't created because of you joining to a JTC voice channel, the command won't work``");
 	bot.on_slashcommand([&bot, &help_embed](const dpp::slashcommand_t& event) -> dpp::task <void> {
-		dpp::snowflake guildid = event.command.guild_id;
 		dpp::guild guild;
 		dpp::command_interaction cmd = event.command.get_command_interaction();
-		/*if (!guildid.empty()) {
-			guild = *dpp::find_guild(guildid);
-		}*/
 		if (event.command.get_command_name() == "help") {
 			event.reply(dpp::message(event.command.channel_id, help_embed));
 			co_return;
