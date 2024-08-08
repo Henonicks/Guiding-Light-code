@@ -2,23 +2,22 @@
 
 using json = nlohmann::json;
 
-std::string elgato, BOT_TOKEN;
-dpp::snowflake bot_logs, bot_dm_logs, my_id, my_guild_id;
-std::ofstream my_logs, other_logs;
+std::string BOT_TOKEN;
+dpp::snowflake bot_dm_logs, my_id;
+std::ofstream my_logs, guild_logs;
+static std::ofstream other_logs;
 
 void configuration::configure_bot() {
     json config;
     std::ifstream config_file_stream("../config.json");
     config_file_stream >> config;
 
-    bot_logs = (dpp::snowflake) config["BOT_LOGS_ID"];
-    bot_dm_logs = (dpp::snowflake) config["BOT_DM_LOGS_ID"];
-    my_id = (dpp::snowflake) config["MY_ID"];
-    my_guild_id = (dpp::snowflake) config["MY_GUILD_ID"];
-    elgato = config["ELGATO"];
+    bot_dm_logs = config["BOT_DM_LOGS_ID"];
+    my_id = config["MY_ID"];
     BOT_TOKEN = config["BOT_TOKEN"];
 
     my_logs.open("../logging/my_logs.log");
+	guild_logs.open("../logging/guild_logs.log");
     other_logs.open("../logging/other_logs.log");
 }
 void configuration::configure_channels(dpp::cluster& bot) {

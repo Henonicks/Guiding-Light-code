@@ -1,4 +1,6 @@
-#pragma once
+#ifndef FILE_NAMESPACE_H
+#define FILE_NAMESPACE_H
+
 #include <guidingLight/guiding_light.h>
 
 
@@ -17,3 +19,5 @@ namespace file {
     bool is_in_file(const std::string& s, std::string filename);
     int pos_in_file(const std::string& s, const std::string& filename);
 }
+
+#endif

@@ -20,11 +20,8 @@ Create a config.json in the directory above the build directory:
 ```json
 {
     "BOT_TOKEN": "Bot token here",
-    "BOT_LOGS_ID" : "ID of the logs channel",
     "BOT_DM_LOGS_ID" : "ID of the channel for DM logs",
-    "MY_ID" : "Creator ID",
-    "MY_GUILD_ID" : "?",
-    "ELGATO" : "Elgato emoji string",
+    "MY_ID" : "Creator ID"
 }
 ```
 

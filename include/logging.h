@@ -7,5 +7,6 @@
 #include "configuration.h"
 
 void log(std::string_view message);
+void guild_log(std::string_view message);
 
 #endif

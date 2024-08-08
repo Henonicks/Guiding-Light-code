@@ -98,31 +98,25 @@ dpp::coroutine <void> slash::set::default_values(dpp::cluster &bot, const dpp::s
     if (!event.command.channel.is_dm()) {
         guild = *dpp::find_guild(guildid);
     }
-    if (!(userid == my_id || user.is_team_user())) {
-        bool allowed_to_set = guild.owner_id == userid;
-        const dpp::confirmation_callback_t& confirmation = co_await bot.co_roles_get(guildid);
-        const auto& guild_roles = confirmation.get <dpp::role_map>();
-        dpp::guild_member member = event.command.member;
-        const auto& roles = member.get_roles();
-        if (!allowed_to_set) {
-            for (const auto& x : guild_roles) {
-                if (x.second.has_manage_channels()) {
-                    if (std::find(roles.begin(), roles.end(), x.first) != roles.end()) {
-                        allowed_to_set = true;
-                        break;
-                    }
-                }
-            }
-        }
-        if (!allowed_to_set) {
-            event.reply(dpp::message("You don't have a role that has the MANAGE_CHANNELS permission.").set_flags(dpp::m_ephemeral));
-            co_return;
-        }
-        else {
-            event.reply(dpp::message("This is an in-dev command.").set_flags(dpp::m_ephemeral));
-            co_return;
-        }
-    }
+	bool allowed_to_set = guild.owner_id == userid;
+	const dpp::confirmation_callback_t& confirmation = co_await bot.co_roles_get(guildid);
+	const auto& guild_roles = confirmation.get <dpp::role_map>();
+	dpp::guild_member member = event.command.member;
+	const auto& roles = member.get_roles();
+	if (!allowed_to_set) {
+		for (const auto& x : guild_roles) {
+			if (x.second.has_manage_channels()) {
+				if (std::find(roles.begin(), roles.end(), x.first) != roles.end()) {
+					allowed_to_set = true;
+					break;
+				}
+			}
+		}
+	}
+	if (!allowed_to_set) {
+		event.reply(dpp::message("You don't have a role that has the MANAGE_CHANNELS permission.").set_flags(dpp::m_ephemeral));
+		co_return;
+	}
     std::string channelid = std::get <std::string>(cmd.options[0].options[0].options[1].value);
     if (cmd.options[0].options[0].name == "name") {
         std::string name = std::get <std::string>(cmd.options[0].options[0].options[0].value);
@@ -306,116 +300,4 @@ dpp::coroutine <void> slash::setup(dpp::cluster& bot, const dpp::slashcommand_t&
             event.reply(dpp::message("It's been already set. No more than one per guild!").set_flags(dpp::m_ephemeral));
         }
     }
-}
-
-void slash::type(dpp::cluster& bot, const dpp::slashcommand_t& event) {
-    dpp::guild_member issuing_member = event.command.member;
-    dpp::command_interaction cmd = event.command.get_command_interaction();
-    const dpp::user user = event.command.get_issuing_user();
-    dpp::snowflake userid = user.id;
-    bot.guild_get_member(my_guild_id, userid, [&bot, event, user, cmd, issuing_member, userid](const dpp::confirmation_callback_t& callback) {
-        if (callback.is_error()) {
-            event.reply("You have to be in our guild of gaymerz (plz iBeg yu :sob:)");
-            return;
-        }
-        const std::string username = user.username;
-        const std::string usertag = '#' + std::to_string(user.discriminator);
-        std::string usernt = "`" + username + usertag + "`" + elgato;
-        if (userid == my_id) {
-            usernt = std::string();
-        }
-        std::string argument = std::get <std::string>(cmd.options[0].value);
-        const std::string old = argument;
-        argument = convert_characters(argument);
-        auto replyto = (dpp::snowflake)std::get <std::string>(cmd.options[1].value);
-        dpp::snowflake channelid;
-        dpp::snowflake command_channel_id = event.command.channel_id;
-        if (cmd.options.size() == 3) {
-            channelid = std::get <dpp::snowflake>(cmd.options[2].value);
-            dpp::channel* asked_channel = dpp::find_channel(channelid);
-            if (asked_channel == nullptr) {
-                event.reply(dpp::message("Channel not found.").set_flags(dpp::m_ephemeral));
-                return;
-            }
-            if (!asked_channel->get_user_permissions(issuing_member).has(dpp::p_send_messages)) {
-                event.reply(dpp::message("You cannot type here.").set_flags(dpp::m_ephemeral));
-                return;
-            }
-            if (!replyto.empty()) {
-                bot.message_get(replyto, channelid, [&bot, argument, replyto, channelid, event, usernt](const dpp::confirmation_callback_t& callback) {
-                    if (callback.is_error()) {
-                        bot.log(dpp::loglevel::ll_info, callback.http_info.body);
-                        event.reply(dpp::message("I couldn't get the original message. If you are sure this is the right channel and so is ID of the message AND the message hasn't been deleted, try again.").set_flags(dpp::m_ephemeral));
-                        return;
-                    }
-                    dpp::message original_msg = std::get <dpp::message>(callback.value);
-                    if (original_msg.channel_id != channelid) {
-                        event.reply(dpp::message("This message does not exist in that channel!").set_flags(dpp::m_ephemeral));
-                        return;
-                    }
-                    event.reply(dpp::message("Sent!").set_flags(dpp::m_ephemeral));
-                    bot.message_create(dpp::message(channelid, usernt + argument).set_reference(replyto));
-                });
-            }
-            else {
-                bot.message_create(dpp::message(channelid, usernt + argument).set_reference(replyto));
-                event.reply(dpp::message("The message should be sent!").set_flags(dpp::m_ephemeral));
-            }
-        }
-        else {
-            if (replyto.empty()) {
-                event.reply(dpp::message("Sent!").set_flags(dpp::m_ephemeral));
-                bot.message_create(dpp::message(command_channel_id, usernt + argument));
-            }
-            else {
-                bot.message_get((dpp::snowflake)replyto, command_channel_id, [&bot, event, &usernt, argument, replyto](const dpp::confirmation_callback_t& callback) {
-                    if (callback.is_error()) {
-                        bot.log(dpp::loglevel::ll_info, callback.http_info.body);
-                        event.reply(dpp::message("An error occurred. Make sure you typed in the correct ID and the message is in the same channel you are in.").set_flags(dpp::m_ephemeral));
-                        return;
-                    }
-                    event.reply(dpp::message("Sent!").set_flags(dpp::m_ephemeral));
-                    bot.message_create(dpp::message(event.command.channel_id, usernt + argument).set_reference(replyto));
-                });
-            }
-        }
-        if (userid != my_id) {
-            usernt = usernt.substr(1, usernt.size() - (elgato.size() + 1) - 1);
-        }
-        log(fmt::format("@<{0}> ({1}) \'{2}\' in {3}",
-            std::to_string(userid), usernt, old, std::to_string(channelid)));
-    });
-}
-
-dpp::coroutine <void> slash::get_emoji(dpp::cluster& bot, const dpp::slashcommand_t& event) {
-    dpp::snowflake guild_id;
-    if (std::holds_alternative <std::string>(event.get_parameter("guild-id"))) {
-        guild_id = (dpp::snowflake)std::get <std::string>(event.get_parameter("guild-id"));
-    }
-    dpp::guild* guild = dpp::find_guild(guild_id);
-    std::string description;
-    if (guild == nullptr) {
-        description = "Guild was not found. Matching in current.\n";
-        guild = dpp::find_guild(event.command.guild_id);
-    }
-    std::string name;
-    if (std::holds_alternative <std::string>(event.get_parameter("emoji-name"))) {
-        name = std::get <std::string>(event.get_parameter("emoji-name"));
-    }
-    const dpp::confirmation_callback_t& callback = co_await bot.co_guild_emojis_get(guild->id);
-    const auto& emojis = callback.get <dpp::emoji_map>();
-    std::string res;
-    for (const auto& x : emojis) {
-        if (x.second.name.find(name) != std::string::npos || name.empty()) {
-            res += fmt::format("{0}: `{0}`", x.second.get_mention()) + '\n';
-        }
-    }
-    description += res.empty() ? "No emoji were found." : res;
-    dpp::embed embed = dpp::embed()
-        .set_title(guild->name)
-        .set_url(guild->get_icon_url())
-        .set_author((name.empty() ? "List of emoji in the requested guild:" : fmt::format("Matching emoji with name `{}`:", name)), "", "")
-        .set_description(description)
-        .set_color(dpp::colors::cyan);
-    event.reply(dpp::message(event.command.channel_id, embed).set_flags(dpp::m_ephemeral));
 }

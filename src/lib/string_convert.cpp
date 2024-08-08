@@ -1,6 +1,6 @@
 #include <string_convert.h>
 
-long long string_to_ll(const std::string& s) {
+long long string_to_ll(std::string_view s) {
     long long res = 0;
     for (long long i = 0; i < s.size(); i++) {
         if (s[i] >= '0' && s[i] <= '9') {
@@ -15,7 +15,7 @@ long long string_to_ll(const std::string& s) {
     return res;
 }
 
-double string_to_double(const std::string& s) {
+double string_to_double(std::string_view s) {
     double res = 0;
     for (int i = 0; i < s.size(); i++) {
         if (s[i] >= '0' && s[i] <= '9') {
@@ -48,28 +48,3 @@ std::string double_to_string(const double& n) {
     res = temp;
     return res;
 }
-
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "UnreachableCode"
-std::string convert_characters(const std::string &s) {
-    std::string res = s;
-    try {
-        if (res == "\\0") {
-            return "\u200E";
-        }
-        while (std::size_t pos = res.find("\\n")) {
-            if (pos != std::string::npos) {
-                res.replace(pos, 2, "\n");
-            }
-            else {
-                break;
-            }
-        }
-        return res;
-    }
-    catch (std::out_of_range& e) {
-        std::cout << e.what() << std::endl;
-    }
-    return res;
-}
-#pragma clang diagnostic pop
