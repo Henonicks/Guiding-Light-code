@@ -1,4 +1,6 @@
-#pragma once
+#ifndef NOTIFICATION_CHANNEL_H
+#define NOTIFICATION_CHANNEL_H
+
 #include <guidingLight/guiding_light.h>
 
 struct vc_notification_chnl {
@@ -10,3 +12,5 @@ bool operator <(vc_notification_chnl chnl1, vc_notification_chnl chnl2);
 vc_notification_chnl get_ntf_chnl(const std::string& line);
 
 extern std::map <dpp::snowflake, vc_notification_chnl> ntif_chnls;
+
+#endif

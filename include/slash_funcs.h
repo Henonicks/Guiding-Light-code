@@ -1,13 +1,12 @@
 #ifndef SLASH_FUNCS_H
 #define SLASH_FUNCS_H
 
-#include "set"
+#include <set>
 #include "jtc_vc.h"
 #include "jtc_defaults.h"
 #include "temp_vc.h"
 #include "notification_channel.h"
 #include "guidingLight/guiding_light.h"
-#include "string_convert.h"
 #include "file_namespace.h"
 #include "configuration.h"
 #include "logging.h"
@@ -43,20 +42,6 @@ namespace slash {
      * @param ntif_channels list of all notification channels where the bot would send message about creating a temporary voice channel for someone.
     */
     dpp::coroutine <void> setup(dpp::cluster& bot, const dpp::slashcommand_t& event);
-
-    /**
-     * @brief posts a message user asked the bot to.
-     * @param bot cluster which will post the asked message if possible.
-     * @param event slashcommand event object which contains information about the request
-    */
-    void type(dpp::cluster& bot, const dpp::slashcommand_t& event);
-
-    /**
-     * @brief gets emoji that match the requested name in requested guild.
-     * @param bot cluster which will reply with all emoji "codes" that match.
-     * @param event slashcommand event object which contains information about the request
-     */
-    dpp::coroutine <void> get_emoji(dpp::cluster& bot, const dpp::slashcommand_t& event);
 }
 
 #endif

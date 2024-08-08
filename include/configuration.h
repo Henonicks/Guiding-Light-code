@@ -7,12 +7,13 @@
 #include "jtc_defaults.h"
 #include "file_namespace.h"
 
-extern std::string elgato, BOT_TOKEN;
-extern dpp::snowflake bot_logs, bot_dm_logs, my_id, my_guild_id;
-extern std::ofstream my_logs;
+std::string BOT_TOKEN;
+dpp::snowflake bot_logs, bot_dm_logs, my_id;
+std::ofstream my_logs;
 
 namespace configuration {
     void configure_bot();
     void configure_channels(dpp::cluster& bot);
 }
+
 #endif
