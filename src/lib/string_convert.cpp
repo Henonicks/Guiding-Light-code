@@ -1,6 +1,6 @@
 #include <string_convert.h>
 
-long long string_to_ll(const std::string_view& s) {
+long long string_to_ll(std::string_view s) {
     long long res = 0;
     for (long long i = 0; i < s.size(); i++) {
         if (s[i] >= '0' && s[i] <= '9') {
@@ -15,7 +15,7 @@ long long string_to_ll(const std::string_view& s) {
     return res;
 }
 
-double string_to_double(const std::string_view& s) {
+double string_to_double(std::string_view s) {
     double res = 0;
     for (int i = 0; i < s.size(); i++) {
         if (s[i] >= '0' && s[i] <= '9') {

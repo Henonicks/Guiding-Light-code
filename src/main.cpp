@@ -16,6 +16,13 @@ std::unordered_map <dpp::snowflake, dpp::guild> all_bot_guilds;
 
 bool to_print_messages = false;
 
+dpp::command_completion_event_t error_callback([](const dpp::confirmation_callback_t& callback) {
+        if (callback.is_error()) {
+
+        }
+});
+
+
 int main(int argc, char** argv) {
 	std::cout << "starting the bot" << std::endl;
 

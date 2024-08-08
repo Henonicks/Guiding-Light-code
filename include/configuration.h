@@ -7,9 +7,9 @@
 #include "jtc_defaults.h"
 #include "file_namespace.h"
 
-std::string BOT_TOKEN;
-dpp::snowflake bot_logs, bot_dm_logs, my_id;
-std::ofstream my_logs;
+extern std::string BOT_TOKEN;
+extern dpp::snowflake bot_logs, bot_dm_logs, my_id;
+extern std::ofstream my_logs;
 
 namespace configuration {
     void configure_bot();

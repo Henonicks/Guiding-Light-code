@@ -6,10 +6,6 @@
 #include <fmt/format.h>
 
 // Place any forward declarations here
-dpp::command_completion_event_t error_callback([](const dpp::confirmation_callback_t& callback) {
-	if (callback.is_error()) {
-
-	}
-});
+extern dpp::command_completion_event_t error_callback;
 
 #endif

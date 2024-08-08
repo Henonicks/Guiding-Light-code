@@ -2,9 +2,10 @@
 
 using json = nlohmann::json;
 
-extern std::string BOT_TOKEN;
-extern dpp::snowflake bot_logs, bot_dm_logs, my_id;
-extern std::ofstream my_logs, other_logs;
+std::string BOT_TOKEN;
+dpp::snowflake bot_logs, bot_dm_logs, my_id;
+std::ofstream my_logs;
+static std::ofstream other_logs;
 
 void configuration::configure_bot() {
     json config;
