@@ -20,6 +20,7 @@ set_target_properties(${BOT_NAME} PROPERTIES
 )
 
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+set(DPP_LIBRARIES dpp)
 find_package(Threads REQUIRED)
 find_package(DPP)
 if(APPLE)
