@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
 
 	configuration::configure_bot(is_dev);
 	dpp::cluster bot(BOT_TOKEN, dpp::i_guilds | dpp::i_guild_members | dpp::i_guild_voice_states | dpp::i_direct_messages | dpp::i_message_content);
-	configuration::configure_channels(bot);
+	bot.on_log(bot_log);
 
 	auto error_callback = [&bot](const dpp::confirmation_callback_t& callback) -> void {
 		if (callback.is_error()) {

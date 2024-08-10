@@ -3,12 +3,11 @@
 
 #include <guidingLight/guiding_light.h>
 
-
 namespace file {
-    const std::string temp_vc_notifications = "../src/temp_vc_notifications.txt";
-    const std::string jtc_vcs = "../src/jtc_vcs.txt";
-    const std::string temp = "../src/temp.txt";
-    const std::string jtc_default_values = "../src/jtc_default_values.txt";
+    extern std::string temp_vc_notifications;
+    extern std::string jtc_vcs;
+    extern std::string temp;
+    extern std::string jtc_default_values;
 
     void line_append(const std::string& s, const std::string& filename);
     std::string getline(const std::string& s, const std::string& filename, const int& start_position = -1);

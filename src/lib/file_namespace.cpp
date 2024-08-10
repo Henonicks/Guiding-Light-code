@@ -1,5 +1,10 @@
 #include <file_namespace.h>
 
+std::string file::temp_vc_notifications;
+std::string file::jtc_vcs;
+std::string file::temp;
+std::string file::jtc_default_values;
+
 void file::line_append(const std::string& s, const std::string& filename) {
     std::string line;
     std::ifstream ifile;
@@ -135,7 +140,7 @@ void file::delete_line_once(int pos, const std::string& filename) {
             delete_line_once(line, filename);
             break;
         }
-        position++;
+        ++position;
     }
 }
 
