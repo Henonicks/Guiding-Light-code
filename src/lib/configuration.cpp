@@ -7,14 +7,15 @@ dpp::snowflake bot_dm_logs, my_id;
 std::ofstream my_logs, guild_logs;
 static std::ofstream other_logs;
 
-void configuration::configure_bot() {
+void configuration::configure_bot(bool is_dev) {
     json config;
     std::ifstream config_file_stream("../config.json");
     config_file_stream >> config;
 
     bot_dm_logs = config["BOT_DM_LOGS_ID"];
     my_id = config["MY_ID"];
-    BOT_TOKEN = config["BOT_TOKEN"];
+
+    BOT_TOKEN = (is_dev ? config["BOT_TOKEN_DEV"] : config["BOT_TOKEN"]);
 
     my_logs.open("../logging/my_logs.log");
 	guild_logs.open("../logging/guild_logs.log");

@@ -1,8 +1,8 @@
-[2024-08-08 20:37:36]: Cluster: 998 of 1000 session starts remaining
-[2024-08-08 20:37:36]: Auto Shard: Bot requires 1 shard
-[2024-08-08 20:37:36]: Starting with 1 shards...
-[2024-08-08 20:37:36]: Connecting new session...
-[2024-08-08 20:37:37]: Shard id 0 (1/1) ready!
-[2024-08-08 20:37:37]: Resume URL for session da6302727c87c08f714f0c68ac78b06e is wss://gateway-us-east1-c.discord.gg (host: gateway-us-east1-c.discord.gg)
-[2024-08-08 20:37:37]: Waiting for endpoint /api/v10/users/@me/guilds rate limit, next request in 1s
-[2024-08-08 20:37:41]: Shards started.
+[2024-08-09 23:40:01]: Cluster: 989 of 1000 session starts remaining
+[2024-08-09 23:40:01]: Auto Shard: Bot requires 1 shard
+[2024-08-09 23:40:01]: Starting with 1 shards...
+[2024-08-09 23:40:01]: Connecting new session...
+[2024-08-09 23:40:01]: Shard id 0 (1/1) ready!
+[2024-08-09 23:40:01]: Resume URL for session b781a286820ee36c653223d14daaf2d5 is wss://gateway-us-east1-b.discord.gg (host: gateway-us-east1-b.discord.gg)
+[2024-08-09 23:40:02]: Waiting for endpoint /api/v10/users/@me/guilds rate limit, next request in 1s
+[2024-08-09 23:40:06]: Shards started.
