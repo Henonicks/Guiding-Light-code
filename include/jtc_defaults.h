@@ -7,7 +7,8 @@
 struct jtc_defaults {
     dpp::snowflake channelid;
     std::string name;
-    int limit, bitrate;
+    long limit;
+	int bitrate;
 };
 
 bool operator <(jtc_defaults jd1, jtc_defaults jd2);

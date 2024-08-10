@@ -18,27 +18,31 @@ int main(int argc, char** argv) {
 	std::cout << "starting the bot" << std::endl;
 
 	std::set <std::string> command_list =
-	{"--return", "--noreturn"};
+			{"./guidingLight", "--return", "--noreturn", "--dev"};
 	std::set <std::string> slashcommand_list =
-	{"--chelp", "--csetup", "--cset",
-	"--dhelp", "--dsetup", "--dset"};
+			{"--chelp", "--csetup", "--cset"};
+	command_list.insert(slashcommand_list.begin(), slashcommand_list.end());
 	std::vector <std::string> commands;
-	std::vector <std::string> slashcommands;
+
 	bool bot_return = false;
+	bool is_dev = false;
 
 	for (int i = 0; i < argc; i++) {
 		if (!command_list.count(std::string(argv[i]))) {
 			std::cout << "Unknown command: " << argv[i] << '\n';
 		}
 		commands.emplace_back(argv[i]);
-		if (*commands.rbegin() == "--return") {
+		if (strcmp(argv[i], "--return") == 0) {
 			bot_return = true;
+		}
+		else if (strcmp(argv[i], "--dev") == 0) {
+			is_dev = true;
 		}
 	}
 
-	configuration::configure_bot();
-	dpp::cluster bot(BOT_TOKEN, dpp::i_all_intents);
-	configuration::configure_channels(bot);
+	configuration::configure_bot(is_dev);
+	dpp::cluster bot(BOT_TOKEN, dpp::i_guilds | dpp::i_guild_members | dpp::i_guild_voice_states | dpp::i_direct_messages | dpp::i_message_content);
+	bot.on_log(bot_log);
 
 	auto error_callback = [&bot](const dpp::confirmation_callback_t& callback) -> void {
 		if (callback.is_error()) {
@@ -47,7 +51,7 @@ int main(int argc, char** argv) {
 	};
 
 	/* Register slash commands here in on_ready */
-	bot.on_ready([&bot, &commands, &error_callback](const dpp::ready_t& event) -> void {
+	bot.on_ready([&bot, commands, error_callback](const dpp::ready_t& event) -> void {
 		if (dpp::run_once <struct register_bot_commands>()) {
 			bot.set_presence(dpp::presence(dpp::ps_idle, dpp::activity(dpp::activity_type::at_watching, "VCs in " + std::to_string(bot.current_user_get_guilds_sync().size()) + " guilds", "", "")));
 
@@ -55,10 +59,7 @@ int main(int argc, char** argv) {
 			dpp::slashcommand setup("setup", "Set up a part of JTC feature", bot.me.id);
 			dpp::slashcommand set("set", "Edit an attribute of the temp VC you are in (or of a JTC).", bot.me.id);
 
-			dpp::command_option emoji_option(dpp::co_sub_command, "emoji", "Get a list of emoji in a guild (helpful for /type)");
-
-			emoji_option.add_option({dpp::co_string, "emoji-name", "Emoji name to match with. Leave empty to get a complete list of emoji."});
-			emoji_option.add_option({dpp::co_string, "guild-id", "ID of the guild you want to search in. Leave empty for current."});
+			std::vector <dpp::slashcommand> slashcommands_to_create;
 
 			set.add_option(
 					dpp::command_option(dpp::co_sub_command, "name", "Change the VC name").
@@ -66,11 +67,11 @@ int main(int argc, char** argv) {
 			);
 			set.add_option(
 					dpp::command_option(dpp::co_sub_command, "limit", "Change the member count limit").
-							add_option(dpp::command_option(dpp::co_string, "limit", "The limit you want the VC to have", true))
+							add_option(dpp::command_option(dpp::co_integer, "limit", "The limit you want the VC to have", true))
 			);
 			set.add_option(
 					dpp::command_option(dpp::co_sub_command, "bitrate", "Change the bitrate of the VC").
-						add_option(dpp::command_option(dpp::co_string, "bitrate", "The bitrate you want the VC to have", true))
+							add_option(dpp::command_option(dpp::co_integer, "bitrate", "The bitrate you want the VC to have", true))
 			);
 
 			//---------------------------------------------------
@@ -78,17 +79,17 @@ int main(int argc, char** argv) {
 
 			dpp::command_option name_sub_cmd = dpp::command_option(dpp::co_sub_command, "name", "Change default name of temp VCs");
 			name_sub_cmd.add_option(dpp::command_option(dpp::co_string, "name", "The name you want the VCs to have", true));
-			name_sub_cmd.add_option(dpp::command_option(dpp::co_string, "channel", "The default value of this JTC will be changed", true));
+			name_sub_cmd.add_option(dpp::command_option(dpp::co_channel, "channel", "The default value of this JTC will be changed", true));
 			sub_cmd_group_default.add_option(name_sub_cmd);
 
 			dpp::command_option limit_sub_cmd = dpp::command_option(dpp::co_sub_command, "limit", "Change default limit of temp VCs");
 			limit_sub_cmd.add_option(dpp::command_option(dpp::co_integer, "limit", "The limit you want the VCs to have", true));
-			limit_sub_cmd.add_option(dpp::command_option(dpp::co_string, "channel", "The default value of this JTC will be changed", true));
+			limit_sub_cmd.add_option(dpp::command_option(dpp::co_channel, "channel", "The default value of this JTC will be changed", true));
 			sub_cmd_group_default.add_option(limit_sub_cmd);
 
 			dpp::command_option bitrate_sub_cmd = dpp::command_option(dpp::co_sub_command, "bitrate", "Change default name of temp VCs");
 			bitrate_sub_cmd.add_option(dpp::command_option(dpp::co_integer, "bitrate","The bitrate you want the VCs to have", true));
-			bitrate_sub_cmd.add_option(dpp::command_option(dpp::co_string, "channel", "The default value of this JTC will be changed", true));
+			bitrate_sub_cmd.add_option(dpp::command_option(dpp::co_channel, "channel", "The default value of this JTC will be changed", true));
 			sub_cmd_group_default.add_option(bitrate_sub_cmd);
 			//---------------------------------------------------
 
@@ -105,25 +106,18 @@ int main(int argc, char** argv) {
 
 			for (const std::string& s : commands) {
 				if (s == "--chelp") {
-					bot.global_command_create(help, error_callback);
+					slashcommands_to_create.push_back(help);
 				}
 				if (s == "--csetup") {
-					bot.global_command_create(setup, error_callback);
+					slashcommands_to_create.push_back(setup);
 				}
 				if (s == "--cset") {
-					bot.global_command_create(set, error_callback);
-				}
-				if (s == "--dhelp") {
-					bot.global_command_create(help, error_callback);
-				}
-				if (s == "--dsetup") {
-					bot.global_command_create(setup, error_callback);
-				}
-				if (s == "--dset") {
-					bot.global_command_create(set, error_callback);
+					slashcommands_to_create.push_back(set);
 				}
 			}
-
+			if (!slashcommands_to_create.empty()) {
+				bot.global_bulk_command_create(slashcommands_to_create, error_callback);
+			}
 		}
 	});
 
@@ -281,7 +275,6 @@ int main(int argc, char** argv) {
 					new_name += defs.name[i];
 				}
 				int limit = defs.limit;
-				log("Temp channel is being created in " + dpp::find_guild(guildid)->name);
 				new_channel.set_name(new_name);
 				new_channel.set_guild_id(guildid);
 				new_channel.set_bitrate(defs.bitrate);
@@ -363,14 +356,19 @@ int main(int argc, char** argv) {
 		set_color(dpp::colors::sti_blue).
 		set_title("``HELP``").
 		set_author("Here is what I can do!\n", "", "").
-		set_description("``/help`` - I don't know, I guess you've just issued the command\n"
-							 "``/setup`` - create a join-to-create (JTC) voice channel. As soon as you join one of those, a temporary one is being created, and you get moved to it, unless you've disconnected\n"
-							 "``/edit is a command with 3 subcommands. It changes some of the properties of a temporary voice channel. If it wasn't created because of you joining to a JTC voice channel, the command won't work``");
+		set_description("`/help` - I don't know, I guess you've just issued the command\n"
+							 "`/setup` - create a join-to-create (JTC) voice channel. As soon as you join one of those, a temporary one is being created, and you get moved to it, unless you've disconnected\n"
+							 "`/set` has two types of subcommands: set current and set default.\n"
+							 "**set current** sets a current value (currently supports the channel name/limit/bitrate) to a user-defined one. Some limitations apply. You cannot change the values of a channel that doesn't belong to you (was requested by someone else)\n"
+							 "**set default** sets a default value (currently supports the channel name/limit/bitrate) to a user-defined one. Some limitations apply. You cannot use this if you don't have the permissions to edit a channel.\n"
+							 "**TIP:** you can put \"{username}\" (without the quotes) so it can be replaced with the username of the person requesting a channel. For example, if the default name is \"VC for {username}\" and a person with the username \"henonicks\" requests a channel, the name of the temporary VC will be set to \"VC for henonicks\".\n"
+							 "\n"
+							 "**NOTE:** if you were in a temporary voice channel before I shut down, the channel will never be auto-deleted since temporary VCs are not stored in the files. This is to be handled by a moderator, which is looked into being fixed soon. Deleting *all* of the temporary VCs out there would take a lot of API requests which could get the bot rate-limited which is, in layman's terms, terrible.");
 	bot.on_slashcommand([&bot, &help_embed](const dpp::slashcommand_t& event) -> dpp::task <void> {
 		dpp::guild guild;
 		dpp::command_interaction cmd = event.command.get_command_interaction();
 		if (event.command.get_command_name() == "help") {
-			event.reply(dpp::message(event.command.channel_id, help_embed));
+			event.reply(dpp::message(event.command.channel_id, help_embed).set_flags(dpp::m_ephemeral));
 			co_return;
 		}
 		if (event.command.get_command_name() == "set") {

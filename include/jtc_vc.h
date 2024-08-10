@@ -1,7 +1,7 @@
 #ifndef JTC_VC_H
 #define JTC_VC_H
 
-#include <guidingLight/guiding_light.h>
+#include "guidingLight/guiding_light.h"
 
 struct jtc_vc {
     dpp::snowflake channelid, guildid;

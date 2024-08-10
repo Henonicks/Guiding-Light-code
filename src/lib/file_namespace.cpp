@@ -1,6 +1,11 @@
 #include <file_namespace.h>
 
-void file::line_append(const std::string& s, std::string filename) {
+std::string file::temp_vc_notifications;
+std::string file::jtc_vcs;
+std::string file::temp;
+std::string file::jtc_default_values;
+
+void file::line_append(const std::string& s, const std::string& filename) {
     std::string line;
     std::ifstream ifile;
     ifile.open(filename);
@@ -24,12 +29,13 @@ void file::line_append(const std::string& s, std::string filename) {
     ofile.close();
 }
 
-std::string file::getline(const std::string& s, const std::string& filename, int start_position) {
+std::string file::getline(const std::string& s, const std::string& filename, const int& start_position) {
     std::string line;
     std::ifstream ifile;
     ifile.open(filename);
     while (std::getline(ifile, line)) {
-        if (line.find(s) == start_position || (start_position == -1 && line.find(s) != std::string::npos)) {
+		size_t pos = line.find(s);
+        if (pos == start_position || (start_position == -1 && pos != std::string::npos)) {
             return line;
         }
     }
@@ -67,7 +73,7 @@ void file::delete_line_once(const std::string& s, const std::string& filename, c
     otemp.close();
 }
 
-void file::delete_if_line(const std::string& s, std::string filename) {
+void file::delete_if_line(const std::string& s, const std::string& filename) {
     std::string line;
     std::ifstream ifile;
     ifile.open(filename);
@@ -124,7 +130,7 @@ void file::line_attach(const std::string& s, const std::string& filename, int po
     itemp.close();
 }
 
-void file::delete_line_once(int pos, std::string filename) {
+void file::delete_line_once(int pos, const std::string& filename) {
     std::string line;
     std::ifstream ifile;
     ifile.open(filename);
@@ -134,11 +140,11 @@ void file::delete_line_once(int pos, std::string filename) {
             delete_line_once(line, filename);
             break;
         }
-        position++;
+        ++position;
     }
 }
 
-bool file::is_in_file(const std::string& s, std::string filename) {
+bool file::is_in_file(const std::string& s, const std::string& filename) {
     std::string line;
     std::ifstream file;
     file.open(filename);
@@ -159,7 +165,17 @@ int file::pos_in_file(const std::string& s, const std::string& filename) {
         if (line.find(s) == 0) {
             return pos;
         }
-        pos++;
+        ++pos;
     }
     return -1;
+}
+int file::count_lines(const std::string& s, const std::string& filename) {
+	std::string line;
+	std::ifstream file;
+	file.open(filename);
+	int res = 0;
+	while (std::getline(file, line)) {
+		res += line.find(s) != std::string::npos;
+	}
+	return res;
 }

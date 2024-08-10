@@ -1,13 +1,13 @@
 #include <jtc_vc.h>
 
 bool operator <(jtc_vc vc1, jtc_vc vc2) {
-    long long c1 = vc1.channelid, c2 = vc2.channelid;
+    unsigned long long c1 = vc1.channelid, c2 = vc2.channelid;
     return c1 < c2;
 }
 
 jtc_vc get_jtc_vc(std::string line) {
     jtc_vc result_line;
-    std::string channelid_line, guildid_line, limit_line;
+    std::string channelid_line, guildid_line;
     int i = 0;
     for (;i < line.size(); i++) {
         //std::cout << i << std::endl;
@@ -15,7 +15,7 @@ jtc_vc get_jtc_vc(std::string line) {
             channelid_line += line[i];
         }
         else {
-            i++;
+            ++i;
             result_line.channelid = (dpp::snowflake)channelid_line;
             //std::cout << "Get_info_line " << result_line.channelid << std::endl;
             break;
@@ -27,7 +27,7 @@ jtc_vc get_jtc_vc(std::string line) {
             guildid_line += line[i];
         }
         else {
-            i++;
+            ++i;
             result_line.guildid = (dpp::snowflake)guildid_line;
             //std::cout << "Get_info_line (guildid) " << guildid_line << " snowflake " << (dpp::snowflake)guildid_line << std::endl;
             break;
