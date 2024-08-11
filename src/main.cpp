@@ -328,7 +328,7 @@ int main(int argc, char** argv) {
 						)
 						.set_footer(
 							dpp::embed_footer()
-							.set_text("Use the button bellow to toggle the temporary VC creationg ping on/off. Have fun!")
+							.set_text("Use the button bellow to toggle the temporary VC creation ping on/off. Have fun!")
 					);
 					dpp::message message = dpp::message(channelid, temp_ping_embed).add_component(
 						dpp::component().add_component(
