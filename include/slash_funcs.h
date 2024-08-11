@@ -15,7 +15,11 @@ namespace slash {
     /**
      * @brief set a JTC value - either default or current one.
      */
-    namespace set {
+
+	extern std::map <std::string, dpp::slashcommand> created_slashcommands;
+    extern dpp::embed help_embed;
+    
+	namespace set {
 
         /**
          * @brief set a default value of a VCs that belong to a JTC.

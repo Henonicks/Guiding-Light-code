@@ -42,7 +42,9 @@ int main(int argc, char** argv) {
 
 	configuration::configure_bot(is_dev);
 	dpp::cluster bot(BOT_TOKEN, dpp::i_guilds | dpp::i_guild_members | dpp::i_guild_voice_states | dpp::i_direct_messages | dpp::i_message_content);
-	bot.on_log(bot_log);
+	bot.on_log([&bot](const dpp::log_t& log) -> void {
+		bot_log(log, bot);
+	});
 
 	auto error_callback = [&bot](const dpp::confirmation_callback_t& callback) -> void {
 		if (callback.is_error()) {
@@ -53,7 +55,9 @@ int main(int argc, char** argv) {
 	/* Register slash commands here in on_ready */
 	bot.on_ready([&bot, commands, error_callback](const dpp::ready_t& event) -> void {
 		if (dpp::run_once <struct register_bot_commands>()) {
-			bot.set_presence(dpp::presence(dpp::ps_idle, dpp::activity(dpp::activity_type::at_watching, "VCs in " + std::to_string(bot.current_user_get_guilds_sync().size()) + " guilds", "", "")));
+			bot.start_timer([&bot](const dpp::timer& h) -> void {
+				bot.set_presence(dpp::presence(dpp::ps_idle, dpp::activity(dpp::activity_type::at_watching, "VCs in " + std::to_string(all_bot_guilds.size()) + " guilds", "", "")));
+			}, 180);
 
 			dpp::slashcommand help("help", "See what I can do!", bot.me.id);
 			dpp::slashcommand setup("setup", "Set up a part of JTC feature", bot.me.id);
@@ -121,6 +125,20 @@ int main(int argc, char** argv) {
 		}
 	});
 
+	bot.on_button_click([&bot](const dpp::button_click_t& event) -> void {
+		if (event.custom_id == "temp_ping_toggle") {
+			const dpp::snowflake& userid = event.command.usr.id;
+			if (no_temp_ping[userid]) {
+				file::delete_line_once(userid.str(), file::no_temp_ping);
+			}
+			else {
+				file::line_append(userid.str(), file::no_temp_ping);
+			}
+			no_temp_ping[userid] = !no_temp_ping[userid];
+			event.reply(dpp::message(event.command.channel_id, (fmt::format("Next time the ping will be: **{}**.", no_temp_ping[userid] == true ? "off" : "on"))).set_flags(dpp::m_ephemeral));
+		}
+	});
+
 	bot.on_message_create([&bot](const dpp::message_create_t& event) -> void {
 		std::string msg = event.msg.content;
 		std::string prefix;
@@ -138,7 +156,7 @@ int main(int argc, char** argv) {
 							return;
 						}
 						auto msg = std::get <dpp::message>(callback.value);
-						bot.start_timer([&bot, msg](dpp::timer timer) {
+						bot.start_timer([&bot, msg](dpp::timer timer) -> void {
 							bot.message_delete(msg.id, msg.channel_id);
 							bot.stop_timer(timer);
 						}, 2);
@@ -156,7 +174,11 @@ int main(int argc, char** argv) {
 				dm_who_str += msg[i];
 			}
 			auto dm_who = dpp::snowflake(dm_who_str);
-			dpp::user_identified user = bot.user_get_sync(dm_who);
+			dpp::user* user = dpp::find_user(dm_who);
+			if (user == nullptr) {
+				event.reply("Screw you, the user is unknown!");
+				return;
+			}
 			std::string content;
 			for (; i < msg.size(); i++) {
 				content += msg[i];
@@ -165,7 +187,7 @@ int main(int argc, char** argv) {
 				std::getline(std::cin >> std::ws, content);
 			}
 			bot.direct_message_create(dm_who, dpp::message(content));
-			bot.message_create(dpp::message(bot_dm_logs, fmt::format("[me to] <@{0}> (``{1}``) \'{2}\'", dm_who_str, user.format_username(), content)));
+			bot.message_create(dpp::message(bot_dm_logs, fmt::format("[me to] <@{0}> (``{1}``) \'{2}\'", dm_who_str, user->username, content)));
 			bot.log(dpp::loglevel::ll_info, fmt::format("dming {0} \'{1}\'", dm_who, content));
 		}
 		if (msg.size() > 4) {
@@ -229,14 +251,17 @@ int main(int argc, char** argv) {
 	bot.on_voice_state_update([&bot](const dpp::voice_state_update_t& event) -> void {
 		dpp::snowflake userid = event.state.user_id;
 		dpp::user* ptr = dpp::find_user(userid);
+		dpp::snowflake channelid = event.state.channel_id;
 		if (ptr == nullptr) {
-			log("User not found");
+			log(fmt::format("User {0} not found. Channel: {1}", userid, channelid));
+			if (!channelid.empty()) {
+				bot.message_create(dpp::message(channelid, fmt::format("<@{}> I could not find your user information. Leave and try again in a few seconds.", userid)).set_allowed_mentions(true));
+			}
 			return;
 		}
 		dpp::user user = *ptr;
 		dpp::snowflake guildid = event.state.guild_id;
-		if (!event.state.channel_id.empty()) {
-			dpp::snowflake channelid = event.state.channel_id;
+		if (!channelid.empty()) {
 			bool is_jtc = !jtc_vcs[channelid].channelid.empty();
 			if (is_jtc) {
 				bool to_return = false;
@@ -274,7 +299,7 @@ int main(int argc, char** argv) {
 					}
 					new_name += defs.name[i];
 				}
-				int limit = defs.limit;
+				int limit = (int)defs.limit;
 				new_channel.set_name(new_name);
 				new_channel.set_guild_id(guildid);
 				new_channel.set_bitrate(defs.bitrate);
@@ -284,11 +309,39 @@ int main(int argc, char** argv) {
 					limit = 0;
 				}
 				new_channel.set_user_limit(limit);
-				bot.channel_create(new_channel,[&bot, current, userid, user, guildid, event](auto const callback) {
-				   auto newchannel = std::get <dpp::channel>(callback.value);
-				   dpp::snowflake channelid = newchannel.id;
-				   temp_vcs[newchannel.id] = {newchannel.id, newchannel.guild_id, userid};
-				   bot.guild_member_move(newchannel.id, newchannel.guild_id, userid, [&bot, channelid, userid](const dpp::confirmation_callback_t& callback) -> void {
+				bot.channel_create(new_channel,[&bot, current, userid, user, guildid, event](const dpp::confirmation_callback_t& callback) -> void {
+					auto newchannel = std::get <dpp::channel>(callback.value);
+					dpp::snowflake channelid = newchannel.id;
+					if (!no_temp_ping[userid]) {
+						bot.message_create(dpp::message(channelid, user.get_mention()).set_allowed_mentions(true), [&bot](const dpp::confirmation_callback_t& callback) -> void {
+							auto new_message = callback.get <dpp::message>();
+							bot.message_delete(new_message.id, new_message.channel_id);
+						});
+					}
+					dpp::embed temp_ping_embed = dpp::embed()
+						.set_color(dpp::colors::sti_blue)
+						.set_title(fmt::format("Welcome to {0}!", newchannel.get_mention()))
+						.set_author(fmt::format("This VC belongs to {}.", user.username), user.get_url(), user.get_avatar_url())
+						.add_field(
+							"You're able to edit the channel!",
+							"Use a subcommand of the `/set` command to change the name, limit, or bitrate of your channel to whatever value your soul desires. See `/help` (not to be confused with \"seek help\") for more information."
+						)
+						.set_footer(
+							dpp::embed_footer()
+							.set_text("Use the button bellow to toggle the temporary VC creationg ping on/off. Have fun!")
+					);
+					dpp::message message = dpp::message(channelid, temp_ping_embed).add_component(
+						dpp::component().add_component(
+							dpp::component()
+								.set_type(dpp::cot_button)
+								.set_emoji("ping", 1271923808739000431)
+								.set_style(dpp::cos_danger)
+								.set_id("temp_ping_toggle")
+						)
+					);
+					bot.message_create(message);
+				   	temp_vcs[newchannel.id] = {newchannel.id, newchannel.guild_id, userid};
+				   	bot.guild_member_move(newchannel.id, newchannel.guild_id, userid, [&bot, channelid, userid](const dpp::confirmation_callback_t& callback) -> void {
 					   bot.start_timer([&bot, callback, userid, channelid](dpp::timer timer) {
 						   if (callback.is_error() || vc_statuses[userid] != channelid) {
 							   bot.channel_delete(channelid, [&bot](const dpp::confirmation_callback_t& callback) -> void {
@@ -320,14 +373,14 @@ int main(int argc, char** argv) {
 			   });
 			}
 		}
-		dpp::snowflake channelid = vc_statuses[userid];
+		channelid = vc_statuses[userid];
 		bool is_temp = !temp_vcs[channelid].channelid.empty();
 		if (is_temp && dpp::find_channel(channelid)->get_voice_members().empty()) {
 			dpp::channel* newchannel = dpp::find_channel(channelid);
 			log(fmt::format("{0} joined a JTC. Guild ID: {1}, channel ID: {2}, channel name: `{3}`, notification channel ID: {4}",
 							user.format_username(), guildid, channelid,
 							dpp::find_channel(channelid)->name, ntif_chnls[guildid].channelid));
-			bot.channel_delete(channelid, [](const dpp::confirmation_callback_t& callback) {
+			bot.channel_delete(channelid, [](const dpp::confirmation_callback_t& callback) -> void {
 				if (callback.is_error()) {
 					std::cout << callback.http_info.body << std::endl;
 				}
@@ -352,23 +405,11 @@ int main(int argc, char** argv) {
 		}
 	});
 
-	dpp::embed help_embed = dpp::embed().
-		set_color(dpp::colors::sti_blue).
-		set_title("``HELP``").
-		set_author("Here is what I can do!\n", "", "").
-		set_description("`/help` - I don't know, I guess you've just issued the command\n"
-							 "`/setup` - create a join-to-create (JTC) voice channel. As soon as you join one of those, a temporary one is being created, and you get moved to it, unless you've disconnected\n"
-							 "`/set` has two types of subcommands: set current and set default.\n"
-							 "**set current** sets a current value (currently supports the channel name/limit/bitrate) to a user-defined one. Some limitations apply. You cannot change the values of a channel that doesn't belong to you (was requested by someone else)\n"
-							 "**set default** sets a default value (currently supports the channel name/limit/bitrate) to a user-defined one. Some limitations apply. You cannot use this if you don't have the permissions to edit a channel.\n"
-							 "**TIP:** you can put \"{username}\" (without the quotes) so it can be replaced with the username of the person requesting a channel. For example, if the default name is \"VC for {username}\" and a person with the username \"henonicks\" requests a channel, the name of the temporary VC will be set to \"VC for henonicks\".\n"
-							 "\n"
-							 "**NOTE:** if you were in a temporary voice channel before I shut down, the channel will never be auto-deleted since temporary VCs are not stored in the files. This is to be handled by a moderator, which is looked into being fixed soon. Deleting *all* of the temporary VCs out there would take a lot of API requests which could get the bot rate-limited which is, in layman's terms, terrible.");
-	bot.on_slashcommand([&bot, &help_embed](const dpp::slashcommand_t& event) -> dpp::task <void> {
+	bot.on_slashcommand([&bot](const dpp::slashcommand_t& event) -> dpp::task <void> {
 		dpp::guild guild;
 		dpp::command_interaction cmd = event.command.get_command_interaction();
 		if (event.command.get_command_name() == "help") {
-			event.reply(dpp::message(event.command.channel_id, help_embed).set_flags(dpp::m_ephemeral));
+			event.reply(dpp::message(event.command.channel_id, slash::help_embed).set_flags(dpp::m_ephemeral));
 			co_return;
 		}
 		if (event.command.get_command_name() == "set") {
@@ -384,7 +425,7 @@ int main(int argc, char** argv) {
 		}
 	});
 
-	signal(SIGINT, [](int code) {
+	signal(SIGINT, [](int code) -> void {
 		std::cout << std::endl << "Ну, все, я пішов спати, бувай, добраніч." << std::endl;
 		system("killall guidingLight");
 	});

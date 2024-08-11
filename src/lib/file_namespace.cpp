@@ -4,6 +4,7 @@ std::string file::temp_vc_notifications;
 std::string file::jtc_vcs;
 std::string file::temp;
 std::string file::jtc_default_values;
+std::string file::no_temp_ping;
 
 void file::line_append(const std::string& s, const std::string& filename) {
     std::string line;

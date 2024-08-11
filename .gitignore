@@ -17,7 +17,9 @@ src/dev/jtc_vcs.txt
 src/dev/jtc_default_values.txt
 src/dev/temp.txt
 src/dev/temp_vc_notifications.txt
-release/dev/jtc_vcs.txt
-release/dev/jtc_default_values.txt
-release/dev/temp.txt
-release/dev/temp_vc_notifications.txt
+src/dev/no_temp_ping.txt
+src/release/dev/jtc_vcs.txt
+src/release/dev/jtc_default_values.txt
+src/release/dev/temp.txt
+src/release/dev/temp_vc_notifications.txt
+src/release/no_temp_ping.txt

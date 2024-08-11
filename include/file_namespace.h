@@ -8,6 +8,7 @@ namespace file {
     extern std::string jtc_vcs;
     extern std::string temp;
     extern std::string jtc_default_values;
+    extern std::string no_temp_ping;
 
     void line_append(const std::string& s, const std::string& filename);
     std::string getline(const std::string& s, const std::string& filename, const int& start_position = -1);
