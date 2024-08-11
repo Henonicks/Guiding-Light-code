@@ -1,5 +1,8 @@
 #include <slash_funcs.h>
 
+std::map <std::string, dpp::slashcommand> slash::created_slashcommands;
+dpp::embed slash::help_embed;
+
 void slash::set::current(dpp::cluster &bot, const dpp::slashcommand_t &event) {
     dpp::command_interaction cmd = event.command.get_command_interaction();
     const dpp::user user = event.command.get_issuing_user();
@@ -155,7 +158,7 @@ dpp::coroutine <void> slash::set::default_values(dpp::cluster &bot, const dpp::s
                 limit = 100;
             }
             if (defs.limit == limit) {
-                event.reply(dpp::message(fmt::format("Limit is already + `{}` <a:skullspin:1121414918357389433>", limit)).set_flags(dpp::m_ephemeral));
+                event.reply(dpp::message(fmt::format("The limit is already + `{}` <a:skullspin:1121414918357389433>", limit)).set_flags(dpp::m_ephemeral));
                 co_return;
             }
             if (limit == 100) {

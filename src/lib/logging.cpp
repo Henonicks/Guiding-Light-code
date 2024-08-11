@@ -1,9 +1,11 @@
 #include "logging.h"
 
-void bot_log(const dpp::log_t& log) {
+void bot_log(const dpp::log_t& log, dpp::cluster& bot) {
 	other_logs << fmt::format("[{0}]: {1}", dpp::utility::current_date_time(), log.message) << std::endl;
 	if (log.message == "Shards started.") {
 		configuration::configure_channels();
+		configuration::write_down_slashcommands(bot);
+		std::cout << "Channels configured." << std::endl;
 	}
 }
 
