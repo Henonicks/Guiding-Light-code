@@ -10,3 +10,4 @@ std::map <dpp::snowflake, temp_vc> temp_vcs;
 std::map <dpp::snowflake, uint64_t> join_time;
 std::map <dpp::snowflake, dpp::snowflake> vc_statuses;
 std::map <dpp::snowflake, bool> no_temp_ping;
+std::map <dpp::snowflake, int> temp_vc_amount;
