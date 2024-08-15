@@ -1,7 +1,7 @@
 #ifndef FILE_NAMESPACE_H
 #define FILE_NAMESPACE_H
 
-#include <guidingLight/guiding_light.h>
+#include "guidingLight/guiding_light.h"
 
 namespace file {
     extern std::string temp_vc_notifications;
@@ -9,6 +9,10 @@ namespace file {
     extern std::string temp;
     extern std::string jtc_default_values;
     extern std::string no_temp_ping;
+    extern std::string topgg_guild_votes_amount;
+    extern std::string topgg_guild_choices;
+    extern std::string no_noguild_reminder;
+    extern std::string topgg_notifications;
 
     void line_append(const std::string& s, const std::string& filename);
     std::string getline(const std::string& s, const std::string& filename, const int& start_position = -1);
@@ -19,6 +23,7 @@ namespace file {
     bool is_in_file(const std::string& s, const std::string& filename);
     int pos_in_file(const std::string& s, const std::string& filename);
 	int count_lines(const std::string& s, const std::string& filename);
+
 }
 
 #endif

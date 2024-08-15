@@ -2,6 +2,7 @@
 
 std::map <std::string, dpp::slashcommand> slash::created_slashcommands;
 dpp::embed slash::help_embed;
+bool slash::enabled = false;
 
 void slash::set::current(dpp::cluster &bot, const dpp::slashcommand_t &event) {
     dpp::command_interaction cmd = event.command.get_command_interaction();
@@ -238,8 +239,9 @@ dpp::coroutine <void> slash::setup(dpp::cluster& bot, const dpp::slashcommand_t&
         co_return;
     }
     if (cmd.options[0].name == "jtc") {
-		if (file::count_lines(event.command.guild_id.str(), file::jtc_vcs) >= 1) {
-			event.reply(dpp::message("You can't have multiple JTCs *at the moment*. Consider editing one instead!").set_flags(dpp::m_ephemeral));
+        int8_t limit = ::topgg::jtc::count_jtcs(guildid);
+		if (file::count_lines(event.command.guild_id.str(), file::jtc_vcs) >= limit) {
+			event.reply(dpp::message(fmt::format("This guild has a JTC limit of {0}.{1}", limit, (limit < 10 ? " You can get more by voting though!" : ""))).set_flags(dpp::m_ephemeral));
 			co_return;
 		}
         std::string arg_string = std::get <std::string>(cmd.options[0].options[0].value);
@@ -283,23 +285,87 @@ dpp::coroutine <void> slash::setup(dpp::cluster& bot, const dpp::slashcommand_t&
         }
     }
     else {
-        bool is_already_set = !ntif_chnls[guildid].channelid.empty();
-        if (!is_already_set) {
-            dpp::channel channel;
-            channel.set_type(dpp::CHANNEL_ANNOUNCEMENT);
+        bool is_already_set;
+        dpp::channel channel;
+        channel.set_type(guild.is_community() ? dpp::CHANNEL_ANNOUNCEMENT : dpp::CHANNEL_TEXT);
+        if (!guild.is_community()) {
+            channel.set_permission_overwrite(guildid, dpp::ot_role, dpp::p_view_channel, dpp::p_send_messages);
+        }
+        channel.set_guild_id(guildid);
+        const bool is_jtc = cmd.options[0].options[0].name == "jtc";
+        if (is_jtc) {
+            is_already_set = !ntif_chnls[guildid].empty();
             channel.set_name("temp-vc-notifications");
-            channel.set_guild_id(guildid);
-            channel.set_parent_id(0);
-            bot.channel_create(channel, [](const dpp::confirmation_callback_t& callback) -> void {
-                dpp::channel newchannel = std::get <dpp::channel>(callback.value);
-                std::string to_add = std::to_string(newchannel.id) + ' ' + std::to_string(newchannel.guild_id);
-                file::line_append(to_add, file::temp_vc_notifications);
-                ntif_chnls[newchannel.guild_id] = get_ntf_chnl(to_add);
-            });
-            event.reply(dpp::message("It's been set. Enjoy!").set_flags(dpp::m_ephemeral));
         }
         else {
-            event.reply(dpp::message("It's been already set. No more than one per guild!").set_flags(dpp::m_ephemeral));
+            is_already_set = !topgg_ntif_chnls[guildid].empty();
+            channel.set_name("topgg-notifications");
+        }
+        if (!is_already_set) {
+            bot.channel_create(channel, [is_jtc](const dpp::confirmation_callback_t& callback) -> void {
+                const auto newchannel = callback.get <dpp::channel>();
+                const std::string to_add = std::to_string(newchannel.id) + ' ' + std::to_string(newchannel.guild_id);
+                file::line_append(to_add, is_jtc ? file::temp_vc_notifications : file::topgg_notifications);
+                (is_jtc ? ntif_chnls : topgg_ntif_chnls)[newchannel.guild_id] = newchannel.id;
+            });
+            event.reply(dpp::message("The channel was just set up!").set_flags(dpp::m_ephemeral));
+        }
+        else {
+            event.reply(dpp::message("It's already set up. No more than one per guild!").set_flags(dpp::m_ephemeral));
         }
     }
+}
+
+void slash::topgg::guild_get(const dpp::slashcommand_t& event) {
+    dpp::user user = event.command.usr;
+    dpp::snowflake guild_id = ::topgg::guild_choices[user.id];
+    dpp::guild* guild = dpp::find_guild(guild_id);
+    if (guild == nullptr) {
+        event.reply(dpp::message(event.command.channel_id, "Guild not found. If you've already set it, consider trying again. Otherwise, set it with `/guild set`.").set_flags(dpp::m_ephemeral));
+    }
+    else {
+        dpp::embed embed = dpp::embed()
+            .set_color(dpp::colors::sti_blue)
+            .set_title("You're voting in favour of this guild.")
+            .set_author(fmt::format("Hello, {0}, your chosen guild is {1}.", user.username, guild->name), "", guild->get_icon_url())
+            .set_thumbnail(guild->get_icon_url()
+        );
+        if (guild->get_banner_url() != "") {
+            embed.set_image(guild->get_banner_url());
+        }
+        dpp::message message = dpp::message(event.command.channel_id, embed).set_flags(dpp::m_ephemeral);
+        event.reply(message);
+    }
+}
+
+void slash::topgg::guild_set(const dpp::slashcommand_t& event) {
+    if (::topgg::guild_choices[event.command.usr.id] == event.command.guild_id) {
+        try {
+            event.reply(dpp::message(event.command.channel_id, fmt::format("Your chosen guild is already {}!", event.command.get_guild().name)));
+        }
+        catch (...) {
+            event.reply(dpp::message(event.command.channel_id, "Guild not found. Try again?").set_flags(dpp::m_ephemeral));
+        }
+    }
+    else {
+        ::topgg::guild_choices[event.command.usr.id] = event.command.guild_id;
+        file::delete_line_once(file::getline(event.command.usr.id.str(), file::topgg_guild_choices), file::topgg_guild_choices);
+        file::line_append(event.command.usr.id.str() + ' ' + event.command.guild_id.str(), file::topgg_guild_choices);
+        dpp::embed embed = dpp::embed()
+            .set_color(dpp::colors::sti_blue)
+            .set_title("You're now voting in favour of this guild.")
+            .set_author(fmt::format("Set your guild to {}.", event.command.get_guild().name), "", event.command.get_guild().get_icon_url())
+            .set_thumbnail(event.command.get_guild().get_icon_url()
+        );
+        if (event.command.get_guild().get_banner_url() != "") {
+            embed.set_image(event.command.get_guild().get_banner_url());
+        }
+        dpp::message message = dpp::message(event.command.channel_id, embed).set_flags(dpp::m_ephemeral);
+        event.reply(message);
+    }
+}
+
+void slash::topgg::get_progress(const dpp::slashcommand_t& event) {
+    const int8_t limit = ::topgg::jtc::count_jtcs(event.command.guild_id);
+	event.reply(dpp::message(event.command.channel_id, fmt::format("This guild's vote progress is: __{0}__/**{1}**. The maximum amount of JTCs allowed here is {2}.{3}", ::topgg::guild_list[event.command.guild_id], ::topgg::votes_leveling[limit], limit, limit < 10 ? " This is the absolute maximum." : "")).set_flags(dpp::m_ephemeral));
 }

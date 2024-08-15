@@ -5,6 +5,10 @@ std::string file::jtc_vcs;
 std::string file::temp;
 std::string file::jtc_default_values;
 std::string file::no_temp_ping;
+std::string file::topgg_guild_votes_amount;
+std::string file::topgg_guild_choices;
+std::string file::no_noguild_reminder;
+std::string file::topgg_notifications;
 
 void file::line_append(const std::string& s, const std::string& filename) {
     std::string line;

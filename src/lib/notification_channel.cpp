@@ -1,11 +1,11 @@
 #include <notification_channel.h>
 
-bool operator <(vc_notification_chnl chnl1, vc_notification_chnl chnl2) {
+bool operator <(notification_chnl chnl1, notification_chnl chnl2) {
     return chnl1.channelid < chnl2.channelid;
 }
 
-vc_notification_chnl get_ntf_chnl(const std::string& line) {
-    vc_notification_chnl result_line;
+notification_chnl get_ntf_chnl(const std::string& line) {
+    notification_chnl result_line;
     std::string channelid_line, guildid_line;
     int i = 0;
     for (;i < line.size(); i++) {
@@ -31,4 +31,5 @@ vc_notification_chnl get_ntf_chnl(const std::string& line) {
     return result_line;
 }
 
-std::map <dpp::snowflake, vc_notification_chnl> ntif_chnls;
+std::map <dpp::snowflake, dpp::snowflake> ntif_chnls;
+std::map <dpp::snowflake, dpp::snowflake> topgg_ntif_chnls;

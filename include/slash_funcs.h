@@ -10,15 +10,18 @@
 #include "file_namespace.h"
 #include "configuration.h"
 #include "logging.h"
+#include "topgg.h"
 
 namespace slash {
-    /**
-     * @brief set a JTC value - either default or current one.
-     */
+
+    extern bool enabled;
 
 	extern std::map <std::string, dpp::slashcommand> created_slashcommands;
     extern dpp::embed help_embed;
     
+    /**
+     * @brief set a JTC value - either default or current one.
+     */
 	namespace set {
 
         /**
@@ -46,6 +49,12 @@ namespace slash {
      * @param ntif_channels list of all notification channels where the bot would send message about creating a temporary voice channel for someone.
     */
     dpp::coroutine <void> setup(dpp::cluster& bot, const dpp::slashcommand_t& event);
+
+    namespace topgg {
+        void guild_get(const dpp::slashcommand_t& event);
+        void guild_set(const dpp::slashcommand_t& event);
+        void get_progress(const dpp::slashcommand_t& event);
+    }
 }
 
 #endif

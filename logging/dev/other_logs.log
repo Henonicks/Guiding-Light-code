@@ -1,8 +1,7 @@
-[2024-08-11 16:14:11]: Cluster: 981 of 1000 session starts remaining
-[2024-08-11 16:14:11]: Auto Shard: Bot requires 1 shard
-[2024-08-11 16:14:11]: Starting with 1 shards...
-[2024-08-11 16:14:12]: Connecting new session...
-[2024-08-11 16:14:12]: Shard id 0 (1/1) ready!
-[2024-08-11 16:14:12]: Resume URL for session 6a536b648526ae4c0d8ddda82aa096fb is wss://gateway-us-east1-b.discord.gg (host: gateway-us-east1-b.discord.gg)
-[2024-08-11 16:14:16]: Shards started.
-[2024-08-11 16:14:20]: Error: 50035: Invalid Form Body - data.embeds.0: List item values of ModelType are required (LIST_ITEM_VALUE_REQUIRED)
+[2024-08-14 17:17:15]: Cluster: 998 of 1000 session starts remaining
+[2024-08-14 17:17:15]: Auto Shard: Bot requires 1 shard
+[2024-08-14 17:17:15]: Starting with 1 shards...
+[2024-08-14 17:17:15]: Connecting new session...
+[2024-08-14 17:17:16]: Shard id 0 (1/1) ready!
+[2024-08-14 17:17:16]: Resume URL for session 239dcbf9af5ecd7f47816138658d87a5 is wss://gateway-us-east1-c.discord.gg (host: gateway-us-east1-c.discord.gg)
+[2024-08-14 17:17:20]: Shards started.
