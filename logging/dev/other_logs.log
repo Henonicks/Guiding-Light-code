@@ -1,7 +1,0 @@
-[2024-08-14 17:17:15]: Cluster: 998 of 1000 session starts remaining
-[2024-08-14 17:17:15]: Auto Shard: Bot requires 1 shard
-[2024-08-14 17:17:15]: Starting with 1 shards...
-[2024-08-14 17:17:15]: Connecting new session...
-[2024-08-14 17:17:16]: Shard id 0 (1/1) ready!
-[2024-08-14 17:17:16]: Resume URL for session 239dcbf9af5ecd7f47816138658d87a5 is wss://gateway-us-east1-c.discord.gg (host: gateway-us-east1-c.discord.gg)
-[2024-08-14 17:17:20]: Shards started.
