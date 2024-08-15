@@ -24,12 +24,9 @@ int main(int argc, char** argv) {
 	command_list.insert(slashcommand_list.begin(), slashcommand_list.end());
 	std::vector <std::string> commands;
 
-	bool bot_return = false;
-	bool is_dev = false;
-
 	for (int i = 0; i < argc; i++) {
 		if (!command_list.count(std::string(argv[i]))) {
-			std::cout << "Unknown command: `" << argv[i] << "`. Ignoring." << '\n';
+			std::cout << "Unknown command: " << argv[i] << '\n';
 		}
 		commands.emplace_back(argv[i]);
 		if (strcmp(argv[i], "--return") == 0) {
@@ -48,7 +45,12 @@ int main(int argc, char** argv) {
 
 	auto error_callback = [&bot](const dpp::confirmation_callback_t& callback) -> void {
 		if (callback.is_error()) {
-			bot.log(dpp::loglevel::ll_error, callback.get_error().message);
+			if (!callback.get_error().errors.empty()) {
+				bot.log(dpp::loglevel::ll_error, fmt::format("FIELD: {0} REASON: {1}", callback.get_error().errors[0].field, callback.get_error().errors[0].reason));
+			}
+			else {
+				bot.log(dpp::loglevel::ll_error, callback.get_error().message);
+			}
 		}
 	};
 
@@ -119,9 +121,10 @@ int main(int argc, char** argv) {
 
 			get.add_option(dpp::command_option(dpp::co_sub_command, "progress", "Get the voting progress of a guild."));
 
-			logs.add_option(dpp::command_option(dpp::co_string, "dpp", "D++ logs, sent by bot.on_log()."));
-			logs.add_option(dpp::command_option(dpp::co_string, "mine", "Logs, written by me."));
-			logs.add_option(dpp::command_option(dpp::co_string, "guild", "Guild logs."));
+			logs.add_option(dpp::command_option(dpp::co_sub_command, "dpp", "D++ logs, sent by bot.on_log()."));
+			logs.add_option(dpp::command_option(dpp::co_sub_command, "mine", "Logs, written by me."));
+			logs.add_option(dpp::command_option(dpp::co_sub_command, "guild", "Guild logs."));
+			logs.set_default_permissions(dpp::permissions::p_administrator);
 
 			for (const std::string& s : commands) {
 				if (s == "--chelp") {
@@ -253,7 +256,7 @@ int main(int argc, char** argv) {
 				jtc_default_values.erase(channelid);
 				jtc_channels_map.erase(channelid);
 				jtc_vcs.erase(channelid);
-				const std::string jtc_line = std::to_string(to_erase_jtc.channelid) + ' ' + std::to_string(to_erase_jtc.guildid);
+				const std::string jtc_line = file::getline(std::to_string(channelid), file::jtc_vcs, -1);
 				file::delete_line_once(jtc_line, file::jtc_vcs);
 				const std::string jtc_defs_line = file::getline(std::to_string(jtc_defs_to_erase.channelid), file::jtc_default_values, -1);
 				file::delete_line_once(jtc_defs_line, file::jtc_default_values);
@@ -288,66 +291,41 @@ int main(int argc, char** argv) {
 		guild_log("I have left a guild. These are its stats:\nName: `" + event.deleted.name + "`\nID: `" + event.deleted.id.str() + "`\nMembers amount: `" + std::to_string(event.deleted.member_count) + "`");
 	});
 
-	bot.on_voice_state_update([&bot, error_callback](const dpp::voice_state_update_t& event) -> void {
-		std::cout << "mic1\n"; // "mic" for "im gonna eat my mic"
+	bot.on_voice_state_update([&bot, error_callback](const dpp::voice_state_update_t& event) {
 		dpp::snowflake channelid = event.state.channel_id;
 		dpp::snowflake userid = event.state.user_id;
-		std::cout << "mic2\n";
 		if (!slash::enabled) {
-			std::cout << "mic3\n";
 			if (!channelid.empty()) {
-				std::cout << "mic4\n";
-				bot.message_create(dpp::message(channelid, fmt::format("<@{}> I'm preparing! You have to wait.", userid)).set_allowed_mentions(true));
-				std::cout << "mic5\n";
+				bot.message_create(dpp::message(channelid, fmt::format("<@{}> I'm preparing! You have to wait.", userid)).set_allowed_mentions(true), error_callback);
 			}
 			return;
 		}
-		std::cout << "mic6\n";
 		dpp::user* ptr = dpp::find_user(userid);
-		std::cout << "mic7\n";
 		if (ptr == nullptr) {
-			std::cout << "mic8\n";
-			log(fmt::format("User {0} not found. Channel: {1}", userid, channelid));
-			std::cout << "mic9\n";
+			bot.log(dpp::ll_error, fmt::format("User {0} not found. Channel: {1}", userid, channelid));
 			if (!channelid.empty()) {
-				std::cout << "mic10\n";
-				bot.message_create(dpp::message(channelid, fmt::format("<@{}> I could not find your user information. Leave and try again in a few seconds.", userid)).set_allowed_mentions(true));
-				std::cout << "mic11\n";
+				bot.message_create(dpp::message(channelid, fmt::format("<@{}> I could not find your user information. Leave and try again in a few seconds.", userid)).set_allowed_mentions(true), error_callback);
 			}
 			return;
 		}
 		dpp::user user = *ptr;
-		std::cout << "mic12\n";
 		dpp::snowflake guildid = event.state.guild_id;
-		std::cout << "mic13\n";
 		if (!channelid.empty()) {
-			std::cout << "mic14\n";
-			bool is_jtc = !jtc_vcs[channelid].channelid.empty();
-			std::cout << "mic15\n";
+			const bool is_jtc = !jtc_vcs[channelid].channelid.empty();
 			if (is_jtc) {
-				std::cout << "mic16\n";
 				bool to_return = false;
 				uint64_t current_time = bot.uptime().to_secs();
-				std::cout << "mic17\n";
 				if (current_time - join_time[userid] <= 5) {
-					std::cout << "mic18\n";
-					bot.message_create(dpp::message(channelid, fmt::format("<@{}> you have to wait more before joining the voice channel. To create a temporary VC as soon as possible, disconnect and try again in 5 seconds.", userid)).set_allowed_mentions(true));
-					std::cout << "mic19\n";
+					bot.message_create(dpp::message(channelid, fmt::format("<@{}> you have to wait more before joining the voice channel. To create a temporary VC as soon as possible, disconnect and try again in 5 seconds.", userid)).set_allowed_mentions(true), error_callback);
 					to_return = true;
 				}
-				std::cout << "mic20\n";
 				join_time[userid] = current_time;
-				std::cout << "mic21\n";
 				if (temp_vc_amount[guildid] >= 50) {
-					std::cout << "mic22\n";
-					bot.message_create(dpp::message(channelid, fmt::format("<@{0}> There are too many temporary VCs in this guild ({1}/15).", userid, temp_vc_amount[guildid])).set_allowed_mentions(true));
-					std::cout << "mic23\n";
+					bot.message_create(dpp::message(channelid, fmt::format("<@{0}> There are too many temporary VCs in this guild ({1}/15).", userid, temp_vc_amount[guildid])).set_allowed_mentions(true), error_callback);
 					to_return = true;
 				}
 				if (to_return) {
-					std::cout << "mic24\n";
-					bot.guild_member_move(channelid, guildid, userid, error_callback);
-					std::cout << "mic25\n";
+					bot.guild_member_move(0, guildid, userid, error_callback);
 					return;
 				}
 				std::string username = user.username;
@@ -390,9 +368,10 @@ int main(int argc, char** argv) {
 					auto newchannel = std::get <dpp::channel>(callback.value);
 					dpp::snowflake channelid = newchannel.id;
 					if (!no_temp_ping[userid]) {
-						bot.message_create(dpp::message(channelid, user.get_mention()).set_allowed_mentions(true), [&bot](const dpp::confirmation_callback_t& callback) -> void {
+						bot.message_create(dpp::message(channelid, user.get_mention()).set_allowed_mentions(true), [&bot, error_callback](const dpp::confirmation_callback_t& callback) -> void {
+							error_callback(callback);
 							auto new_message = callback.get <dpp::message>();
-							bot.message_delete(new_message.id, new_message.channel_id);
+							bot.message_delete(new_message.id, new_message.channel_id, error_callback);
 						});
 					}
 					dpp::embed temp_ping_embed = dpp::embed()
@@ -418,89 +397,59 @@ int main(int argc, char** argv) {
 					);
 					bot.message_create(message);
 				   	temp_vcs[newchannel.id] = {newchannel.id, newchannel.guild_id, userid};
-				   	bot.guild_member_move(newchannel.id, newchannel.guild_id, userid, [&bot, channelid, userid](const dpp::confirmation_callback_t& callback) -> void {
-					   	bot.start_timer([&bot, callback, userid, channelid](dpp::timer timer) {
+				   	bot.guild_member_move(newchannel.id, newchannel.guild_id, userid, [&bot, channelid, userid, error_callback](const dpp::confirmation_callback_t& callback) -> void {
+						bot.start_timer([&bot, callback, userid, channelid, error_callback](dpp::timer h) -> void {
 							if (callback.is_error() || vc_statuses[userid] != channelid) {
-								bot.channel_delete(channelid, [&bot](const dpp::confirmation_callback_t& callback) -> void {
-									if (callback.is_error()) {
-									   	bot.log(dpp::ll_error, callback.get_error().errors[0].reason);
-								   	}
-							   	});
-						   	}
-						   	bot.stop_timer(timer);
-					   	}, 5);
+								bot.channel_delete(channelid, error_callback);
+							}
+							bot.stop_timer(h);
+						}, 5);
 				   	});
 				   	if (!ntif_chnls[guildid].empty()) {
 					   	std::string description = "A new temporary channel has been created ";
 					   	description += (!newchannel.parent_id.empty() ?
 							   	"in the <#" +
-							   	std::to_string(newchannel.parent_id) + "> category"
+							   	newchannel.parent_id.str() + "> category"
 							   	: "outside the categories");
 					   	description += ". Join the channel, **" + newchannel.name + "** (<#" +
-									  	std::to_string(newchannel.id) + ">)!";
+									  	newchannel.id.str() + ">)!";
 					   	dpp::embed temp_vc_create_embed = dpp::embed().
 							   	set_color(dpp::colors::greenish_blue).
 							   	set_description(description);
 					   	bot.message_create(dpp::message(ntif_chnls[guildid], temp_vc_create_embed), error_callback);
 				   	}
-				   	if (callback.is_error()) {
-					   	log(callback.get_error().errors[0].reason);
-				   	}
+					error_callback(callback);
 			   	});
 			}
 		}
 		channelid = vc_statuses[userid];
 		const bool is_temp = !temp_vcs[channelid].channelid.empty();
-		dpp::channel* newchannel = dpp::find_channel(channelid);
-		std::cout << "nullptr ? " << (newchannel == nullptr) << '\n';
-		std::cout << 0 << '\n';
-		if (is_temp && newchannel->get_voice_members().empty()) {
-			std::cout << 1 << '\n';
-			log(fmt::format("{0} joined a JTC. Guild ID: {1}, channel ID: {2}, channel name: `{3}`, notification channel ID: {4}",
+		if (is_temp && dpp::find_channel(channelid)->get_voice_members().empty()) {
+			dpp::channel* newchannel = dpp::find_channel(channelid);
+			log(fmt::format("{0} left a JTC. Guild ID: {1}, channel ID: {2}, channel name: `{3}`, notification channel ID: {4}",
 							user.format_username(), guildid, channelid,
-							dpp::find_channel(channelid)->name, ntif_chnls[guildid]));
-			std::cout << 2 << '\n';
+							newchannel->name, ntif_chnls[guildid]));
 			const dpp::snowflake ntif_channelid = ntif_chnls[guildid];
 			if (!ntif_channelid.empty()) {
 				std::string description = "A temporary channel **" + newchannel->name + "**";
 				const dpp::channel* category = dpp::find_channel(newchannel->parent_id);
 				if (category != nullptr) {
-					std::cout << 3 << '\n';
 					description += " in the **" + category->name + "** category";
 				}
 				description += " is deleted.";
 				const dpp::embed temp_vc_delete_message = dpp::embed().
 						set_color(dpp::colors::blood_night).
 						set_description(description);
-				std::cout << 4 << '\n';
-				bot.message_create(dpp::message(ntif_channelid, temp_vc_delete_message));
-				std::cout << 5 << '\n';
+				bot.message_create(dpp::message(ntif_channelid, temp_vc_delete_message), error_callback);
 			}
-			bot.channel_delete(channelid, [&bot](const dpp::confirmation_callback_t& callback) -> void {
-				std::cout << 6 << '\n';
-				bot.start_timer([&bot, callback](const dpp::timer h) -> void {
-					if (callback.is_error()) {
-						std::cout << "there is an error\n";
-						log(callback.get_error().errors[0].reason);
-					}
-					bot.stop_timer(h);
-				}, 3000000);
-			});
+			bot.channel_delete(channelid, error_callback);
 		}
-		std::cout << 7 << '\n';
 		vc_statuses[userid] = event.state.channel_id;
-		std::cout << 8 << '\n';
-		if (vc_statuses[userid].empty()) {
-			std::cout << 9 << '\n';
-			vc_statuses[userid] = 1;
-			std::cout << 10 << '\n';
-		}
-		std::cout << "end\n";
 	});
 
 	bot.on_slashcommand([&bot](const dpp::slashcommand_t& event) -> dpp::task <void> {
 		if (!slash::enabled) {
-			event.reply(dpp::message("Patience, I'm preparing! Wait about 5-10 seconds and try again."));
+			event.reply(dpp::message("Patience, I'm preparing! Wait about 5-10 seconds and try again.").set_flags(dpp::m_ephemeral));
 			co_return;
 		}
 		dpp::guild guild;
@@ -509,8 +458,16 @@ int main(int argc, char** argv) {
 			event.reply(dpp::message(event.command.channel_id, slash::help_embed).set_flags(dpp::m_ephemeral));
 			co_return;
 		}
+		if (event.command.get_command_name() == "logs") {
+			if (event.command.usr.id != my_id) {
+				bot.direct_message_create(my_id, dpp::message(fmt::format("Ayo {} checking logs wht", event.command.usr.id)));
+			}
+			std::string_view file_name = (cmd.options[0].name == "dpp" ? "other_logs.log" : (cmd.options[0].name == "mine" ? "my_logs.log" : "guild_logs.log"));
+			dpp::message message = dpp::message().add_file(file_name, dpp::utility::read_file(fmt::format("{0}{1}/{2}", logs_directory, logs_suffix, file_name))).set_flags(dpp::m_ephemeral);
+			event.reply(message);
+		}
 		if (event.command.get_command_name() == "vote") {
-			event.reply(dpp::message(fmt::format("Vote [here](https://top.gg/bot/1101159652315627551) and earn JTC points for a chosen guild! See {} for more information.", slash::created_slashcommands["help"].get_mention())));
+			event.reply(dpp::message("Vote [here](https://top.gg/bot/1101159652315627551/vote) and earn JTC points for a chosen guild! See `/help` for more information.").set_flags(dpp::m_ephemeral));
 			co_return;
 		}
 		if (event.command.get_command_name() == "guild") {
