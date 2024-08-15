@@ -8,6 +8,6 @@ cmake/FindDPP.cmake
 build/
 config.json
 logging/dev/
-src/dev/
 logging/release/
+src/dev/
 src/release/
