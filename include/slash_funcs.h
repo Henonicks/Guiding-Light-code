@@ -50,6 +50,11 @@ namespace slash {
     */
     dpp::coroutine <void> setup(dpp::cluster& bot, const dpp::slashcommand_t& event);
 
+    namespace blocklist {
+        void add(const dpp::slashcommand_t& event);
+        void remove(const dpp::slashcommand_t& event);
+    }
+
     namespace topgg {
         void guild_get(const dpp::slashcommand_t& event);
         void guild_set(const dpp::slashcommand_t& event);
