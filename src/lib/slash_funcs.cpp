@@ -323,7 +323,7 @@ void slash::blocklist::status(const dpp::slashcommand_t& event) {
         return;
     }
     const dpp::snowflake user_id = std::get <dpp::snowflake>(event.get_parameter("user"));
-    event.reply(dpp::message(fmt::format("The user is {}in the blocklist of the channel.", (banned[channel_id].count(user_id) ? "" : "not "))));
+    event.reply(dpp::message(fmt::format("The user is {}in the blocklist of the channel.", (banned[channel_id].count(user_id) ? "" : "not "))).set_flags(dpp::m_ephemeral));
 }
 
 void slash::blocklist::add(const dpp::slashcommand_t& event) {
