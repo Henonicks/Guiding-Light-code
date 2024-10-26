@@ -31,5 +31,5 @@ notification_chnl get_ntf_chnl(const std::string& line) {
     return result_line;
 }
 
-std::map <dpp::snowflake, dpp::snowflake> ntif_chnls;
-std::map <dpp::snowflake, dpp::snowflake> topgg_ntif_chnls;
+std::map <guild_snowflake, channel_snowflake> ntif_chnls;
+std::map <guild_snowflake, channel_snowflake> topgg_ntif_chnls;

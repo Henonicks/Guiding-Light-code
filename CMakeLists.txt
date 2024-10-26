@@ -49,7 +49,8 @@ target_link_libraries(${BOT_NAME}
 target_compile_definitions(${BOT_NAME} PUBLIC DPP_CORO)
 target_compile_features(${BOT_NAME} PUBLIC cxx_std_20)
 
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Wextra -Wpedantic")
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -Wextra -Wpedantic")
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic")
 
 if (DPP_FOUND)
     target_link_libraries(${BOT_NAME} ${DPP_LIBRARIES})

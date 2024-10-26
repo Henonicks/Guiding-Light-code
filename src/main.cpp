@@ -132,6 +132,11 @@ int main(int argc, char** argv) {
 					add_option(dpp::command_option(dpp::co_user, "user", "The user to be removed from the blocklist."))
 			);
 
+			blocklist.add_option(
+				dpp::command_option(dpp::co_sub_command, "status", "Remove a user from the blocklist.").
+					add_option(dpp::command_option(dpp::co_user, "user", "The user to be removed from the blocklist."))
+			);
+
 			logs.add_option(dpp::command_option(dpp::co_sub_command, "dpp", "D++ logs, sent by bot.on_log()."));
 			logs.add_option(dpp::command_option(dpp::co_sub_command, "mine", "Logs, written by me."));
 			logs.add_option(dpp::command_option(dpp::co_sub_command, "guild", "Guild logs."));
@@ -238,7 +243,7 @@ int main(int argc, char** argv) {
 				return;
 			}
 			std::string content;
-			for (; i < msg.size(); i++) {
+			for (;i < msg.size(); i++) {
 				content += msg[i];
 			}
 			if (content.empty()) {
@@ -260,9 +265,35 @@ int main(int argc, char** argv) {
 		}
 	});
 
-	bot.on_channel_update([](const dpp::channel_update_t& event) -> void {
+	bot.on_channel_update([&bot](const dpp::channel_update_t& event) -> void {
 		if (jtc_channels_map[event.updated->id] != dpp::channel{}) {
 			jtc_channels_map[event.updated->id] = *event.updated;
+		}
+		if (!temp_vcs[event.updated->id].channelid.empty()) {
+			auto unbanned = banned[event.updated->id];
+			bool flag{};
+			for (const auto& x : event.updated->permission_overwrites) {
+				if (banned[event.updated->id].count(x.id) && x.allow.can(dpp::p_view_channel)) {
+					flag = true;
+					banned[event.updated->id].erase(x.id);
+				}
+				if (x.deny.can(dpp::p_view_channel)) {
+					flag = true;
+					banned[event.updated->id].insert(x.id);
+				}
+				if (unbanned.count(x.id)) {
+					unbanned.erase(x.id);
+				}
+			}
+			for (const auto& x : unbanned) {
+				flag = true;
+				if (banned[event.updated->id].count(x)) {
+					banned[event.updated->id].erase(x);
+				}
+			}
+			if (flag) {
+				bot.message_create(dpp::message(event.updated->id, "The blocklist of this channel has been modified by a moderator."));
+			}
 		}
 	});
 
@@ -525,6 +556,9 @@ int main(int argc, char** argv) {
 			}
 			if (cmd.options[0].name == "remove") {
 				slash::blocklist::remove(event);
+			}
+			if (cmd.options[0].name == "status") {
+				slash::blocklist::status(event);
 			}
 		}
 	});

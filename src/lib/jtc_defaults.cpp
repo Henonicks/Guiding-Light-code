@@ -38,4 +38,4 @@ jtc_defaults get_jtc_defs(std::string line) {
     return {channelid_line, name, (int)string_to_ll(limit), (int)string_to_ll(bitrate_line)};
 }
 
-std::map <dpp::snowflake, jtc_defaults> jtc_default_values;
+std::map <channel_snowflake, jtc_defaults> jtc_default_values;

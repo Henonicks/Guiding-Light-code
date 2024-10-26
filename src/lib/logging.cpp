@@ -3,9 +3,9 @@
 void bot_log(const dpp::log_t& log, dpp::cluster& bot) {
 	other_logs << fmt::format("[{0}]: {1}", dpp::utility::current_date_time(), log.message) << std::endl;
 	if (log.message == "Shards started.") {
-		std::cout << "Configuring channels...\n";
+		std::cout << "Praying that all the cache is received...\n";
 		bot.start_timer([&bot](dpp::timer h) -> void {
-			configuration::configure_channels(bot);
+			configuration::pray(bot);
 			configuration::write_down_slashcommands(bot);
 
 			bot.stop_timer(h);

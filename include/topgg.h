@@ -7,10 +7,10 @@
 
 namespace topgg {
 	extern int last_collection_time;
-	extern std::map <dpp::snowflake, dpp::snowflake> guild_choices;
-	extern std::map <dpp::snowflake, int> guild_list;
+	extern std::map <user_snowflake, guild_snowflake> guild_choices;
+	extern std::map <guild_snowflake, int> guild_list;
 	extern std::vector <int> votes_leveling;
-	extern std::map <dpp::snowflake, bool> noguild_reminders;
+	extern std::map <user_snowflake, bool> noguild_reminders;
 
 	struct guild_choice {
 		dpp::snowflake user_id, guild_id;

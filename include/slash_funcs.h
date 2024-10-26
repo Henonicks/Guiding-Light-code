@@ -53,6 +53,7 @@ namespace slash {
     namespace blocklist {
         void add(const dpp::slashcommand_t& event);
         void remove(const dpp::slashcommand_t& event);
+        void status(const dpp::slashcommand_t& event);
     }
 
     namespace topgg {
