@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
 	std::set <std::string> command_list =
 			{"./guidingLight", "--return", "--noreturn", "--dev"};
 	std::set <std::string> slashcommand_list =
-			{"--chelp", "--csetup", "--cset", "--cguild", "--cget", "--cvote", "--clogs"};
+			{"--chelp", "--csetup", "--cset", "--cguild", "--cget", "--cvote", "--cblocklist", "--clogs", "--call"};
 	command_list.insert(slashcommand_list.begin(), slashcommand_list.end());
 	std::vector <std::string> commands;
 
@@ -68,6 +68,7 @@ int main(int argc, char** argv) {
 			dpp::slashcommand get("get", "Get the voting progress of a guild.", bot.me.id);
 			dpp::slashcommand vote("vote", "Show the top.gg vote link.", bot.me.id);
 			dpp::slashcommand logs("logs", "Drop the logs of choice.", bot.me.id);
+			dpp::slashcommand blocklist("blocklist", "Add/Remove a user from your channel's blocklist", bot.me.id);
 
 			std::vector <dpp::slashcommand> slashcommands_to_create;
 
@@ -121,12 +122,37 @@ int main(int argc, char** argv) {
 
 			get.add_option(dpp::command_option(dpp::co_sub_command, "progress", "Get the voting progress of a guild."));
 
+			blocklist.add_option(
+				dpp::command_option(dpp::co_sub_command, "add", "Add a user to the blocklist.").
+					add_option(dpp::command_option(dpp::co_user, "user", "The user to be added to the blocklist."))
+			);
+
+			blocklist.add_option(
+				dpp::command_option(dpp::co_sub_command, "remove", "Remove a user from the blocklist.").
+					add_option(dpp::command_option(dpp::co_user, "user", "The user to be removed from the blocklist."))
+			);
+
+			blocklist.add_option(
+				dpp::command_option(dpp::co_sub_command, "status", "Remove a user from the blocklist.").
+					add_option(dpp::command_option(dpp::co_user, "user", "The user to be removed from the blocklist."))
+			);
+
 			logs.add_option(dpp::command_option(dpp::co_sub_command, "dpp", "D++ logs, sent by bot.on_log()."));
 			logs.add_option(dpp::command_option(dpp::co_sub_command, "mine", "Logs, written by me."));
 			logs.add_option(dpp::command_option(dpp::co_sub_command, "guild", "Guild logs."));
 			logs.set_default_permissions(dpp::permissions::p_administrator);
 
 			for (const std::string& s : commands) {
+				if (s == "--call") {
+					slashcommands_to_create.clear();
+					slashcommands_to_create.push_back(help);
+					slashcommands_to_create.push_back(setup);
+					slashcommands_to_create.push_back(set);
+					slashcommands_to_create.push_back(guild);
+					slashcommands_to_create.push_back(get);
+					slashcommands_to_create.push_back(vote);
+					slashcommands_to_create.push_back(blocklist);
+				}
 				if (s == "--chelp") {
 					slashcommands_to_create.push_back(help);
 				}
@@ -145,8 +171,14 @@ int main(int argc, char** argv) {
 				if (s == "--cvote") {
 					slashcommands_to_create.push_back(vote);
 				}
-				if (s == "--clogs") {
+				if (s == "--cblocklist") {
+					slashcommands_to_create.push_back(blocklist);
+				}
+				if (s == "--clogs" || s == "--call") {
 					bot.guild_command_create(logs, MY_GUILD_ID, error_callback);
+				}
+				if (s == "--call") {
+					break;
 				}
 			}
 			if (!slashcommands_to_create.empty()) {
@@ -211,7 +243,7 @@ int main(int argc, char** argv) {
 				return;
 			}
 			std::string content;
-			for (; i < msg.size(); i++) {
+			for (;i < msg.size(); i++) {
 				content += msg[i];
 			}
 			if (content.empty()) {
@@ -233,9 +265,35 @@ int main(int argc, char** argv) {
 		}
 	});
 
-	bot.on_channel_update([](const dpp::channel_update_t& event) -> void {
+	bot.on_channel_update([&bot](const dpp::channel_update_t& event) -> void {
 		if (jtc_channels_map[event.updated->id] != dpp::channel{}) {
 			jtc_channels_map[event.updated->id] = *event.updated;
+		}
+		if (!temp_vcs[event.updated->id].channelid.empty()) {
+			auto unbanned = banned[event.updated->id];
+			bool flag{};
+			for (const auto& x : event.updated->permission_overwrites) {
+				if (banned[event.updated->id].count(x.id) && x.allow.can(dpp::p_view_channel)) {
+					flag = true;
+					banned[event.updated->id].erase(x.id);
+				}
+				if (x.deny.can(dpp::p_view_channel)) {
+					flag = true;
+					banned[event.updated->id].insert(x.id);
+				}
+				if (unbanned.count(x.id)) {
+					unbanned.erase(x.id);
+				}
+			}
+			for (const auto& x : unbanned) {
+				flag = true;
+				if (banned[event.updated->id].count(x)) {
+					banned[event.updated->id].erase(x);
+				}
+			}
+			if (flag) {
+				bot.message_create(dpp::message(event.updated->id, "The blocklist of this channel has been modified by a moderator."));
+			}
 		}
 	});
 
@@ -373,29 +431,29 @@ int main(int argc, char** argv) {
 							auto new_message = callback.get <dpp::message>();
 							bot.message_delete(new_message.id, new_message.channel_id, error_callback);
 						});
+						dpp::embed temp_ping_embed = dpp::embed()
+							.set_color(dpp::colors::sti_blue)
+							.set_title(fmt::format("Welcome to {0}!", newchannel.get_mention()))
+							.set_author(fmt::format("This VC belongs to {}.", user.username), user.get_url(), user.get_avatar_url())
+							.add_field(
+								"You're able to edit the channel!",
+								"Use a subcommand of the `/set` command to change the name, limit, or bitrate of your channel to whatever value your soul desires. See `/help` (not to be confused with \"seek help\") for more information."
+							)
+							.set_footer(
+								dpp::embed_footer()
+								.set_text("Use the button bellow to toggle the temporary VC creation ping on/off. Have fun!")
+						);
+						dpp::message message = dpp::message(channelid, temp_ping_embed).add_component(
+							dpp::component().add_component(
+								dpp::component()
+									.set_type(dpp::cot_button)
+									.set_emoji("ping", 1271923808739000431)
+									.set_style(dpp::cos_danger)
+									.set_id("temp_ping_toggle")
+							)
+						);
+						bot.message_create(message);
 					}
-					dpp::embed temp_ping_embed = dpp::embed()
-						.set_color(dpp::colors::sti_blue)
-						.set_title(fmt::format("Welcome to {0}!", newchannel.get_mention()))
-						.set_author(fmt::format("This VC belongs to {}.", user.username), user.get_url(), user.get_avatar_url())
-						.add_field(
-							"You're able to edit the channel!",
-							"Use a subcommand of the `/set` command to change the name, limit, or bitrate of your channel to whatever value your soul desires. See `/help` (not to be confused with \"seek help\") for more information."
-						)
-						.set_footer(
-							dpp::embed_footer()
-							.set_text("Use the button bellow to toggle the temporary VC creation ping on/off. Have fun!")
-					);
-					dpp::message message = dpp::message(channelid, temp_ping_embed).add_component(
-						dpp::component().add_component(
-							dpp::component()
-								.set_type(dpp::cot_button)
-								.set_emoji("ping", 1271923808739000431)
-								.set_style(dpp::cos_danger)
-								.set_id("temp_ping_toggle")
-						)
-					);
-					bot.message_create(message);
 				   	temp_vcs[newchannel.id] = {newchannel.id, newchannel.guild_id, userid};
 				   	bot.guild_member_move(newchannel.id, newchannel.guild_id, userid, [&bot, channelid, userid, error_callback](const dpp::confirmation_callback_t& callback) -> void {
 						bot.start_timer([&bot, callback, userid, channelid, error_callback](dpp::timer h) -> void {
@@ -491,6 +549,17 @@ int main(int argc, char** argv) {
 		}
 		if (event.command.get_command_name() == "setup") {
 			co_await slash::setup(bot, event);
+		}
+		if (event.command.get_command_name() == "blocklist") {
+			if (cmd.options[0].name == "add") {
+				slash::blocklist::add(event);
+			}
+			if (cmd.options[0].name == "remove") {
+				slash::blocklist::remove(event);
+			}
+			if (cmd.options[0].name == "status") {
+				slash::blocklist::status(event);
+			}
 		}
 	});
 

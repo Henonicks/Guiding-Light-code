@@ -32,5 +32,5 @@ jtc_vc get_jtc_vc(std::string_view line) {
     return result_line;
 }
 
-std::map <dpp::snowflake, dpp::channel> jtc_channels_map;
-std::map <dpp::snowflake, jtc_vc> jtc_vcs;
+std::map <channel_snowflake, jtc_vc> jtc_vcs;
+std::map <channel_snowflake, dpp::channel> jtc_channels_map;

@@ -20,7 +20,7 @@ extern int delay;
 
 namespace configuration {
     void configure_bot(const bool& is_dev);
-    void configure_channels(dpp::cluster& bot);
+    void pray(dpp::cluster& bot);
 	void write_down_slashcommands(dpp::cluster& bot);
 }
 

@@ -15,6 +15,6 @@ bool operator <(jtc_defaults jd1, jtc_defaults jd2);
 
 jtc_defaults get_jtc_defs(std::string line);
 
-extern std::map <dpp::snowflake, jtc_defaults> jtc_default_values;
+extern std::map <channel_snowflake, jtc_defaults> jtc_default_values;
 
 #endif

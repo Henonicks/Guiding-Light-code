@@ -11,10 +11,10 @@ bool operator <(topgg::guild_votes_amount vc1, topgg::guild_votes_amount vc2) {
 }
 
 int topgg::last_collection_time = 0;
-std::map <dpp::snowflake, dpp::snowflake> topgg::guild_choices;
-std::map <dpp::snowflake, int> topgg::guild_list;
+std::map <user_snowflake, guild_snowflake> topgg::guild_choices;
+std::map <guild_snowflake, int> topgg::guild_list;
 std::vector <int> topgg::votes_leveling = {0, 225, 450, 800, 1300, 2000, 2750, 3350, 4350, 5000};
-std::map <dpp::snowflake, bool> topgg::noguild_reminders;
+std::map <user_snowflake, bool> topgg::noguild_reminders;
 
 topgg::guild_choice topgg::get_guild_choice(std::string_view line) {
 	topgg::guild_choice result;
@@ -89,7 +89,7 @@ bool topgg::vote(const dpp::snowflake& user_id, const bool& weekend, dpp::cluste
 int8_t topgg::jtc::count_jtcs(const dpp::snowflake& guild_id) {
     const int& guild_votes_amount = ::topgg::guild_list[guild_id];
     int i = 1;
-    for (i; i < 10; i++) {
+    for (;i < 10; i++) {
         if (::topgg::votes_leveling[i] > guild_votes_amount) {
             break;
         }

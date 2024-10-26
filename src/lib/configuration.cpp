@@ -39,7 +39,7 @@ void configuration::configure_bot(const bool& is_dev) {
 	file::topgg_notifications = fmt::format("../src/{}/topgg_notifications.txt", logs_suffix);
 }
 
-void configuration::configure_channels(dpp::cluster& bot) {
+void configuration::pray(dpp::cluster& bot) { // I'll pray that when this function starts executing we have all the cache because Discord doesn't let me know whether all the cache I've received at a certain point is everything or there's more and there's no better way to do this I promise
 	std::string line;
 
 	std::ifstream last_jtc_vcs;
@@ -169,16 +169,14 @@ void configuration::configure_channels(dpp::cluster& bot) {
 
 	slash::enabled = true;
 
-	std::cout << "Channels configured.\n";
+	std::cout << "Amen.\n";
 }
 
 void configuration::write_down_slashcommands(dpp::cluster& bot) {
 	bot.global_commands_get([&bot](const dpp::confirmation_callback_t& callback) -> void {
 		auto map = callback.get <dpp::slashcommand_map>();
 		for (const auto& x : map) {
-			for (const auto& y : x.second.options) {
-				slash::created_slashcommands[x.second.name] = x.second;
-			}
+			slash::created_slashcommands[x.second.name] = x.second;
 		}
 		slash::help_embed = dpp::embed().
 			set_color(dpp::colors::sti_blue).
@@ -231,6 +229,16 @@ void configuration::write_down_slashcommands(dpp::cluster& bot) {
 
 				"__**get**__ gets the guild you\'re currently voting in favour of. "
 				"If you\'ve issued the `set` sub-command in the gulid `X`, that\'ll be the guild returned.\n"
+
+				"## /blocklist\n"
+
+				"A blocklist is a list of users who aren\'t allowed to join your voice channel.\n"
+
+				"__**add**__ adds a user to the blocklist of the channel if a user is provided as the parameter.\n"
+
+				"__**remove**__ removes a user from the blocklist of the channel if a user is provided as the parameter.\n"
+
+				"__**status**__ tells you whether the requested user is in the blocklist or not.\n"
 
 				"\n"
 
