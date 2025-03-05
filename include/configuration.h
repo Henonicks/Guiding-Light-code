@@ -14,7 +14,7 @@ extern std::string_view logs_directory;
 extern std::string BOT_TOKEN, logs_suffix;
 extern dpp::snowflake bot_dm_logs, my_id, TOPGG_WEBHOOK_CHANNEL_ID, MY_GUILD_ID;
 extern std::ofstream my_logs, guild_logs, other_logs;
-extern bool bot_return;
+extern dpp::start_type bot_return;
 extern bool is_dev;
 extern int delay;
 

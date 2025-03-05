@@ -6,7 +6,7 @@ std::string_view logs_directory = "../logging/";
 std::string BOT_TOKEN, logs_suffix;
 dpp::snowflake bot_dm_logs, my_id, TOPGG_WEBHOOK_CHANNEL_ID, MY_GUILD_ID;
 std::ofstream my_logs, guild_logs, other_logs;
-bool bot_return = false;
+dpp::start_type bot_return = dpp::st_wait;
 bool is_dev = false;
 int delay = 5;
 
