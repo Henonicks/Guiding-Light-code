@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
 		}
 		commands.emplace_back(argv[i]);
 		if (strcmp(argv[i], "--return") == 0) {
-			bot_return = true;
+			bot_return = dpp::st_return;
 		}
 		else if (strcmp(argv[i], "--dev") == 0) {
 			is_dev = true;
@@ -266,20 +266,20 @@ int main(int argc, char** argv) {
 	});
 
 	bot.on_channel_update([&bot](const dpp::channel_update_t& event) -> void {
-		if (jtc_channels_map[event.updated->id] != dpp::channel{}) {
-			jtc_channels_map[event.updated->id] = *event.updated;
+		if (jtc_channels_map[event.updated.id] != dpp::channel{}) {
+			jtc_channels_map[event.updated.id] = event.updated;
 		}
-		if (!temp_vcs[event.updated->id].channelid.empty()) {
-			auto unbanned = banned[event.updated->id];
+		if (!temp_vcs[event.updated.id].channelid.empty()) {
+			auto unbanned = banned[event.updated.id];
 			bool flag{};
-			for (const auto& x : event.updated->permission_overwrites) {
-				if (banned[event.updated->id].count(x.id) && x.allow.can(dpp::p_view_channel)) {
+			for (const auto& x : event.updated.permission_overwrites) {
+				if (banned[event.updated.id].count(x.id) && x.allow.can(dpp::p_view_channel)) {
 					flag = true;
-					banned[event.updated->id].erase(x.id);
+					banned[event.updated.id].erase(x.id);
 				}
 				if (x.deny.can(dpp::p_view_channel)) {
 					flag = true;
-					banned[event.updated->id].insert(x.id);
+					banned[event.updated.id].insert(x.id);
 				}
 				if (unbanned.count(x.id)) {
 					unbanned.erase(x.id);
@@ -287,12 +287,12 @@ int main(int argc, char** argv) {
 			}
 			for (const auto& x : unbanned) {
 				flag = true;
-				if (banned[event.updated->id].count(x)) {
-					banned[event.updated->id].erase(x);
+				if (banned[event.updated.id].count(x)) {
+					banned[event.updated.id].erase(x);
 				}
 			}
 			if (flag) {
-				bot.message_create(dpp::message(event.updated->id, "The blocklist of this channel has been modified by a moderator."));
+				bot.message_create(dpp::message(event.updated.id, "The blocklist of this channel has been modified by a moderator."));
 			}
 		}
 	});
@@ -341,8 +341,8 @@ int main(int argc, char** argv) {
 	});
 
 	bot.on_guild_create([](const dpp::guild_create_t& event) -> void {
-		all_bot_guilds[event.created->id] = *event.created;
-		guild_log("I have joined a guild. These are its stats:\nName: `" + event.created->name + "`\nID: `" + event.created->id.str() + "`\nMembers amount: `" + std::to_string(event.created->member_count) + "`");
+		all_bot_guilds[event.created.id] = event.created;
+		guild_log("I have joined a guild. These are its stats:\nName: `" + event.created.name + "`\nID: `" + event.created.id.str() + "`\nMembers amount: `" + std::to_string(event.created.member_count) + "`");
 	});
 	bot.on_guild_delete([](const dpp::guild_delete_t& event) {
 		all_bot_guilds.erase(event.deleted.id);

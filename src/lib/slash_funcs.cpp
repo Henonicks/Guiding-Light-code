@@ -72,7 +72,7 @@ void slash::set::current(dpp::cluster &bot, const dpp::slashcommand_t &event) {
             }
             else if (argument < 0) {
                 event.reply(dpp::message("Yo what? You wanna make the limit negative? Well you shouldn't be able to stay in the channel then. Executing user out of the channel... Executing is done! Enjoy being kicked out!"));
-                bot.guild_member_move(0, bot.channel_get_sync(vc_statuses[userid]).guild_id, userid);
+                bot.guild_member_move(0, jtc_channels_map[vc_statuses[userid]].guild_id, userid);
             }
             else {
                 if (channel->user_limit == argument) {
@@ -328,7 +328,7 @@ void slash::blocklist::status(const dpp::slashcommand_t& event) {
 
 void slash::blocklist::add(const dpp::slashcommand_t& event) {
     const dpp::user& issuer = event.command.usr;
-    dpp::cluster* bot = event.from->creator;
+    dpp::cluster* bot = event.from()->creator;
     temp_vc issuer_vc = temp_vcs[vc_statuses[issuer.id]];
     if (issuer_vc.creatorid != issuer.id) {
         event.reply(dpp::message("The channel you\'re in does not belong to you!").set_flags(dpp::m_ephemeral));
@@ -362,7 +362,7 @@ void slash::blocklist::add(const dpp::slashcommand_t& event) {
 }
 
 void slash::blocklist::remove(const dpp::slashcommand_t& event) {
-    dpp::cluster* bot = event.from->creator;
+    dpp::cluster* bot = event.from()->creator;
     const dpp::user& issuer = event.command.usr;
     if (temp_vcs[vc_statuses[issuer.id]].creatorid != issuer.id) {
         event.reply(dpp::message("The channel you\'re in does not belong to you!").set_flags(dpp::m_ephemeral));
