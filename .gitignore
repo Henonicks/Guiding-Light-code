@@ -4,10 +4,10 @@ out/
 .idea/
 tmp/
 cmake-build-debug
-cmake/FindDPP.cmake
 build/
 config.json
 logging/dev/
 logging/release/
 src/dev/
 src/release/
+Guiding_Light_Config/

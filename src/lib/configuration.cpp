@@ -12,7 +12,7 @@ int delay = 5;
 
 void configuration::configure_bot(const bool& is_dev) {
     json config;
-    std::ifstream config_file_stream("../config.json");
+    std::ifstream config_file_stream("../Guiding_Light_Config/config.json");
     config_file_stream >> config;
 
     bot_dm_logs = config["BOT_DM_LOGS_ID"];
