@@ -17,6 +17,7 @@ extern std::ofstream my_logs, guild_logs, other_logs;
 extern dpp::start_type bot_return;
 extern bool is_dev;
 extern int delay;
+extern uint64_t guild_amount, channel_amount, user_amount;
 
 namespace configuration {
     void configure_bot(const bool& is_dev);

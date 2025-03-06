@@ -15,8 +15,6 @@
 std::unordered_map <dpp::snowflake, dpp::guild> all_bot_guilds;
 
 int main(int argc, char** argv) {
-	std::cout << "starting the bot" << std::endl;
-
 	std::set <std::string> command_list =
 			{"./guidingLight", "--return", "--noreturn", "--dev"};
 	std::set <std::string> slashcommand_list =
@@ -564,7 +562,7 @@ int main(int argc, char** argv) {
 	});
 
 	signal(SIGINT, [](int code) -> void {
-		std::cout << std::endl << "Ну, все, я пішов спати, бувай, добраніч." << std::endl;
+		log("Ну, все, я пішов спати, бувай, добраніч.");
 		system("killall guidingLight");
 	});
 

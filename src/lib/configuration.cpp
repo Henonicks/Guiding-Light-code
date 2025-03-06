@@ -9,6 +9,7 @@ std::ofstream my_logs, guild_logs, other_logs;
 dpp::start_type bot_return = dpp::st_wait;
 bool is_dev = false;
 int delay = 5;
+uint64_t guild_amount = 0, channel_amount = 0, user_amount = 0;
 
 void configuration::configure_bot(const bool& is_dev) {
     json config;
@@ -168,8 +169,6 @@ void configuration::pray(dpp::cluster& bot) { // I'll pray that when this functi
 	topgg_notifications_file.close();
 
 	slash::enabled = true;
-
-	std::cout << "Amen.\n";
 }
 
 void configuration::write_down_slashcommands(dpp::cluster& bot) {

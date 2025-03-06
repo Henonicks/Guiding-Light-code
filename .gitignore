@@ -6,8 +6,7 @@ tmp/
 cmake-build-debug
 build/
 config.json
-logging/dev/
-logging/release/
+logging/
 src/dev/
 src/release/
 Guiding_Light_Config/
