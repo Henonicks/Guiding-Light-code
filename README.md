@@ -23,7 +23,7 @@ Create a config.json in `Guiding_Light_Config`, located above the `build` direct
     "BOT_TOKEN_DEV" : "Test bot token here (use --dev when starting to test new changes without affecting anything used in production)",
     "BOT_DM_LOGS_ID" : "ID of the channel for DM logs",
     "MY_ID" : "Your account's ID",
-    "TOPGG_WEBHOOK_CHANNEL_ID" : "The channel for top.gg vote webhook messages",
+    "TOPGG_WEBHOOK_CHANNEL_ID" : "ID of the channel for top.gg vote webhook messages",
     "MY_GUILD_ID" : "ID of your guild. Used to create a command only administrators (which I know can only be me) can use"
 }
 ```
