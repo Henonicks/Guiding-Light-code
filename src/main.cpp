@@ -271,7 +271,7 @@ int main(int argc, char** argv) {
 			auto unbanned = banned[event.updated.id];
 			bool flag{};
 			for (const auto& x : event.updated.permission_overwrites) {
-				if (banned[event.updated.id].count(x.id) && x.allow.can(dpp::p_view_channel)) {
+				if (banned[event.updated.id].count(x.id) && (x.allow.can(dpp::p_view_channel) || !x.deny.can(dpp::p_view_channel))) {
 					flag = true;
 					banned[event.updated.id].erase(x.id);
 				}
@@ -290,7 +290,7 @@ int main(int argc, char** argv) {
 				}
 			}
 			if (flag) {
-				bot.message_create(dpp::message(event.updated.id, "The blocklist of this channel has been modified by a moderator."));
+				bot.message_create(dpp::message(event.updated.id, "The blocklist of this channel has been updated."));
 			}
 		}
 	});
@@ -550,10 +550,10 @@ int main(int argc, char** argv) {
 		}
 		if (event.command.get_command_name() == "blocklist") {
 			if (cmd.options[0].name == "add") {
-				slash::blocklist::add(event);
+				co_await slash::blocklist::add(event);
 			}
 			if (cmd.options[0].name == "remove") {
-				slash::blocklist::remove(event);
+				co_await slash::blocklist::remove(event);
 			}
 			if (cmd.options[0].name == "status") {
 				slash::blocklist::status(event);

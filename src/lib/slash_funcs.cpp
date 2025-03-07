@@ -326,62 +326,81 @@ void slash::blocklist::status(const dpp::slashcommand_t& event) {
     event.reply(dpp::message(fmt::format("The user is {}in the blocklist of the channel.", (banned[channel_id].count(user_id) ? "" : "not "))).set_flags(dpp::m_ephemeral));
 }
 
-void slash::blocklist::add(const dpp::slashcommand_t& event) {
+dpp::coroutine <void> slash::blocklist::add(const dpp::slashcommand_t& event) {
     const dpp::user& issuer = event.command.usr;
     dpp::cluster* bot = event.from()->creator;
     temp_vc issuer_vc = temp_vcs[vc_statuses[issuer.id]];
     if (issuer_vc.creatorid != issuer.id) {
         event.reply(dpp::message("The channel you\'re in does not belong to you!").set_flags(dpp::m_ephemeral));
-        return;
+        co_return;
     }
     const dpp::snowflake requested_id = std::get <dpp::snowflake>(event.get_parameter("user"));
     const dpp::user* requested = dpp::find_user(requested_id);
     if (requested == nullptr) {
         event.reply(dpp::message("Requested user not found.").set_flags(dpp::m_ephemeral));
-        return;
+        co_return;
     }
-    const dpp::channel* channel = dpp::find_channel(issuer_vc.channelid);
+    dpp::channel* channel = dpp::find_channel(issuer_vc.channelid);
     const dpp::permission requested_permission = channel->get_user_permissions(requested);
     if (requested_permission.has(dpp::p_administrator)) {
         event.reply(dpp::message("The user has administrator access to this channel!").set_flags(dpp::m_ephemeral));
-        return;
+        co_return;
     }
     if (banned[issuer_vc.channelid].count(requested_id)) {
         event.reply(dpp::message("The user is already in the blocklist!").set_flags(dpp::m_ephemeral));
     }
     else {
-        banned[issuer_vc.channelid].insert(requested_id);
-        dpp::channel* channel = dpp::find_channel(vc_statuses[issuer.id]);
         channel->set_permission_overwrite(requested_id, dpp::ot_member, 0, dpp::p_view_channel);
+        const dpp::confirmation_callback_t callback = co_await bot->co_channel_edit(*channel);
+        if (callback.is_error()) {
+            event.reply(dpp::message("Error. Couldn't move the user to the blocklist. Tip: the user may have a role that is above my roles.").set_flags(dpp::m_ephemeral));
+            if (!callback.get_error().errors.empty()) {
+				bot->log(dpp::loglevel::ll_error, fmt::format("FIELD: {0} REASON: {1}", callback.get_error().errors[0].field, callback.get_error().errors[0].reason));
+			}
+			else {
+				bot->log(dpp::loglevel::ll_error, callback.get_error().message);
+			}
+            co_return;
+        }
+        banned[issuer_vc.channelid].insert(requested_id);
         if (vc_statuses[issuer.id] == vc_statuses[requested_id]) {
             bot->guild_member_move(0, issuer_vc.guildid, requested_id);
-            bot->channel_edit(*channel);
         }
         event.reply(dpp::message("The user was added to the blocklist of the current channel.").set_flags(dpp::m_ephemeral));
     }
 }
 
-void slash::blocklist::remove(const dpp::slashcommand_t& event) {
+dpp::coroutine <void> slash::blocklist::remove(const dpp::slashcommand_t& event) {
     dpp::cluster* bot = event.from()->creator;
     const dpp::user& issuer = event.command.usr;
     if (temp_vcs[vc_statuses[issuer.id]].creatorid != issuer.id) {
         event.reply(dpp::message("The channel you\'re in does not belong to you!").set_flags(dpp::m_ephemeral));
-        return;
+        co_return;
     }
     const dpp::snowflake requested_id = std::get <dpp::snowflake>(event.get_parameter("user"));
     const dpp::user* requested = dpp::find_user(requested_id);
     if (requested == nullptr) {
         event.reply(dpp::message("Requested user not found.").set_flags(dpp::m_ephemeral));
-        return;
+        co_return;
     }
     if (!banned[temp_vcs[vc_statuses[issuer.id]].channelid].count(requested_id)) {
         event.reply(dpp::message("The user was not in the blocklist!").set_flags(dpp::m_ephemeral));
     }
     else {
-        banned[temp_vcs[vc_statuses[issuer.id]].channelid].erase(requested_id);
         dpp::channel* channel = dpp::find_channel(vc_statuses[issuer.id]);
         channel->set_permission_overwrite(requested_id, dpp::ot_member, dpp::p_view_channel, 0);
-        bot->channel_edit(*channel);
+        const dpp::confirmation_callback_t callback = co_await bot->co_channel_edit(*channel);
+        if (callback.is_error()) {
+            event.reply(dpp::message("Error. Couldn't remove the user from the blocklist. Tip: the user may have a role that is above my roles.").set_flags(dpp::m_ephemeral));
+            if (!callback.get_error().errors.empty()) {
+				bot->log(dpp::loglevel::ll_error, fmt::format("FIELD: {0} REASON: {1}", callback.get_error().errors[0].field, callback.get_error().errors[0].reason));
+			}
+			else {
+				bot->log(dpp::loglevel::ll_error, callback.get_error().message);
+			}
+            co_return;
+        }
+        banned[temp_vcs[vc_statuses[issuer.id]].channelid].erase(requested_id);
         event.reply(dpp::message("The user was removed from the blocklist of the current channel.").set_flags(dpp::m_ephemeral));
     }
 }
