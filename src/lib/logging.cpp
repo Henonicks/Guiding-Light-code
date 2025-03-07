@@ -3,14 +3,16 @@
 void bot_log(const dpp::log_t& _log, dpp::cluster& bot) {
 	other_logs << fmt::format("[{0}]: {1}", dpp::utility::current_date_time(), _log.message) << std::endl;
 	if (_log.message == "Shards started.") {
-		log(fmt::format("[{}]: Waiting till we receive all the cache...", dpp::utility::current_date_time()));
+		log("Waiting till we receive all the cache...");
 		bot.start_timer([&bot](dpp::timer h) -> void {
 			const uint64_t new_guild_amount = dpp::get_guild_count();
 			const uint64_t new_channel_amount = dpp::get_channel_count();
 			const uint64_t new_user_amount = dpp::get_user_count();
 			if (!(new_guild_amount > guild_amount || new_channel_amount > channel_amount || new_user_amount > user_amount)) {
+				log("Done! Doing stuff...");
 				configuration::pray(bot);
 				configuration::write_down_slashcommands(bot);
+				log("Done doing stuff!");
 				bot.stop_timer(h);
 			}
 			else {
