@@ -9,6 +9,7 @@ std::string file::topgg_guild_votes_amount;
 std::string file::topgg_guild_choices;
 std::string file::no_noguild_reminder;
 std::string file::topgg_notifications;
+std::string file::tickets;
 
 void file::line_append(const std::string& s, const std::string& filename) {
     std::string line;

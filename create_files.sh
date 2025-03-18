@@ -11,6 +11,7 @@ touch src/dev/topgg_guild_votes_amount.txt
 touch src/dev/topgg_guild_choices.txt
 touch src/dev/no_noguild_reminder.txt
 touch src/dev/topgg_notifications.txt
+touch src/release/tickets.txt
 mkdir src/release
 touch src/release/temp_vc_notifications.txt
 touch src/release/jtc_vcs.txt
@@ -21,6 +22,7 @@ touch src/release/topgg_guild_votes_amount.txt
 touch src/release/topgg_guild_choices.txt
 touch src/release/no_noguild_reminder.txt
 touch src/release/topgg_notifications.txt
+touch src/release/tickets.txt
 
 # logs
 mkdir logging

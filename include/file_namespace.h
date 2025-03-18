@@ -13,6 +13,7 @@ namespace file {
     extern std::string topgg_guild_choices;
     extern std::string no_noguild_reminder;
     extern std::string topgg_notifications;
+    extern std::string tickets;
 
     void line_append(const std::string& s, const std::string& filename);
     std::string getline(const std::string& s, const std::string& filename, const int& start_position = -1);

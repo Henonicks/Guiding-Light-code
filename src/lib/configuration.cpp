@@ -4,7 +4,7 @@ using json = nlohmann::json;
 
 std::string_view logs_directory = "../logging/";
 std::string BOT_TOKEN, logs_suffix;
-dpp::snowflake bot_dm_logs, my_id, TOPGG_WEBHOOK_CHANNEL_ID, MY_GUILD_ID;
+dpp::snowflake bot_dm_logs, my_id, TOPGG_WEBHOOK_CHANNEL_ID, MY_GUILD_ID, TICKETS_GUILD_ID;
 std::ofstream my_logs, guild_logs, other_logs;
 dpp::start_type bot_return = dpp::st_wait;
 bool is_dev = false;
@@ -20,6 +20,7 @@ void configuration::configure_bot(const bool& is_dev) {
     my_id = config["MY_ID"];
 	MY_GUILD_ID = config["MY_GUILD_ID"];
 	TOPGG_WEBHOOK_CHANNEL_ID = config["TOPGG_WEBHOOK_CHANNEL_ID"];
+	TICKETS_GUILD_ID = config["TICKETS_GUILD_ID"];
 
     BOT_TOKEN = (is_dev ? config["BOT_TOKEN_DEV"] : config["BOT_TOKEN"]);
 
@@ -38,6 +39,7 @@ void configuration::configure_bot(const bool& is_dev) {
 	file::topgg_guild_choices = fmt::format("../src/{}/topgg_guild_choices.txt", logs_suffix);
 	file::no_noguild_reminder = fmt::format("../src/{}/no_noguild_reminder.txt", logs_suffix);
 	file::topgg_notifications = fmt::format("../src/{}/topgg_notifications.txt", logs_suffix);
+	file::tickets = fmt::format("../src/{}/tickets.txt", logs_suffix);
 }
 
 void configuration::pray(dpp::cluster& bot) { // I'll pray that when this function starts executing we have all the cache because Discord doesn't let me know whether all the cache I've received at a certain point is everything or there's more and there's no better way to do this I promise
@@ -168,6 +170,24 @@ void configuration::pray(dpp::cluster& bot) { // I'll pray that when this functi
 
 	topgg_notifications_file.close();
 
+	std::ifstream tickets_file;
+	tickets_file.open(file::tickets);
+
+	while (std::getline(tickets_file, line)) {
+		ticket tckt = get_ticket(line);
+		dpp::user* user = dpp::find_user(tckt.user_id);
+		dpp::channel* channel = dpp::find_channel(tckt.channel_id);
+		if (user != nullptr && channel != nullptr) {
+			tickets[user->id] = channel->id;
+			ck_tickets[channel->id] = user->id;
+		}
+		else {
+			file::delete_line_once(line, file::tickets);
+		}
+	}
+
+	tickets_file.close();
+
 	slash::enabled = true;
 }
 
@@ -177,11 +197,11 @@ void configuration::write_down_slashcommands(dpp::cluster& bot) {
 		for (const auto& x : map) {
 			slash::created_slashcommands[x.second.name] = x.second;
 		}
-		slash::help_embed = dpp::embed().
+		slash::help_embed_1 = dpp::embed().
 			set_color(dpp::colors::sti_blue).
 			set_author("Here is what I can do!\n", bot.me.get_url(), bot.me.get_avatar_url()).
 			set_description("## /help\n"
-							"I don\'t know, I guess you\'ve just issued this command?\n"
+							"I guess you\'ve just issued this command!\n"
 				"# JTC-related\n"
 
 				"A Join-To-Create Voice Channel, or, as referred to, a JTC VC (or simply JTC), is a voice channel which you can join so that a temporary voice is created. "
@@ -231,6 +251,8 @@ void configuration::write_down_slashcommands(dpp::cluster& bot) {
 
 				"## /blocklist\n"
 
+				"### Note: this command is in beta. If something goes wrong, please report it by creating a ticket.\n"
+
 				"A blocklist is a list of users who aren\'t allowed to join your voice channel.\n"
 
 				"__**add**__ adds a user to the blocklist of the channel if a user is provided as the parameter.\n"
@@ -239,17 +261,29 @@ void configuration::write_down_slashcommands(dpp::cluster& bot) {
 
 				"__**status**__ tells you whether the requested user is in the blocklist or not.\n"
 
-				"\n"
+				"# Ticket-related\n"
 
+				"Whenever you find something that works incorrectly (at least, in your opinion) you can contact the creator of the bot by DMing it. "
+				"But first, you need to open a ticket.\n"
+
+				"## /ticket\n"
+
+				"### Note: this command is in beta. If something goes wrong... well, this is the tickets command, so you're on your own. Unless you're in the Discord server.\n"
+
+				"__**create**__ allows the creator of the bot to talk to you through the bot's DMs.\n"
+				"__**close**__ closes a ticket, ending any conversation between the creator of the bot and you."
+			);
+		slash::help_embed_2 = dpp::embed().
+			set_color(dpp::colors::sti_blue).
+			set_description(
 				"__***TIP:***__ when setting the default name for a JTC, you can put \"{username}\" (without the quotes) so it can be replaced with the username of the person requesting a channel. For example, if the default name is \"VC for {username}\" and a person with the username \"henonicks\" requests a channel, the name of the temporary VC will be set to \"VC for henonicks\".\n"
 
 				"\n"
 
-				"__***NOTE:***__ If I shut down while you\'re in a temporary VC, the channel will never be auto-deleted since temporary VCs are not stored in the files. This is to be handled by a moderator. Deleting *all* of the temporary VCs out there would take a lot of API requests which could get the bot rate-limited which is, in Layman\'s terms, terrible.\n"
+				"__***NOTE:***__ If the bot shuts down while you\'re in a temporary VC, the channel will never be auto-deleted since temporary VCs are not stored in the files. This is to be handled by a moderator. Deleting *all* of the temporary VCs out there would take a lot of API requests which could get the bot rate-limited which is, in Layman\'s terms, terrible.\n"
 				"If you vote but don\'t have a guild set to vote in favour of, the point is wasted. The first time you do that, you get a direct message from the bot if your DMs are open."
-			)
-			.set_footer(dpp::embed_footer()
-				.set_text("You can always ask the creator a question in direct messages or on the support server!")
+			).set_footer(dpp::embed_footer()
+				.set_text("You can always ask the creator of the bot a question in direct messages or on the support server!")
 				.set_icon(bot.me.get_avatar_url())
 			);
 	});

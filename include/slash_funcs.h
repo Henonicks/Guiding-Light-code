@@ -2,22 +2,19 @@
 #define SLASH_FUNCS_H
 
 #include <set>
-#include "jtc_vc.h"
-#include "jtc_defaults.h"
-#include "temp_vc.h"
-#include "notification_channel.h"
-#include "guidingLight/guiding_light.h"
-#include "file_namespace.h"
 #include "configuration.h"
-#include "logging.h"
-#include "topgg.h"
+#include "ticket.h"
+#include "temp_vc.h"
 
 namespace slash {
 
     extern bool enabled;
 
+    extern std::map <std::string, std::map <dpp::snowflake, bool>> in_progress; // finished states of commands
+
 	extern std::map <std::string, dpp::slashcommand> created_slashcommands;
-    extern dpp::embed help_embed;
+    extern dpp::embed help_embed_1;
+    extern dpp::embed help_embed_2;
     
     /**
      * @brief set a JTC value - either default or current one.
@@ -61,6 +58,12 @@ namespace slash {
         void guild_set(const dpp::slashcommand_t& event);
         void get_progress(const dpp::slashcommand_t& event);
     }
+
+    namespace ticket {
+        dpp::coroutine <void> create(const dpp::slashcommand_t& event);
+        void close(const dpp::slashcommand_t& event);
+    }
+
 }
 
 #endif
