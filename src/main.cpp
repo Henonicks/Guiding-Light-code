@@ -1,14 +1,10 @@
 #include "guidingLight/guiding_light.h"
 #include <random>
 #include <csignal>
-#include "jtc_vc.h"
-#include "jtc_defaults.h"
-#include "temp_vc.h"
-#include "slash_funcs.h"
 #include "file_namespace.h"
-#include "notification_channel.h"
 #include "configuration.h"
 #include "logging.h"
+#include "ticket_handler.h"
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCDFAInspection"
@@ -18,7 +14,7 @@ int main(int argc, char** argv) {
 	std::set <std::string> command_list =
 			{"./guidingLight", "--return", "--noreturn", "--dev"};
 	std::set <std::string> slashcommand_list =
-			{"--chelp", "--csetup", "--cset", "--cguild", "--cget", "--cvote", "--cblocklist", "--clogs", "--call"};
+			{"--chelp", "--csetup", "--cset", "--cguild", "--cget", "--cvote", "--cblocklist", "--clogs", "--cticket", "--call"};
 	command_list.insert(slashcommand_list.begin(), slashcommand_list.end());
 	std::vector <std::string> commands;
 
@@ -67,6 +63,7 @@ int main(int argc, char** argv) {
 			dpp::slashcommand vote("vote", "Show the top.gg vote link.", bot.me.id);
 			dpp::slashcommand logs("logs", "Drop the logs of choice.", bot.me.id);
 			dpp::slashcommand blocklist("blocklist", "Add/Remove a user from your channel's blocklist", bot.me.id);
+			dpp::slashcommand ticket("ticket", "Create/Delete a ticket.", bot.me.id);
 
 			std::vector <dpp::slashcommand> slashcommands_to_create;
 
@@ -140,6 +137,10 @@ int main(int argc, char** argv) {
 			logs.add_option(dpp::command_option(dpp::co_sub_command, "guild", "Guild logs."));
 			logs.set_default_permissions(dpp::permissions::p_administrator);
 
+			ticket.add_option(dpp::command_option(dpp::co_sub_command, "create", "Create a support ticket."));
+			ticket.add_option(dpp::command_option(dpp::co_sub_command, "close", "Delete a support ticket."));
+			ticket.set_dm_permission(true);
+
 			for (const std::string& s : commands) {
 				if (s == "--call") {
 					slashcommands_to_create.clear();
@@ -150,6 +151,7 @@ int main(int argc, char** argv) {
 					slashcommands_to_create.push_back(get);
 					slashcommands_to_create.push_back(vote);
 					slashcommands_to_create.push_back(blocklist);
+					slashcommands_to_create.push_back(ticket);
 				}
 				if (s == "--chelp") {
 					slashcommands_to_create.push_back(help);
@@ -174,6 +176,9 @@ int main(int argc, char** argv) {
 				}
 				if (s == "--clogs" || s == "--call") {
 					bot.guild_command_create(logs, MY_GUILD_ID, error_callback);
+				}
+				if (s == "--cticket") {
+					slashcommands_to_create.push_back(ticket);
 				}
 				if (s == "--call") {
 					break;
@@ -200,14 +205,25 @@ int main(int argc, char** argv) {
 	});
 
 	bot.on_message_create([&bot](const dpp::message_create_t& event) -> void {
-		std::string msg = event.msg.content;
+		const dpp::snowflake& userid = event.msg.author.id;
+		if (userid == bot.me.id) {
+			return;
+		}
+		const dpp::snowflake& channel_id = event.msg.channel_id;
+		const std::string& msg = event.msg.content;
+		const dpp::snowflake& guild_id = event.msg.guild_id;
+		if (event.msg.is_dm()) {
+			handle_dm_in(userid, event);
+		}
+		if (guild_id == TICKETS_GUILD_ID) {
+			handle_dm_out(event);
+		}
+		/*
 		std::string prefix;
-		dpp::snowflake userid = event.msg.author.id;
 		const std::string username = event.msg.author.username;
 		const std::string usertag = '#' + std::to_string(event.msg.author.discriminator);
 		const std::string usernt = username + usertag;
 		const std::string str_userid = "<@" + std::to_string(userid) + '>';
-		const dpp::snowflake& channel_id = event.msg.channel_id;
 		if (event.msg.is_dm()) {
 			if (userid != dpp::snowflake(bot.me.id)) {
 				bot.message_create(dpp::message(bot_dm_logs, "<@" + std::to_string(userid) + "> (" + event.msg.author.format_username() + ") [to me] " + event.msg.content), [&bot, userid](const dpp::confirmation_callback_t& callback) -> void {
@@ -250,7 +266,7 @@ int main(int argc, char** argv) {
 			bot.direct_message_create(dm_who, dpp::message(content));
 			bot.message_create(dpp::message(bot_dm_logs, fmt::format("[me to] <@{0}> (`{1}`) \'{2}\'", dm_who_str, user->username, content)));
 			log(fmt::format("dming {0} \'{1}\'", dm_who, content));
-		}
+		}*/
 		if (channel_id == TOPGG_WEBHOOK_CHANNEL_ID) {
 			const dpp::snowflake user_id = msg.substr(2, msg.size() - bot.me.id.str().size() - 10);
 			bool weekend = msg[2 + user_id.str().size() + 2] == 't';
@@ -325,15 +341,22 @@ int main(int argc, char** argv) {
 		else {
 			const bool is_ntf = !ntif_chnls[guildid].empty();
 			if (is_ntf) {
-				const std::string to_remove = event.deleted.id.str() + ' ' + event.deleted.guild_id.str();
+				const std::string to_remove = channelid.str() + ' ' + guildid.str();
 				file::delete_line_once(to_remove, file::temp_vc_notifications);
 				ntif_chnls.erase(event.deleted.guild_id);
 			}
 			const bool is_topgg_ntf = !topgg_ntif_chnls[guildid].empty();
 			if (is_topgg_ntf) {
-				const std::string to_remove = event.deleted.id.str() + ' ' + event.deleted.guild_id.str();
+				const std::string to_remove = channelid.str() + ' ' + guildid.str();
 				file::delete_line_once(to_remove, file::topgg_notifications);
 				topgg_ntif_chnls.erase(event.deleted.guild_id);
+			}
+			const bool is_ticket = !ck_tickets[channelid].empty();
+			if (is_ticket) {
+				const std::string to_remove = channelid.str() + ' ' + guildid.str();
+				file::delete_line_once(to_remove, file::tickets);
+				tickets.erase(ck_tickets[channelid]);
+				ck_tickets.erase(channelid);
 			}
 		}
 	});
@@ -508,13 +531,15 @@ int main(int argc, char** argv) {
 			event.reply(dpp::message("Patience, I'm preparing! Wait about 5-10 seconds and try again.").set_flags(dpp::m_ephemeral));
 			co_return;
 		}
-		dpp::guild guild;
+		const dpp::snowflake& guild_id = event.command.guild_id;
+		const dpp::snowflake& user_id = event.command.usr.id;
+		const std::string cmd_name = event.command.get_command_name();
 		dpp::command_interaction cmd = event.command.get_command_interaction();
-		if (event.command.get_command_name() == "help") {
-			event.reply(dpp::message(event.command.channel_id, slash::help_embed).set_flags(dpp::m_ephemeral));
+		if (cmd_name == "help") {
+			event.reply(dpp::message(event.command.channel_id, slash::help_embed_1).add_embed(slash::help_embed_2).set_flags(dpp::m_ephemeral));
 			co_return;
 		}
-		if (event.command.get_command_name() == "logs") {
+		if (cmd_name == "logs") {
 			if (event.command.usr.id != my_id) {
 				bot.direct_message_create(my_id, dpp::message(fmt::format("Ayo {} checking logs wht", event.command.usr.id)));
 			}
@@ -522,11 +547,11 @@ int main(int argc, char** argv) {
 			dpp::message message = dpp::message().add_file(file_name, dpp::utility::read_file(fmt::format("{0}{1}/{2}", logs_directory, logs_suffix, file_name))).set_flags(dpp::m_ephemeral);
 			event.reply(message);
 		}
-		if (event.command.get_command_name() == "vote") {
+		if (cmd_name == "vote") {
 			event.reply(dpp::message("Vote [here](https://top.gg/bot/1101159652315627551/vote) and earn JTC points for a chosen guild! See `/help` for more information.").set_flags(dpp::m_ephemeral));
 			co_return;
 		}
-		if (event.command.get_command_name() == "guild") {
+		if (cmd_name == "guild") {
 			if (cmd.options[0].name == "get") {
 				slash::topgg::guild_get(event);
 			}
@@ -534,10 +559,10 @@ int main(int argc, char** argv) {
 				slash::topgg::guild_set(event);
 			}
 		}
-		if (event.command.get_command_name() == "get") {
+		if (cmd_name == "get") {
 			slash::topgg::get_progress(event);
 		}
-		if (event.command.get_command_name() == "set") {
+		if (cmd_name == "set") {
 			if (cmd.options[0].name == "default") {
 				co_await slash::set::default_values(bot, event);
 			}
@@ -545,10 +570,17 @@ int main(int argc, char** argv) {
 				slash::set::current(bot, event);
 			}
 		}
-		if (event.command.get_command_name() == "setup") {
+		if (cmd_name == "setup") {
+			auto& status = slash::in_progress[cmd_name][guild_id];
+			if (status) {
+				event.reply(dpp::message("A channel is already being set up! Try again when it's done.").set_flags(dpp::m_ephemeral));
+				co_return;
+			}
+			status = true;
 			co_await slash::setup(bot, event);
+			status = false;
 		}
-		if (event.command.get_command_name() == "blocklist") {
+		if (cmd_name == "blocklist") {
 			if (cmd.options[0].name == "add") {
 				co_await slash::blocklist::add(event);
 			}
@@ -557,6 +589,21 @@ int main(int argc, char** argv) {
 			}
 			if (cmd.options[0].name == "status") {
 				slash::blocklist::status(event);
+			}
+		}
+		if (cmd_name == "ticket") {
+			auto& status = slash::in_progress[cmd_name][user_id];
+			if (status) {
+				event.reply(dpp::message("A ticket is already being created! Try again when it's done.").set_flags(dpp::m_ephemeral));
+				co_return;
+			}
+			if (cmd.options[0].name == "create") {
+				status = true;
+				co_await slash::ticket::create(event);
+				status = false;
+			}
+			if (cmd.options[0].name == "close") {
+				slash::ticket::close(event);
 			}
 		}
 	});
