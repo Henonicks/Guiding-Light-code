@@ -3,8 +3,9 @@
 #include <csignal>
 #include "file_namespace.h"
 #include "configuration.h"
-#include "logging.h"
 #include "ticket_handler.h"
+#include "temp_vc_handler.h"
+#include "logging.h"
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCDFAInspection"
@@ -218,55 +219,6 @@ int main(int argc, char** argv) {
 		if (guild_id == TICKETS_GUILD_ID) {
 			handle_dm_out(event);
 		}
-		/*
-		std::string prefix;
-		const std::string username = event.msg.author.username;
-		const std::string usertag = '#' + std::to_string(event.msg.author.discriminator);
-		const std::string usernt = username + usertag;
-		const std::string str_userid = "<@" + std::to_string(userid) + '>';
-		if (event.msg.is_dm()) {
-			if (userid != dpp::snowflake(bot.me.id)) {
-				bot.message_create(dpp::message(bot_dm_logs, "<@" + std::to_string(userid) + "> (" + event.msg.author.format_username() + ") [to me] " + event.msg.content), [&bot, userid](const dpp::confirmation_callback_t& callback) -> void {
-					bot.direct_message_create(userid, dpp::message("Message is received!"), [&bot](const dpp::confirmation_callback_t& callback) {
-						if (callback.is_error()) {
-							bot.log(dpp::loglevel::ll_error, callback.http_info.body);
-							return;
-						}
-						auto msg = std::get <dpp::message>(callback.value);
-						bot.start_timer([&bot, msg](dpp::timer timer) -> void {
-							bot.message_delete(msg.id, msg.channel_id);
-							bot.stop_timer(timer);
-						}, 2);
-					});
-				});
-			}
-		}
-		if (msg.find("!dm ") == 0 && event.msg.author.id == my_id) {
-			std::string dm_who_str;
-			int i;
-			for (i = 4; i < msg.size(); i++) {
-				if (msg[i] == ' ') {
-					break;
-				}
-				dm_who_str += msg[i];
-			}
-			auto dm_who = dpp::snowflake(dm_who_str);
-			dpp::user* user = dpp::find_user(dm_who);
-			if (user == nullptr) {
-				event.reply("Screw you, the user is unknown!"); // this message can only be sent to me, so really I'm telling myself "Screw you".
-				return;
-			}
-			std::string content;
-			for (;i < msg.size(); i++) {
-				content += msg[i];
-			}
-			if (content.empty()) {
-				std::getline(std::cin >> std::ws, content);
-			}
-			bot.direct_message_create(dm_who, dpp::message(content));
-			bot.message_create(dpp::message(bot_dm_logs, fmt::format("[me to] <@{0}> (`{1}`) \'{2}\'", dm_who_str, user->username, content)));
-			log(fmt::format("dming {0} \'{1}\'", dm_who, content));
-		}*/
 		if (channel_id == TOPGG_WEBHOOK_CHANNEL_ID) {
 			const dpp::snowflake user_id = msg.substr(2, msg.size() - bot.me.id.str().size() - 10);
 			bool weekend = msg[2 + user_id.str().size() + 2] == 't';
@@ -371,159 +323,26 @@ int main(int argc, char** argv) {
 	});
 
 	bot.on_voice_state_update([&bot, error_callback](const dpp::voice_state_update_t& event) {
-		dpp::snowflake channelid = event.state.channel_id;
-		dpp::snowflake userid = event.state.user_id;
-		if (!slash::enabled) {
-			if (!channelid.empty()) {
-				bot.message_create(dpp::message(channelid, fmt::format("<@{}> I'm preparing! You have to wait.", userid)).set_allowed_mentions(true), error_callback);
-			}
-			return;
-		}
-		dpp::user* ptr = dpp::find_user(userid);
-		if (ptr == nullptr) {
-			bot.log(dpp::ll_error, fmt::format("User {0} not found. Channel: {1}", userid, channelid));
-			if (!channelid.empty()) {
-				bot.message_create(dpp::message(channelid, fmt::format("<@{}> I could not find your user information. Leave and try again in a few seconds.", userid)).set_allowed_mentions(true), error_callback);
-			}
-			return;
-		}
+		dpp::snowflake channel_id = event.state.channel_id;
+		dpp::snowflake user_id = event.state.user_id;
+		dpp::user* ptr = dpp::find_user(user_id);
 		dpp::user user = *ptr;
-		dpp::snowflake guildid = event.state.guild_id;
-		if (!channelid.empty()) {
-			const bool is_jtc = !jtc_vcs[channelid].channelid.empty();
+		dpp::snowflake guild_id = event.state.guild_id;
+		if (!channel_id.empty()) {
+			const bool is_jtc = !jtc_vcs[channel_id].channelid.empty();
 			if (is_jtc) {
-				bool to_return = false;
-				uint64_t current_time = bot.uptime().to_secs();
-				if (current_time - join_time[userid] <= 5) {
-					bot.message_create(dpp::message(channelid, fmt::format("<@{}> you have to wait more before joining the voice channel. To create a temporary VC as soon as possible, disconnect and try again in 5 seconds.", userid)).set_allowed_mentions(true), error_callback);
-					to_return = true;
-				}
-				join_time[userid] = current_time;
-				if (temp_vc_amount[guildid] >= 50) {
-					bot.message_create(dpp::message(channelid, fmt::format("<@{0}> There are too many temporary VCs in this guild ({1}/15).", userid, temp_vc_amount[guildid])).set_allowed_mentions(true), error_callback);
-					to_return = true;
-				}
-				if (to_return) {
-					bot.guild_member_move(0, guildid, userid, error_callback);
-					return;
-				}
-				std::string username = user.username;
-				std::string new_name;
-				dpp::channel new_channel;
-				new_channel.set_type(dpp::channel_type::CHANNEL_VOICE);
-				jtc_defaults defs = jtc_default_values[channelid];
-				for (int i = 0; i < defs.name.size(); i++) {
-					if (defs.name[i] == '{') {
-						if (defs.name.size() - i >= 10) { // text {username}
-							std::string temp_string;	  // 0123456789	14
-							for (int j = i; j < i + 10; j++) {
-								temp_string += defs.name[j];
-							}
-							if (temp_string == "{username}") {
-								new_name += username;
-								i += 9;
-								continue;
-							}
-						}
-					}
-					else if (defs.name[i] == '_') {
-						new_name += ' ';
-						continue;
-					}
-					new_name += defs.name[i];
-				}
-				int limit = (int)defs.limit;
-				new_channel.set_name(new_name);
-				new_channel.set_guild_id(guildid);
-				new_channel.set_bitrate(defs.bitrate);
-				dpp::channel current = jtc_channels_map[channelid];
-				new_channel.set_parent_id(current.parent_id);
-				if (limit == 100) {
-					limit = 0;
-				}
-				new_channel.set_user_limit(limit);
-				bot.channel_create(new_channel,[&bot, current, userid, user, guildid, event, error_callback](const dpp::confirmation_callback_t& callback) -> void {
-					++temp_vc_amount[guildid];
-					auto newchannel = std::get <dpp::channel>(callback.value);
-					dpp::snowflake channelid = newchannel.id;
-					if (!no_temp_ping[userid]) {
-						bot.message_create(dpp::message(channelid, user.get_mention()).set_allowed_mentions(true), [&bot, error_callback](const dpp::confirmation_callback_t& callback) -> void {
-							error_callback(callback);
-							auto new_message = callback.get <dpp::message>();
-							bot.message_delete(new_message.id, new_message.channel_id, error_callback);
-						});
-						dpp::embed temp_ping_embed = dpp::embed()
-							.set_color(dpp::colors::sti_blue)
-							.set_title(fmt::format("Welcome to {0}!", newchannel.get_mention()))
-							.set_author(fmt::format("This VC belongs to {}.", user.username), user.get_url(), user.get_avatar_url())
-							.add_field(
-								"You're able to edit the channel!",
-								"Use a subcommand of the `/set` command to change the name, limit, or bitrate of your channel to whatever value your soul desires. See `/help` (not to be confused with \"seek help\") for more information."
-							)
-							.set_footer(
-								dpp::embed_footer()
-								.set_text("Use the button bellow to toggle the temporary VC creation ping on/off. Have fun!")
-						);
-						dpp::message message = dpp::message(channelid, temp_ping_embed).add_component(
-							dpp::component().add_component(
-								dpp::component()
-									.set_type(dpp::cot_button)
-									.set_emoji("ping", 1271923808739000431)
-									.set_style(dpp::cos_danger)
-									.set_id("temp_ping_toggle")
-							)
-						);
-						bot.message_create(message);
-					}
-				   	temp_vcs[newchannel.id] = {newchannel.id, newchannel.guild_id, userid};
-				   	bot.guild_member_move(newchannel.id, newchannel.guild_id, userid, [&bot, channelid, userid, error_callback](const dpp::confirmation_callback_t& callback) -> void {
-						bot.start_timer([&bot, callback, userid, channelid, error_callback](dpp::timer h) -> void {
-							if (callback.is_error() || vc_statuses[userid] != channelid) {
-								bot.channel_delete(channelid, error_callback);
-							}
-							bot.stop_timer(h);
-						}, 5);
-				   	});
-				   	if (!ntif_chnls[guildid].empty()) {
-					   	std::string description = "A new temporary channel has been created ";
-					   	description += (!newchannel.parent_id.empty() ?
-							   	"in the <#" +
-							   	newchannel.parent_id.str() + "> category"
-							   	: "outside the categories");
-					   	description += ". Join the channel, **" + newchannel.name + "** (<#" +
-									  	newchannel.id.str() + ">)!";
-					   	dpp::embed temp_vc_create_embed = dpp::embed().
-							   	set_color(dpp::colors::greenish_blue).
-							   	set_description(description);
-					   	bot.message_create(dpp::message(ntif_chnls[guildid], temp_vc_create_embed), error_callback);
-				   	}
-					error_callback(callback);
-			   	});
+				const temp_vc_query q = {ptr, channel_id, guild_id};
+				temp_vcs_queue.push(q);
+				temp_vc_create(&bot, q);
 			}
 		}
-		channelid = vc_statuses[userid];
-		const bool is_temp = !temp_vcs[channelid].channelid.empty();
-		if (is_temp && dpp::find_channel(channelid)->get_voice_members().empty()) {
-			dpp::channel* newchannel = dpp::find_channel(channelid);
-			log(fmt::format("{0} left a JTC. Guild ID: {1}, channel ID: {2}, channel name: `{3}`, notification channel ID: {4}",
-							user.format_username(), guildid, channelid,
-							newchannel->name, ntif_chnls[guildid]));
-			const dpp::snowflake ntif_channelid = ntif_chnls[guildid];
-			if (!ntif_channelid.empty()) {
-				std::string description = "A temporary channel **" + newchannel->name + "**";
-				const dpp::channel* category = dpp::find_channel(newchannel->parent_id);
-				if (category != nullptr) {
-					description += " in the **" + category->name + "** category";
-				}
-				description += " is deleted.";
-				const dpp::embed temp_vc_delete_message = dpp::embed().
-						set_color(dpp::colors::blood_night).
-						set_description(description);
-				bot.message_create(dpp::message(ntif_channelid, temp_vc_delete_message), error_callback);
-			}
-			bot.channel_delete(channelid, error_callback);
+		channel_id = vc_statuses[user_id];
+		const bool is_temp = !temp_vcs[channel_id].channelid.empty();
+		if (is_temp && dpp::find_channel(channel_id)->get_voice_members().empty()) {
+			dpp::channel* channel = dpp::find_channel(channel_id);
+			temp_vc_delete_msg(&bot, user, channel);
 		}
-		vc_statuses[userid] = event.state.channel_id;
+		vc_statuses[user_id] = event.state.channel_id;
 	});
 
 	bot.on_slashcommand([&bot](const dpp::slashcommand_t& event) -> dpp::task <void> {

@@ -486,7 +486,6 @@ void slash::ticket::close(const dpp::slashcommand_t& event) {
         event.reply(dpp::message("You don't have a ticket, so no tickets were closed.").set_flags(dpp::m_ephemeral));
         return;
     }
-    dpp::cluster* bot = event.from()->creator;
     file::delete_line_once(fmt::format("{0}, {1}", user_id, tickets[user_id]), file::tickets);
     ck_tickets.erase(tickets[user_id]);
     tickets.erase(user_id);

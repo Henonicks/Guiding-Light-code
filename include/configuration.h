@@ -22,7 +22,7 @@ extern uint64_t guild_amount, channel_amount, user_amount;
 
 namespace configuration {
     void configure_bot(const bool& is_dev);
-    void pray(dpp::cluster& bot);
+    void pray();
 	void write_down_slashcommands(dpp::cluster& bot);
 }
 

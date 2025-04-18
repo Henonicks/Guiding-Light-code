@@ -42,7 +42,7 @@ void configuration::configure_bot(const bool& is_dev) {
 	file::tickets = fmt::format("../src/{}/tickets.txt", logs_suffix);
 }
 
-void configuration::pray(dpp::cluster& bot) { // I'll pray that when this function starts executing we have all the cache because Discord doesn't let me know whether all the cache I've received at a certain point is everything or there's more and there's no better way to do this I promise
+void configuration::pray() { // I'll pray that when this function starts executing we have all the cache because Discord doesn't let me know whether all the cache I've received at a certain point is everything or there's more and there's no better way to do this I promise
 	std::string line;
 
 	std::ifstream last_jtc_vcs;
