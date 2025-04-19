@@ -1,5 +1,7 @@
 #include "temp_vc_handler.h"
 
+user_snowflake handling_user_id;
+
 void temp_vc_create_msg(dpp::cluster* bot, const temp_vc_query& q, const dpp::channel& channel) {
     std::string description = "A new temporary channel has been created ";
             description += (!channel.parent_id.empty() ?
@@ -11,10 +13,13 @@ void temp_vc_create_msg(dpp::cluster* bot, const temp_vc_query& q, const dpp::ch
             dpp::embed temp_vc_create_embed = dpp::embed().
             set_color(dpp::colors::greenish_blue).
             set_description(description);
-            bot->message_create(dpp::message(ntif_chnls[q.guild_id], temp_vc_create_embed), error_callback);
+    bot->message_create(dpp::message(ntif_chnls[q.guild_id], temp_vc_create_embed), error_callback);
+}
+
+ void temp_vc_create_owner_msg(dpp::cluster* bot, const temp_vc_query& q, const dpp::snowflake& channel_id) {
     dpp::embed temp_ping_embed = dpp::embed()
     .set_color(dpp::colors::sti_blue)
-    .set_title(fmt::format("Welcome to <#{}>!", channel.id))
+    .set_title(fmt::format("Welcome to <#{}>!", channel_id))
     .set_author(fmt::format("This VC belongs to {}.", q.usr->username), q.usr->get_url(), q.usr->get_avatar_url())
     .add_field(
         "You're able to edit the channel!",
@@ -24,7 +29,7 @@ void temp_vc_create_msg(dpp::cluster* bot, const temp_vc_query& q, const dpp::ch
         dpp::embed_footer()
         .set_text("Use the button bellow to toggle the temporary VC creation ping on/off. Have fun!")
     );
-    dpp::message message = dpp::message(channel.id, temp_ping_embed).add_component(
+    dpp::message message = dpp::message(channel_id, q.usr->get_mention()).add_embed(temp_ping_embed).add_component(
         dpp::component().add_component(
             dpp::component()
             .set_type(dpp::cot_button)
@@ -32,8 +37,8 @@ void temp_vc_create_msg(dpp::cluster* bot, const temp_vc_query& q, const dpp::ch
             .set_style(dpp::cos_danger)
             .set_id("temp_ping_toggle")
         )
-    );
-    bot->message_create(message);
+    ).set_allowed_mentions(true);
+    bot->message_create(message, error_callback);
 }
 
 void temp_vc_delete_msg(dpp::cluster* bot, const dpp::user& user, const dpp::channel* channel) {
@@ -110,31 +115,33 @@ void temp_vc_create(dpp::cluster* bot, const temp_vc_query& q) {
         limit = 0;
     }
     new_channel.set_user_limit(limit);
-    bot->start_timer([new_channel, bot, current, q](const dpp::timer& on_tick) -> void {
+    const dpp::timer_callback_t timer_function = [new_channel, bot, current, q](const bool& called_separately) -> void {
         if (temp_vcs_queue.empty()) {
-            return;
+            if (called_separately) {
+                return;
+            }
+            throw 0;
         }
         if (temp_vcs_queue.front().usr->id != q.usr->id) {
             return;
         }
-        if (vc_statuses[q.usr->id] != q.channel_id) {
+        if (handling_user_id == q.usr->id) {
             return;
         }
         if (temp_vc_amount[q.guild_id] >= 50) {
+            temp_vcs_queue.pop();
             bot->message_create(dpp::message(q.channel_id, fmt::format("<@{0}> There are too many temporary VCs in this guild ({1}/50).", q.usr->id, temp_vc_amount[q.guild_id])).set_allowed_mentions(true), error_callback);
             bot->guild_member_move(0, q.guild_id, q.usr->id, error_callback);
             return;
         }
-        temp_vcs_queue.pop();
-        bot->channel_create(new_channel,[bot, current, q, on_tick](const dpp::confirmation_callback_t& callback) -> void {
+        handling_user_id = q.usr->id;
+        bot->channel_create(new_channel, [bot, current, q](const dpp::confirmation_callback_t& callback) -> void {
+            temp_vcs_queue.pop();
+            handling_user_id = 0;
             ++temp_vc_amount[q.guild_id];
             const auto channel = std::get <dpp::channel>(callback.value);
             if (!no_temp_ping[q.usr->id]) {
-                bot->message_create(dpp::message(channel.id, q.usr->get_mention()).set_allowed_mentions(true), [bot](const dpp::confirmation_callback_t& callback) -> void {
-                    error_callback(callback);
-                    auto new_message = callback.get <dpp::message>();
-                    bot->message_delete(new_message.id, new_message.channel_id, error_callback);
-                });
+                temp_vc_create_owner_msg(bot, q, channel.id);
             }
             temp_vcs[channel.id] = {channel.id, channel.guild_id, q.usr->id};
             bot->guild_member_move(channel.id, channel.guild_id, q.usr->id, [bot, channel, q](const dpp::confirmation_callback_t& callback) -> void {
@@ -148,6 +155,18 @@ void temp_vc_create(dpp::cluster* bot, const temp_vc_query& q) {
             });
             error_callback(callback);
         });
-        bot->stop_timer(on_tick);
+        if (called_separately) {
+            return;
+        }
+        throw 0;
+    };
+    timer_function(true);
+    bot->start_timer([new_channel, bot, current, q, timer_function](const dpp::timer& h) -> void {
+        try {
+            timer_function(false);
+        }
+        catch (...) {
+            bot->stop_timer(h);
+        }
     }, 1);
 }
