@@ -232,7 +232,7 @@ int main(int argc, char** argv) {
 	});
 
 	bot.on_channel_update([&bot](const dpp::channel_update_t& event) -> void {
-		if (jtc_channels_map[event.updated.id] != dpp::channel{}) {
+		if (!jtc_vcs[event.updated.id].channelid.empty()) {
 			jtc_channels_map[event.updated.id] = event.updated;
 		}
 		if (!temp_vcs[event.updated.id].channelid.empty()) {
@@ -347,7 +347,7 @@ int main(int argc, char** argv) {
 
 	bot.on_slashcommand([&bot](const dpp::slashcommand_t& event) -> dpp::task <void> {
 		if (!slash::enabled) {
-			event.reply(dpp::message("Patience, I'm preparing! Wait about 5-10 seconds and try again.").set_flags(dpp::m_ephemeral));
+			event.reply(dpp::message("I'm preparing! Please wait about 5-10 seconds and try again.").set_flags(dpp::m_ephemeral));
 			co_return;
 		}
 		const dpp::snowflake& guild_id = event.command.guild_id;
@@ -386,7 +386,7 @@ int main(int argc, char** argv) {
 				co_await slash::set::default_values(bot, event);
 			}
 			else {
-				slash::set::current(bot, event);
+				co_await slash::set::current(bot, event);
 			}
 		}
 		if (cmd_name == "setup") {
@@ -429,6 +429,7 @@ int main(int argc, char** argv) {
 
 	signal(SIGINT, [](int code) -> void {
 		log("Ну, все, я пішов спати, бувай, добраніч.");
+		std::cout << "Ну, все, я пішов спати, бувай, добраніч." << '\n';
 		system("killall guidingLight");
 	});
 

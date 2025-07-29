@@ -6,7 +6,7 @@ dpp::embed slash::help_embed_1;
 dpp::embed slash::help_embed_2;
 bool slash::enabled = false;
 
-void slash::set::current(dpp::cluster &bot, const dpp::slashcommand_t &event) {
+dpp::coroutine <void> slash::set::current(dpp::cluster &bot, const dpp::slashcommand_t &event) {
     dpp::command_interaction cmd = event.command.get_command_interaction();
     const dpp::user user = event.command.get_issuing_user();
     dpp::snowflake userid = user.id;
@@ -18,8 +18,8 @@ void slash::set::current(dpp::cluster &bot, const dpp::slashcommand_t &event) {
     else {
         dpp::channel* channel = dpp::find_channel(channelid);
         if (channel == nullptr) {
-            event.reply(dpp::message("Channel could not be found.").set_flags(dpp::m_ephemeral));
-            return;
+            event.reply(dpp::message("Channel could not be found. Please, try again.").set_flags(dpp::m_ephemeral));
+            co_return;
         }
         std::string old_name = channel->name;
         if (cmd.options[0].name == "name") {
@@ -33,6 +33,11 @@ void slash::set::current(dpp::cluster &bot, const dpp::slashcommand_t &event) {
             else {
                 channel->set_name(argument);
                 bot.channel_edit(*channel, [event, old_name, channel](const dpp::confirmation_callback_t& callback) {
+                    if (callback.is_error()) {
+                        error_callback(callback);
+                        event.reply(fmt::format("Error: {}.", callback.get_error().message));
+                        return;
+                    }
                     event.reply(dpp::message("The name of the channel has changed from \"`" + old_name + "` to \"`" + channel->name + "`\".").set_flags(dpp::m_ephemeral));
                 });
             }
@@ -41,8 +46,8 @@ void slash::set::current(dpp::cluster &bot, const dpp::slashcommand_t &event) {
 			auto argument = std::get <long>(cmd.options[0].options[0].value);
             dpp::guild* guild = dpp::find_guild(channel->guild_id);
             if (guild == nullptr) {
-                event.reply("Guild could not be found.");
-                return;
+                event.reply("Guild could not be found. Please, try again.");
+                co_return;
             }
             dpp::channel curr_channel = *channel;
             dpp::message to_reply = dpp::message().set_flags(dpp::m_ephemeral);
@@ -61,11 +66,15 @@ void slash::set::current(dpp::cluster &bot, const dpp::slashcommand_t &event) {
             else {
                 content = fmt::format("Set bitrate to `{}` successfully.", argument);
                 curr_channel.set_bitrate(argument);
-                bot.channel_edit(curr_channel);
+                const dpp::confirmation_callback_t& callback = co_await bot.co_channel_edit(curr_channel);
+                if (callback.is_error()) {
+                    error_callback(callback);
+                    event.reply(fmt::format("Error: {}.", callback.get_error().message));
+                    co_return;
+                }
             }
             to_reply.set_content(content);
             event.reply(to_reply);
-
         }
         else if (cmd.options[0].name == "limit") {
 			auto argument = std::get <long>(cmd.options[0].options[0].value);
@@ -73,8 +82,8 @@ void slash::set::current(dpp::cluster &bot, const dpp::slashcommand_t &event) {
                 event.reply(dpp::message("For voice channels, it's impossible to make the limit greater than `99`. You can make it infinite by putting `0` as argument.").set_flags(dpp::m_ephemeral));
             }
             else if (argument < 0) {
-                event.reply(dpp::message("Yo what? You wanna make the limit negative? Well you shouldn't be able to stay in the channel then. Executing user out of the channel... Executing is done! Enjoy being kicked out!"));
-                bot.guild_member_move(0, jtc_channels_map[vc_statuses[userid]].guild_id, userid);
+                event.reply(dpp::message("Well now we're just being silly, aren't we?").set_flags(dpp::m_ephemeral));
+                bot.guild_member_move(0, temp_vcs[vc_statuses[userid]].guildid, userid, error_callback);
             }
             else {
                 if (channel->user_limit == argument) {
@@ -82,8 +91,14 @@ void slash::set::current(dpp::cluster &bot, const dpp::slashcommand_t &event) {
                 }
                 else {
                     channel->set_user_limit(argument);
-                    bot.channel_edit(*channel);
-                    event.reply(dpp::message("User limit is set to `" + std::to_string(argument) + "` successfuly.").set_flags(dpp::m_ephemeral));
+                    bot.channel_edit(*channel, [event, argument](const dpp::confirmation_callback_t callback) {
+                        if (callback.is_error()) {
+                            error_callback(callback);
+                            event.reply(fmt::format("Error: {}.", callback.get_error().message));
+                            return;
+                        }
+                        event.reply(dpp::message("User limit is set to `" + std::to_string(argument) + "` successfuly.").set_flags(dpp::m_ephemeral));
+                    });
                 }
             }
         }
