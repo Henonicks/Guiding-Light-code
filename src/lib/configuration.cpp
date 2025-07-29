@@ -298,7 +298,7 @@ void configuration::write_down_slashcommands(dpp::cluster& bot) {
 
 				"\n"
 
-				"__***NOTE:***__ If the bot shuts down while you\'re in a temporary VC, the channel will never be auto-deleted since temporary VCs are not stored in the files. This is to be handled by a moderator. Deleting *all* of the temporary VCs out there would take a lot of API requests which could get the bot rate-limited which is, in Layman\'s terms, terrible.\n"
+				"__***NOTE:***__ When the bot reboots, it won\'t know that you (as well as anyone else) are/is in a channel. A temporary VC needs to be \"touched\" to be auto-deleted. So to delete your previously owned channel you need to re-join it and then leave it. Although if you decide to keep it, you can!\n"
 				"If you vote but don\'t have a guild set to vote in favour of, the point is wasted. The first time you do that, you get a direct message from the bot if your DMs are open."
 			).set_footer(dpp::embed_footer()
 				.set_text("You can always ask the creator of the bot a question in direct messages or on the support server!")
