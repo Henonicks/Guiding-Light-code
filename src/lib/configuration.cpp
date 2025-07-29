@@ -40,6 +40,7 @@ void configuration::configure_bot(const bool& is_dev) {
 	file::no_noguild_reminder = fmt::format("../src/{}/no_noguild_reminder.txt", logs_suffix);
 	file::topgg_notifications = fmt::format("../src/{}/topgg_notifications.txt", logs_suffix);
 	file::tickets = fmt::format("../src/{}/tickets.txt", logs_suffix);
+	file::temp_vcs = fmt::format("../src/{}/temp_vcs.txt", logs_suffix);
 }
 
 void configuration::pray() { // I'll pray that when this function starts executing we have all the cache because Discord doesn't let me know whether all the cache I've received at a certain point is everything or there's more and there's no better way to do this I promise
@@ -60,6 +61,7 @@ void configuration::pray() { // I'll pray that when this function starts executi
 	}
 
 	last_jtc_vcs.close();
+
 	std::ifstream last_temp_vc_notifications;
 	last_temp_vc_notifications.open(file::temp_vc_notifications);
 
@@ -187,6 +189,22 @@ void configuration::pray() { // I'll pray that when this function starts executi
 	}
 
 	tickets_file.close();
+
+	std::ifstream last_temp_vcs;
+	last_temp_vcs.open(file::temp_vcs);
+	while (std::getline(last_temp_vcs, line)) {
+		dpp::channel* channel = dpp::find_channel(get_temp_vc(line).channelid);
+		if (channel != nullptr) {
+			temp_vc current = get_temp_vc(line);
+			++temp_vc_amount[current.guildid];
+			temp_vcs[current.channelid] = current;
+		}
+		else {
+			file::delete_line_once(line, file::temp_vcs);
+		}
+	}
+
+	last_temp_vcs.close();
 
 	slash::enabled = true;
 }

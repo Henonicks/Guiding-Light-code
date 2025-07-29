@@ -13,7 +13,7 @@ dpp::coroutine <void> slash::set::current(dpp::cluster &bot, const dpp::slashcom
     dpp::snowflake channelid = vc_statuses[userid];
     bool user_is_main = !channelid.empty();
     if (!user_is_main) {
-        event.reply(dpp::message("You are not in a VC you can edit. Note that those commands edit temporary VCs only").set_flags(dpp::m_ephemeral));
+        event.reply(dpp::message("You are not in a VC you can edit. If you are, it's likely that the bot restarted while you were in the channel. In that case, **__rejoin it__**. Note that those commands edit temporary VCs only.").set_flags(dpp::m_ephemeral));
     }
     else {
         dpp::channel* channel = dpp::find_channel(channelid);

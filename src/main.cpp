@@ -288,6 +288,8 @@ int main(int argc, char** argv) {
 			if (!to_erase_temp.channelid.empty()) {
 				--temp_vc_amount[guildid];
 				temp_vcs.erase(channelid);
+				const std::string temp_line = file::getline(std::to_string(channelid), file::temp_vcs, -1);
+				file::delete_line_once(temp_line, file::temp_vcs);
 			}
 		}
 		else {
