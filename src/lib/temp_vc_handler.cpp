@@ -149,6 +149,7 @@ void temp_vc_create(dpp::cluster* bot, const temp_vc_query& q) {
                     bot->channel_delete(channel.id, error_callback);
                     return;
                 }
+                file::line_append(fmt::format("{0} {1} {2} {3}", channel.id, channel.guild_id, q.usr->id, q.channel_id), file::temp_vcs);
                 if (!ntif_chnls[q.guild_id].empty()) {
                     temp_vc_create_msg(bot, q, channel);
                 }

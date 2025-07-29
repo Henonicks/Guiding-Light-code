@@ -14,7 +14,8 @@ namespace file {
     extern std::string no_noguild_reminder;
     extern std::string topgg_notifications;
     extern std::string tickets;
-
+    extern std::string temp_vcs;
+    
     void line_append(const std::string& s, const std::string& filename);
     std::string getline(const std::string& s, const std::string& filename, const int& start_position = -1);
     void delete_line_once(const std::string& s, const std::string& filename, const bool& should_contain_at_pos_0 = false);
