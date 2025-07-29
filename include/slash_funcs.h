@@ -33,7 +33,7 @@ namespace slash {
          * @param bot cluster which gets the request and handles it.
          * @param event the slashcommand event object which contains information about request.
          */
-        void current(dpp::cluster& bot, const dpp::slashcommand_t& event);
+        dpp::coroutine <void> current(dpp::cluster& bot, const dpp::slashcommand_t& event);
     }
 
     /**
