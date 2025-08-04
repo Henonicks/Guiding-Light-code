@@ -5,7 +5,9 @@ names=("jtc_vcs" "temp_vc_notifications" "jtc_default_values" "no_temp_ping" "to
 for x in ${names[@]}; do
     while IFS= read -r line; do
         echo $line
-        line=${line//[ ]/,}
+        line="'$line"
+        line=${line//[ ]/"','"}
+        line="$line'"
         echo $line
         sqlite3 database/dev.db "INSERT INTO $x VALUES ($line);"
     done < src/dev/$x.txt
@@ -14,8 +16,10 @@ done
 for x in ${names[@]}; do
     while IFS= read -r line; do
         echo $line
-        line=${line//[ ]/,}
+        line="'$line"
+        line=${line//[ ]/"','"}
+        line="$line'"
         echo $line
         sqlite3 database/release.db "INSERT INTO $x VALUES ($line);"
-    done < src/release/$x.txt
+    done < src/dev/$x.txt
 done
