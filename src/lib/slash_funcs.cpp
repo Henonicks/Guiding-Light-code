@@ -473,7 +473,7 @@ void slash::topgg::guild_set(const dpp::slashcommand_t& event) {
 
 void slash::topgg::get_progress(const dpp::slashcommand_t& event) {
     const int8_t limit = ::topgg::jtc::count_jtcs(event.command.guild_id);
-	event.reply(dpp::message(event.command.channel_id, fmt::format("This guild's vote progress is: __{0}__/**{1}**. The maximum amount of JTCs allowed here is {2}.{3}", ::topgg::guild_votes_amount[event.command.guild_id], ::topgg::votes_leveling[limit], limit, limit < 10 ? " This is the absolute maximum." : "")).set_flags(dpp::m_ephemeral));
+	event.reply(dpp::message(event.command.channel_id, fmt::format("This guild's vote progress is: __{0}__/**{1}**. The maximum amount of JTCs allowed here is {2}.{3}", ::topgg::guild_votes_amount[event.command.guild_id], ::topgg::votes_leveling[limit], limit, limit == 10 ? " This is the absolute maximum." : "")).set_flags(dpp::m_ephemeral));
 }
 
 dpp::coroutine <void> slash::ticket::create(const dpp::slashcommand_t& event) {
