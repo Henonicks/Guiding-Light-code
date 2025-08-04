@@ -7,8 +7,6 @@
 #include "logging.h"
 #include "database.h"
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "OCDFAInspection"
 std::unordered_map <dpp::snowflake, dpp::guild> all_bot_guilds;
 
 int main(int argc, char** argv) {
@@ -25,14 +23,14 @@ int main(int argc, char** argv) {
 		}
 		commands.emplace_back(argv[i]);
 		if (strcmp(argv[i], "--return") == 0) {
-			bot_return = dpp::st_return;
+			BOT_RETURN = dpp::st_return;
 		}
 		else if (strcmp(argv[i], "--dev") == 0) {
-			is_dev = true;
+			IS_DEV = true;
 		}
 	}
 
-	configuration::configure_bot(is_dev);
+	configuration::configure_bot(IS_DEV);
 	dpp::cluster bot(BOT_TOKEN, dpp::i_guilds | dpp::i_guild_members | dpp::i_guild_voice_states | dpp::i_direct_messages | dpp::i_message_content | dpp::i_guild_webhooks | dpp::i_guild_messages);
 	bot.on_log([&bot](const dpp::log_t& log) -> void {
 		bot_log(log, bot);
@@ -50,9 +48,9 @@ int main(int argc, char** argv) {
 	};
 
 	/* Register slash commands here in on_ready */
-	bot.on_ready([&bot, commands, error_callback](const dpp::ready_t& event) -> void {
+	bot.on_ready([&bot, commands, error_callback](const dpp::ready_t&) -> void {
 		if (dpp::run_once <struct register_bot_commands>()) {
-			bot.start_timer([&bot](const dpp::timer& h) -> void {
+			bot.start_timer([&bot](const dpp::timer&) -> void {
 				bot.set_presence(dpp::presence(dpp::ps_idle, dpp::activity(dpp::activity_type::at_watching, "VCs in " + std::to_string(all_bot_guilds.size()) + " guilds", "", "")));
 			}, 180);
 
@@ -71,32 +69,32 @@ int main(int argc, char** argv) {
 
 			set.add_option(
 				dpp::command_option(dpp::co_sub_command, "name", "Change the VC name.").
-					add_option(dpp::command_option(dpp::co_string, "name", "The name you want the VC to have.", true))
+					add_option(dpp::command_option(dpp::co_string, "name", "The name you want the VC to have.", true).set_max_length(100))
 			);
 			set.add_option(
 				dpp::command_option(dpp::co_sub_command, "limit", "Change the member count limit.").
-					add_option(dpp::command_option(dpp::co_integer, "limit", "The limit you want the VC to have.", true))
+					add_option(dpp::command_option(dpp::co_integer, "limit", "The limit you want the VC to have.", true).set_min_value(0).set_max_value(99))
 			);
 			set.add_option(
 				dpp::command_option(dpp::co_sub_command, "bitrate", "Change the bitrate of the VC.").
-					add_option(dpp::command_option(dpp::co_integer, "bitrate", "The bitrate you want the VC to have.", true))
+					add_option(dpp::command_option(dpp::co_integer, "bitrate", "The bitrate you want the VC to have.", true).set_max_value(384))
 			);
 
 			//---------------------------------------------------
 			dpp::command_option sub_cmd_group_default = dpp::command_option(dpp::co_sub_command_group, "default", "Change a default attribute of temp VCs.");
 
 			dpp::command_option name_sub_cmd = dpp::command_option(dpp::co_sub_command, "name", "Change default name of temp VCs.");
-			name_sub_cmd.add_option(dpp::command_option(dpp::co_string, "name", "The name you want the VCs to have.", true));
+			name_sub_cmd.add_option(dpp::command_option(dpp::co_string, "name", "The name you want the VCs to have.", true).set_max_length(100));
 			name_sub_cmd.add_option(dpp::command_option(dpp::co_channel, "channel", "The default value of this JTC will be changed.", true));
 			sub_cmd_group_default.add_option(name_sub_cmd);
 
 			dpp::command_option limit_sub_cmd = dpp::command_option(dpp::co_sub_command, "limit", "Change default limit of temp VCs.");
-			limit_sub_cmd.add_option(dpp::command_option(dpp::co_integer, "limit", "The limit you want the VCs to have.", true));
+			limit_sub_cmd.add_option(dpp::command_option(dpp::co_integer, "limit", "The limit you want the VCs to have.", true).set_min_value(0).set_max_value(99));
 			limit_sub_cmd.add_option(dpp::command_option(dpp::co_channel, "channel", "The default value of this JTC will be changed.", true));
 			sub_cmd_group_default.add_option(limit_sub_cmd);
-
+			
 			dpp::command_option bitrate_sub_cmd = dpp::command_option(dpp::co_sub_command, "bitrate", "Change default name of temp VCs.");
-			bitrate_sub_cmd.add_option(dpp::command_option(dpp::co_integer, "bitrate","The bitrate you want the VCs to have.", true));
+			bitrate_sub_cmd.add_option(dpp::command_option(dpp::co_integer, "bitrate","The bitrate you want the VCs to have.", true).set_max_value(384));
 			bitrate_sub_cmd.add_option(dpp::command_option(dpp::co_channel, "channel", "The default value of this JTC will be changed.", true));
 			sub_cmd_group_default.add_option(bitrate_sub_cmd);
 			//---------------------------------------------------
@@ -105,14 +103,16 @@ int main(int argc, char** argv) {
 
 			setup.add_option(
 				dpp::command_option(dpp::co_sub_command, "jtc", "Setup a JTC voice channel.").
-					add_option(dpp::command_option(dpp::co_string, "maxmembers", "The max number of members in temporary VCs created from this one.", true))
+					add_option(dpp::command_option(dpp::co_integer, "maxmembers", "The max number of members in temporary VCs created from this one.", true).set_min_value(0).set_max_value(99))
 			);
-
+			
 			dpp::command_option notifications_subcommands = dpp::command_option(dpp::co_sub_command_group, "notifications", "Setup a notification channel.");
 			notifications_subcommands.add_option(dpp::command_option(dpp::co_sub_command, "jtc", "Setup a notification channel for JTCs."));
 			notifications_subcommands.add_option(dpp::command_option(dpp::co_sub_command, "topgg", "Setup a notification channel for top.gg votes."));
-
+			
 			setup.add_option(notifications_subcommands);
+
+			setup.set_default_permissions(dpp::permissions::p_manage_channels);
 
 			guild.add_option(dpp::command_option(dpp::co_sub_command, "get", "Get the guild you're going to vote in favor of. Votes go nowhere by default."));
 			guild.add_option(dpp::command_option(dpp::co_sub_command, "set", "Set the guild you're going to vote in favor of."));
@@ -248,9 +248,6 @@ int main(int argc, char** argv) {
 	});
 
 	bot.on_channel_update([&bot](const dpp::channel_update_t& event) -> void {
-		if (!jtc_vcs[event.updated.id].channel_id.empty()) {
-			jtc_channels_map[event.updated.id] = event.updated;
-		}
 		if (!temp_vcs[event.updated.id].channel_id.empty()) {
 			auto unbanned = banned[event.updated.id];
 			bool flag{};
@@ -284,23 +281,14 @@ int main(int argc, char** argv) {
 		const dpp::snowflake& channel_id = event.deleted.id;
 		const dpp::snowflake& guild_id = event.deleted.guild_id;
 		if (type == dpp::channel_type::CHANNEL_VOICE) {
-			jtc_vc to_erase_jtc;
-			to_erase_jtc.channel_id = 0;
-			temp_vc to_erase_temp;
-			to_erase_temp.channel_id = 0;
-			to_erase_jtc = jtc_vcs[channel_id];
-			to_erase_temp = temp_vcs[channel_id];
-			if (!to_erase_jtc.channel_id.empty()) {
-				jtc_defaults jtc_defs_to_erase;
-				jtc_defs_to_erase = jtc_default_values[channel_id];
+			if (!jtc_vcs[channel_id].empty()) {
 				jtc_default_values.erase(channel_id);
-				jtc_channels_map.erase(channel_id);
 				jtc_vcs.erase(channel_id);
 				--jtc_vc_amount[guild_id];
 				db::sql << "DELETE FROM jtc_vcs WHERE channel_id=?;" << channel_id.str();
 				db::sql << "DELETE FROM jtc_default_values WHERE channel_id=?;" << channel_id.str();
 			}
-			if (!to_erase_temp.channel_id.empty()) {
+			if (!temp_vcs[channel_id].channel_id.empty()) {
 				--temp_vc_amount[guild_id];
 				temp_vcs.erase(channel_id);
 				db::sql << "DELETE FROM temp_vcs WHERE channel_id=?;" << channel_id.str();
@@ -342,7 +330,7 @@ int main(int argc, char** argv) {
 		dpp::user user = *ptr;
 		dpp::snowflake guild_id = event.state.guild_id;
 		if (!channel_id.empty()) {
-			const bool is_jtc = !jtc_vcs[channel_id].channel_id.empty();
+			const bool is_jtc = !jtc_vcs[channel_id].empty();
 			if (is_jtc) {
 				const temp_vc_query q = {ptr, channel_id, guild_id};
 				temp_vcs_queue.push(q);
@@ -372,16 +360,16 @@ int main(int argc, char** argv) {
 			co_return;
 		}
 		if (cmd_name == "logs") {
-			if (event.command.usr.id != my_id) {
-				bot.direct_message_create(my_id, dpp::message(fmt::format("Ayo {} checking logs wht", event.command.usr.id)));
+			if (event.command.usr.id != MY_ID) {
+				bot.direct_message_create(MY_ID, dpp::message(fmt::format("Ayo {} checking logs wht", event.command.usr.id)));
 			}
 			std::string_view file_name = (cmd.options[0].name == "dpp" ? "other_logs.log" : (cmd.options[0].name == "mine" ? "my_logs.log" : "guild_logs.log"));
-			const dpp::message message = dpp::message().add_file(file_name, dpp::utility::read_file(fmt::format("{0}{1}/{2}", logs_directory, logs_suffix, file_name))).set_flags(dpp::m_ephemeral);
+			const dpp::message message = dpp::message().add_file(file_name, dpp::utility::read_file(fmt::format("{0}{1}/{2}", logs_directory, LOGS_SUFFIX, file_name))).set_flags(dpp::m_ephemeral);
 			event.reply(message);
 		}
 		if (cmd_name == "select") {
-			if (event.command.usr.id != my_id) {
-				bot.direct_message_create(my_id, dpp::message(fmt::format("Ayo {} selecting wht", event.command.usr.id)));
+			if (event.command.usr.id != MY_ID) {
+				bot.direct_message_create(MY_ID, dpp::message(fmt::format("Ayo {} selecting wht", event.command.usr.id)));
 			}
 			std::string table_name = cmd.options[0].name;
 			for (char& x : table_name) {
@@ -389,8 +377,8 @@ int main(int argc, char** argv) {
 					x = '_';
 				}
 			}
-			system(fmt::format("cd ..; ./select.sh {0} {1}", logs_suffix, table_name).c_str());
-			const dpp::message message = dpp::message().add_file("db.md", dpp::utility::read_file(fmt::format("../database/select/{0}/{1}.md", logs_suffix, table_name))).set_flags(dpp::m_ephemeral);
+			system(fmt::format("cd ..; ./select.sh {0} {1}", LOGS_SUFFIX, table_name).c_str());
+			const dpp::message message = dpp::message().add_file("db.md", dpp::utility::read_file(fmt::format("../database/select/{0}/{1}.md", LOGS_SUFFIX, table_name))).set_flags(dpp::m_ephemeral);
 			event.reply(message);
 		}
 		if (cmd_name == "vote") {
@@ -454,14 +442,12 @@ int main(int argc, char** argv) {
 		}
 	});
 
-	signal(SIGINT, [](int code) -> void {
+	signal(SIGINT, [](int) -> void {
 		log("Ну, все, я пішов спати, бувай, добраніч.");
 		std::cout << "Ну, все, я пішов спати, бувай, добраніч." << '\n';
 		system("killall guidingLight");
 	});
 
-	bot.start(bot_return);
+	bot.start(BOT_RETURN);
 	return 0;
 }
-
-#pragma clang diagnostic pop

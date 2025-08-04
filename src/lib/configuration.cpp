@@ -3,43 +3,42 @@
 using json = nlohmann::json;
 
 std::string_view logs_directory = "../logging/";
-std::string BOT_TOKEN, logs_suffix;
-dpp::snowflake bot_dm_logs, my_id, TOPGG_WEBHOOK_CHANNEL_ID, MY_GUILD_ID, MY_PRIVATE_GUILD_ID, TICKETS_GUILD_ID;
+std::string BOT_TOKEN, LOGS_SUFFIX;
+dpp::snowflake BOT_DM_LOGS, MY_ID, TOPGG_WEBHOOK_CHANNEL_ID, MY_GUILD_ID, MY_PRIVATE_GUILD_ID, TICKETS_GUILD_ID;
 std::ofstream my_logs, guild_logs, other_logs, sql_logs;
-dpp::start_type bot_return = dpp::st_wait;
-bool is_dev = false;
-int delay = 5;
+dpp::start_type BOT_RETURN = dpp::st_wait;
+bool IS_DEV = false;
+int DELAY = 5;
 uint64_t guild_amount = 0, channel_amount = 0, user_amount = 0;
 
 void configuration::configure_bot(const bool& is_dev) {
-    json config;
-    std::ifstream config_file_stream("../Guiding_Light_Config/config.json");
-    config_file_stream >> config;
+	json config;
+	std::ifstream config_file_stream("../Guiding_Light_Config/config.json");
+	config_file_stream >> config;
 
-    bot_dm_logs = config["BOT_DM_LOGS_ID"];
-    my_id = config["MY_ID"];
+	BOT_DM_LOGS = config["BOT_DM_LOGS_ID"];
+	MY_ID = config["MY_ID"];
 	MY_GUILD_ID = config["MY_GUILD_ID"];
 	MY_PRIVATE_GUILD_ID = config["MY_PRIVATE_GUILD_ID"];
 	TOPGG_WEBHOOK_CHANNEL_ID = config["TOPGG_WEBHOOK_CHANNEL_ID"];
 	TICKETS_GUILD_ID = config["TICKETS_GUILD_ID"];
 
-    BOT_TOKEN = (is_dev ? config["BOT_TOKEN_DEV"] : config["BOT_TOKEN"]);
+	BOT_TOKEN = (is_dev ? config["BOT_TOKEN_DEV"] : config["BOT_TOKEN"]);
 
-	logs_suffix = (is_dev ? "dev" : "release");
+	LOGS_SUFFIX = (is_dev ? "dev" : "release");
 
-    my_logs.open(fmt::format("{0}{1}/my_logs.log", logs_directory, logs_suffix));
-    guild_logs.open(fmt::format("{0}{1}/guild_logs.log", logs_directory, logs_suffix));
-    other_logs.open(fmt::format("{0}{1}/other_logs.log", logs_directory, logs_suffix));
-    sql_logs.open(fmt::format("{0}{1}/sql_logs.log", logs_directory, logs_suffix));
+	my_logs.open(fmt::format("{0}{1}/my_logs.log", logs_directory, LOGS_SUFFIX));
+	guild_logs.open(fmt::format("{0}{1}/guild_logs.log", logs_directory, LOGS_SUFFIX));
+	other_logs.open(fmt::format("{0}{1}/other_logs.log", logs_directory, LOGS_SUFFIX));
+	sql_logs.open(fmt::format("{0}{1}/sql_logs.log", logs_directory, LOGS_SUFFIX));
 }
 
 void configuration::pray() { // I'll pray that when this function starts executing we have all the cache because Discord doesn't let me know whether all the cache I've received at a certain point is everything or there's more and there's no better way to do this I promise
 	db::sql << "SELECT * FROM jtc_vcs;" >> [](const db::BIGINT& channel_id, const db::BIGINT& guild_id) {
 		const dpp::channel* channel = dpp::find_channel(channel_id);
 		if (channel != nullptr) {
-			jtc_vcs[channel_id] = {channel_id, guild_id};
+			jtc_vcs[channel_id] = guild_id;
 			++jtc_vc_amount[guild_id];
-			jtc_channels_map[channel_id] = *channel;
 		}
 		else {
 			db::sql << "DELETE FROM jtc_vcs WHERE channel_id=?;" << channel_id;
