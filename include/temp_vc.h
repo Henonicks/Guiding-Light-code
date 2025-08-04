@@ -6,16 +6,14 @@
 #include "jtc_defaults.h"
 
 struct temp_vc {
-    dpp::snowflake channel_id, guild_id, creator_id, parent_id;
+	dpp::snowflake channel_id, guild_id, creator_id, parent_id;
 };
 
 bool operator <(temp_vc vc1, temp_vc vc2);
 
-temp_vc get_temp_vc(std::string_view line);
-
 struct temp_vc_query {
-    dpp::user* usr;
-    dpp::snowflake channel_id, guild_id;
+	dpp::user* usr;
+	dpp::snowflake channel_id, guild_id;
 };
 
 extern std::map <channel_snowflake, temp_vc> temp_vcs;

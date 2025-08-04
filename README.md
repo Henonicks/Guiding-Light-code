@@ -38,7 +38,7 @@ Create a config.json in `Guiding_Light_Config`, located above the `build` direct
 
 ## Setup
 
-If you don't have the log files already, run the `create_files.sh` script. It'll create all the log files. If you don't have the database files already, run `init_db.sh`. If you've used the version of this bot which used text files as a database, run `conv_db.sh`.
+If you don't have the log files already, run the `create_files.sh` script. It'll create all the log files. If you don't have the database files already, run `init_db.sh`. If you've used the version of this bot which used text files as a database, run `conv_db.sh`. If you've used the bot before, chances are, your database still remembers the "infinite" value of the VC user limit as 100. Run `100_to_0.sh` to fix this as otherwise the bot will try to create a VC with the limit set to 100 and fail. If this is the case, you'll also have underscores instead of spaces. This isn't needed anymore so the bot won't replace underscore with spaces when creating a temporary VC. Convert them with `us_to_sp.sh`.
 
 Start the bot:
 
