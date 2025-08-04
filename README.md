@@ -47,11 +47,11 @@ Start the bot:
 
 ## Monitoring
 
-If you want to see what's going on with the bot, you can peek at the logs in `logging/<mode>/<logs type>_logs.log`. You can also use the `select.sh` script which `SELECT`s everything from a table. It takes two parameters: bot running mode (`dev` or `release`) and the table name. For example, you can do:
+If you want to see what's going on with the bot, you can peek at the logs in `logging/<mode>/<logs type>_logs.log` or issue the `/logs` slashcommand. You can also use the `select.sh` script which `SELECT`s everything from a table. It takes two parameters: bot running mode (`dev` or `release`) and the table name. For example, you can do:
 
     ./select.sh dev jtc_vcs
 
-This will create a file in `database/select/dev`, called `jtc_vcs.md`. This is what is run to generate a file when an administrator runs `/select` (that is a guild command, so only one guild gets it, you don't have to worry about that).
+This will create a file in `database/select/dev`, called `jtc_vcs.md`. This is what is run to generate a file when an administrator runs `/select` (that, along with `/logging` is a guild command, so only one guild gets it, you don't have to worry about that).
 
 ## Extending the bot
 

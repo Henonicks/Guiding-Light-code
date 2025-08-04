@@ -30,6 +30,7 @@ void configuration::configure_bot(const bool& is_dev) {
     my_logs.open(fmt::format("{0}{1}/my_logs.log", logs_directory, logs_suffix));
     guild_logs.open(fmt::format("{0}{1}/guild_logs.log", logs_directory, logs_suffix));
     other_logs.open(fmt::format("{0}{1}/other_logs.log", logs_directory, logs_suffix));
+    sql_logs.open(fmt::format("{0}{1}/sql_logs.log", logs_directory, logs_suffix));
 }
 
 void configuration::pray() { // I'll pray that when this function starts executing we have all the cache because Discord doesn't let me know whether all the cache I've received at a certain point is everything or there's more and there's no better way to do this I promise
