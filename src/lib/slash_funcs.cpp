@@ -7,16 +7,16 @@ dpp::embed slash::help_embed_2;
 bool slash::enabled = false;
 
 dpp::coroutine <void> slash::set::current(dpp::cluster &bot, const dpp::slashcommand_t &event) {
-    dpp::command_interaction cmd = event.command.get_command_interaction();
+    const dpp::command_interaction cmd = event.command.get_command_interaction();
     const dpp::user user = event.command.get_issuing_user();
-    dpp::snowflake userid = user.id;
-    dpp::snowflake channelid = vc_statuses[userid];
-    bool user_is_main = !channelid.empty();
+    const dpp::snowflake& user_id = user.id;
+    const dpp::snowflake& channel_id = vc_statuses[user_id];
+    const bool user_is_main = !channel_id.empty();
     if (!user_is_main) {
         event.reply(dpp::message("You are not in a VC you can edit. If you are, it's likely that the bot restarted while you were in the channel. In that case, **__rejoin it__**. Note that those commands edit temporary VCs only.").set_flags(dpp::m_ephemeral));
     }
     else {
-        dpp::channel* channel = dpp::find_channel(channelid);
+        dpp::channel* channel = dpp::find_channel(channel_id);
         if (channel == nullptr) {
             event.reply(dpp::message("Channel could not be found. Please, try again.").set_flags(dpp::m_ephemeral));
             co_return;
@@ -83,7 +83,7 @@ dpp::coroutine <void> slash::set::current(dpp::cluster &bot, const dpp::slashcom
             }
             else if (argument < 0) {
                 event.reply(dpp::message("Well now we're just being silly, aren't we?").set_flags(dpp::m_ephemeral));
-                bot.guild_member_move(0, temp_vcs[vc_statuses[userid]].guildid, userid, error_callback);
+                bot.guild_member_move(0, temp_vcs[vc_statuses[user_id]].guild_id, user_id, error_callback);
             }
             else {
                 if (channel->user_limit == argument) {
@@ -106,16 +106,16 @@ dpp::coroutine <void> slash::set::current(dpp::cluster &bot, const dpp::slashcom
 }
 
 dpp::coroutine <void> slash::set::default_values(dpp::cluster& bot, const dpp::slashcommand_t& event) {
-    dpp::command_interaction cmd = event.command.get_command_interaction();
+    const dpp::command_interaction cmd = event.command.get_command_interaction();
     const dpp::user user = event.command.get_issuing_user();
-    dpp::snowflake userid = user.id;
-    dpp::snowflake guildid = event.command.guild_id;
+    const dpp::snowflake& user_id = user.id;
+    const dpp::snowflake& guild_id = event.command.guild_id;
     dpp::guild guild;
     if (!event.command.channel.is_dm()) {
-        guild = *dpp::find_guild(guildid);
+        guild = *dpp::find_guild(guild_id);
     }
-	bool allowed_to_set = guild.owner_id == userid;
-	const dpp::confirmation_callback_t& confirmation = co_await bot.co_roles_get(guildid);
+	bool allowed_to_set = guild.owner_id == user_id;
+	const dpp::confirmation_callback_t& confirmation = co_await bot.co_roles_get(guild_id);
 	const auto& guild_roles = confirmation.get <dpp::role_map>();
 	dpp::guild_member member = event.command.member;
 	const auto& roles = member.get_roles();
@@ -133,9 +133,9 @@ dpp::coroutine <void> slash::set::default_values(dpp::cluster& bot, const dpp::s
 		co_await event.co_reply(dpp::message("You don't have a role that has the MANAGE_CHANNELS permission.").set_flags(dpp::m_ephemeral));
 		co_return;
 	}
-    auto channelid = std::get <dpp::snowflake>(cmd.options[0].options[0].options[1].value);
-	jtc_defaults defs = jtc_default_values[channelid];
-	if (defs.channelid.empty()) {
+    const auto channel_id = std::get <dpp::snowflake>(cmd.options[0].options[0].options[1].value);
+	jtc_defaults defs = jtc_default_values[channel_id];
+	if (defs.channel_id.empty()) {
 		co_await event.co_reply(dpp::message("This is not a JTC VC I know of.").set_flags(dpp::m_ephemeral));
 		co_return;
 	}
@@ -155,15 +155,14 @@ dpp::coroutine <void> slash::set::default_values(dpp::cluster& bot, const dpp::s
             co_await event.co_reply(dpp::message(fmt::format("The name is already + `{}` <a:skullspin:1121414918357389433>", name)).set_flags(dpp::m_ephemeral));
             co_return;
         }
-        new_defs.channelid = defs.channelid;
+        new_defs.channel_id = defs.channel_id;
         new_defs.name = name;
         new_defs.limit = defs.limit;
         new_defs.bitrate = defs.bitrate;
-        jtc_default_values.erase(defs.channelid);
-        jtc_default_values[new_defs.channelid] = new_defs;
-		std::string line = file::getline(channelid.str(), file::jtc_default_values, 0);
-        file::delete_line_once(line, file::jtc_default_values);
-        file::line_append(new_defs.channelid.str() + ' ' + name + ' ' + std::to_string(new_defs.limit) + ' ' + std::to_string(new_defs.bitrate), file::jtc_default_values);
+        jtc_default_values.erase(defs.channel_id);
+        jtc_default_values[new_defs.channel_id] = new_defs;
+        db::sql << "DELETE FROM jtc_default_values WHERE channel_id=?;" << channel_id.str();
+        db::sql << "INSERT INTO jtc_default_values VALUES (?, ?, ?, ?);" << channel_id.str() << defs.limit << defs.bitrate << name;
         event.reply(dpp::message(fmt::format("The default name is set to `{}`!", name)).set_flags(dpp::m_ephemeral));
     }
     else if (cmd.options[0].options[0].name == "limit") {
@@ -182,24 +181,23 @@ dpp::coroutine <void> slash::set::default_values(dpp::cluster& bot, const dpp::s
             if (limit == 100) {
                 limit = 0;
             }
-            jtc_default_values.erase(channelid);
-            file::delete_line_once(file::getline(std::to_string(defs.channelid), file::jtc_default_values, -1), file::jtc_default_values);
-            new_defs.channelid = defs.channelid;
+            jtc_default_values.erase(channel_id);
+            db::sql << "DELETE FROM jtc_default_values WHERE channel_id=?;" << defs.channel_id.str();
+            new_defs.channel_id = defs.channel_id;
             new_defs.name = defs.name;
             new_defs.limit = limit;
             new_defs.bitrate = defs.bitrate;
             if (limit == 0) {
                 new_defs.limit = 100;
             }
-            jtc_default_values[channelid] = new_defs;
-            std::string line = std::to_string(new_defs.channelid) + ' ' + new_defs.name + ' ' + std::to_string(new_defs.limit) + ' ' + std::to_string(new_defs.bitrate);
-            file::line_append(line, file::jtc_default_values);
+            jtc_default_values[channel_id] = new_defs;
+            std::string line = std::to_string(new_defs.channel_id) + ' ' + new_defs.name + ' ' + std::to_string(new_defs.limit) + ' ' + std::to_string(new_defs.bitrate);
+            db::sql << "INSERT INTO jtc_default_values VALUES (?, ?, ?, ?);" << channel_id.str() << defs.name << limit << defs.bitrate;
             event.reply(dpp::message(fmt::format("The default limit is set to `{}`!", limit)).set_flags(dpp::m_ephemeral));
         }
     }
     else if (cmd.options[0].options[0].name == "bitrate") {
         auto bitrate = std::get <long>(cmd.options[0].options[0].options[0].value);
-        std::string line = file::getline(std::to_string(defs.channelid), file::jtc_default_values, -1);
         dpp::message to_reply = dpp::message().set_flags(dpp::m_ephemeral);
         std::string content;
         int max_bitrate = ((guild.premium_tier == 0) ?
@@ -215,11 +213,11 @@ dpp::coroutine <void> slash::set::default_values(dpp::cluster& bot, const dpp::s
         }
         else {
             content = fmt::format("The default bitrate is set to `{}`!", bitrate);
-            file::delete_line_once(line, file::jtc_default_values);
             new_defs = defs;
             new_defs.bitrate = (int)bitrate;
-            jtc_default_values[channelid] = new_defs;
-            file::line_append(std::to_string(new_defs.channelid) + ' ' + new_defs.name + ' ' + std::to_string(new_defs.limit) + ' ' + std::to_string(bitrate), file::jtc_default_values);
+            jtc_default_values[channel_id] = new_defs;
+            db::sql << "DELETE FROM jtc_default_values WHERE channel_id=?;" << channel_id.str();
+            db::sql << "INSERT INTO jtc_default_values VALUES (?, ?, ?, ?);" << channel_id.str() << defs.name << defs.limit << bitrate;
         }
         to_reply.set_content(content);
         event.reply(to_reply);
@@ -227,17 +225,13 @@ dpp::coroutine <void> slash::set::default_values(dpp::cluster& bot, const dpp::s
 }
 
 dpp::coroutine <void> slash::setup(dpp::cluster& bot, const dpp::slashcommand_t& event) {
-    dpp::snowflake guildid = event.command.guild_id;
-    dpp::command_interaction cmd = event.command.get_command_interaction();
-    const dpp::user user = event.command.get_issuing_user();
-    dpp::snowflake userid = user.id;
-    dpp::guild guild;
-    if (!event.command.channel.is_dm()) {
-        guild = *dpp::find_guild(guildid);
-    }
-    
-    bool allowed_to_setup = guild.owner_id == userid;
-    const dpp::confirmation_callback_t& confirmation = co_await bot.co_roles_get(guildid);
+    const dpp::snowflake& guild_id = event.command.guild_id;
+    const dpp::command_interaction cmd = event.command.get_command_interaction();
+    const dpp::user& user = event.command.usr;
+    const dpp::snowflake& user_id = user.id;
+    const dpp::guild guild = *dpp::find_guild(guild_id);
+    bool allowed_to_setup = guild.owner_id == user_id;
+    const dpp::confirmation_callback_t& confirmation = co_await bot.co_roles_get(guild_id);
     const auto& role_map = confirmation.get <dpp::role_map>();
     dpp::guild_member member = event.command.member;
     const auto& member_roles = member.get_roles();
@@ -256,13 +250,13 @@ dpp::coroutine <void> slash::setup(dpp::cluster& bot, const dpp::slashcommand_t&
         co_return;
     }
     if (cmd.options[0].name == "jtc") {
-        int8_t limit = ::topgg::jtc::count_jtcs(guildid);
-		if (file::count_lines(event.command.guild_id.str(), file::jtc_vcs) >= limit) {
+        int8_t limit = ::topgg::jtc::count_jtcs(guild_id);
+		if (jtc_vc_amount[guild_id] >= limit) {
 			co_await event.co_reply(dpp::message(fmt::format("This guild has a JTC limit of {0}.{1}", limit, (limit < 10 ? " You can get more by voting though!" : ""))).set_flags(dpp::m_ephemeral));
 			co_return;
 		}
         std::string arg_string = std::get <std::string>(cmd.options[0].options[0].value);
-        auto max = (short)string_to_ll(arg_string);
+        auto max = (int8_t)string_to_ll(arg_string);
         if (max < 0 || max > 100) {
             co_await event.co_reply(dpp::message("Only numbers between 0 and 99 (0 for channel without limit) are allowed.").set_flags(dpp::m_ephemeral));
         }
@@ -285,6 +279,7 @@ dpp::coroutine <void> slash::setup(dpp::cluster& bot, const dpp::slashcommand_t&
                 co_await event.co_reply(dpp::message("Tried to create a join-to-create channel but failed. If this happens again, please report the incident by opening a ticket.").set_flags(dpp::m_ephemeral));
                 co_return;
             }
+            ++jtc_vc_amount[guild_id];
             dpp::channel newchannel;
             newchannel = std::get <dpp::channel>(callback.value);
             if (max == 0) {
@@ -292,12 +287,12 @@ dpp::coroutine <void> slash::setup(dpp::cluster& bot, const dpp::slashcommand_t&
             }
             jtc_vc vc = {newchannel.id, newchannel.guild_id};
             jtc_vcs[newchannel.id] = vc;
-            jtc_defaults defs = {newchannel.id, "VC_for_{username}", max, 96};
+            jtc_defaults defs = {newchannel.id, "VC_for_{username}", max, 64};
             jtc_default_values[newchannel.id] = defs;
-            const std::string vc_string = std::to_string(vc.channelid) + ' ' + std::to_string(vc.guildid);
-            const std::string defs_str = std::to_string(defs.channelid) + ' ' + defs.name + ' ' + std::to_string(defs.limit) + ' ' + std::to_string(defs.bitrate);
-            file::line_append(vc_string, file::jtc_vcs);
-            file::line_append(defs_str, file::jtc_default_values);
+            const std::string vc_string = std::to_string(vc.channel_id) + ' ' + std::to_string(vc.guild_id);
+            const std::string defs_str = std::to_string(defs.channel_id) + ' ' + defs.name + ' ' + std::to_string(defs.limit) + ' ' + std::to_string(defs.bitrate);
+            db::sql << "INSERT INTO jtc_vcs VALUES (?, ?);" << newchannel.id.str() << newchannel.guild_id.str();
+            db::sql << "INSERT INTO jtc_default_values VALUES (?, ?, ?, ?);" << newchannel.id.str() << "VC_for_{username}" << max << 64;
             co_await event.co_reply(dpp::message("Created a join-to-create channel.").set_flags(dpp::m_ephemeral));
             jtc_channels_map[newchannel.id] = newchannel;
         }
@@ -307,34 +302,39 @@ dpp::coroutine <void> slash::setup(dpp::cluster& bot, const dpp::slashcommand_t&
         dpp::channel channel;
         channel.set_type(guild.is_community() ? dpp::CHANNEL_ANNOUNCEMENT : dpp::CHANNEL_TEXT);
         if (!guild.is_community()) {
-            channel.set_permission_overwrite(guildid, dpp::ot_role, dpp::p_view_channel, dpp::p_send_messages);
+            channel.set_permission_overwrite(guild_id, dpp::ot_role, dpp::p_view_channel, dpp::p_send_messages);
         }
-        channel.set_guild_id(guildid);
+        channel.set_guild_id(guild_id);
         const bool is_jtc = cmd.options[0].options[0].name == "jtc";
         if (is_jtc) {
-            is_already_set = !ntif_chnls[guildid].empty();
+            is_already_set = !temp_vc_notifications[guild_id].empty();
             channel.set_name("temp-vc-notifications");
         }
         else {
-            is_already_set = !topgg_ntif_chnls[guildid].empty();
+            is_already_set = !topgg_notifications[guild_id].empty();
             channel.set_name("topgg-notifications");
         }
         if (!is_already_set) {
             const dpp::confirmation_callback_t& callback = co_await bot.co_channel_create(channel);
             const auto newchannel = callback.get <dpp::channel>();
             const std::string to_add = std::to_string(newchannel.id) + ' ' + std::to_string(newchannel.guild_id);
-            file::line_append(to_add, is_jtc ? file::temp_vc_notifications : file::topgg_notifications);
-            (is_jtc ? ntif_chnls : topgg_ntif_chnls)[newchannel.guild_id] = newchannel.id;
-            co_await event.co_reply(dpp::message("The channel was just set up!").set_flags(dpp::m_ephemeral));
+            try {
+                db::sql << "INSERT INTO " + (std::string)(is_jtc ? "temp_vc_notifications" : "topgg_notifications") + " VALUES (?, ?);" << newchannel.id.str() << newchannel.guild_id.str();
+            }
+            catch (sqlite::sqlite_exception& e) {
+                std::cout << e.what() << ' ' << e.get_code() << ' ' << e.get_sql() << '\n';
+            }
+            (is_jtc ? temp_vc_notifications : topgg_notifications)[newchannel.guild_id] = newchannel.id;
+            co_await event.co_reply(dpp::message("The channel has been set up!").set_flags(dpp::m_ephemeral));
         }
         else {
-            co_await event.co_reply(dpp::message("It's already set up. No more than one per guild!").set_flags(dpp::m_ephemeral));
+            co_await event.co_reply(dpp::message("It's already been set up. No more than one per guild!").set_flags(dpp::m_ephemeral));
         }
     }
 }
 
 void slash::blocklist::status(const dpp::slashcommand_t& event) {
-    const dpp::snowflake channel_id = temp_vcs[vc_statuses[event.command.usr.id]].channelid;
+    const dpp::snowflake channel_id = temp_vcs[vc_statuses[event.command.usr.id]].channel_id;
     if (channel_id.empty()) {
         event.reply(dpp::message("You're not in a temporary voice channel!").set_flags(dpp::m_ephemeral));
         return;
@@ -347,7 +347,7 @@ dpp::coroutine <void> slash::blocklist::add(const dpp::slashcommand_t& event) {
     const dpp::user& issuer = event.command.usr;
     dpp::cluster* bot = event.from()->creator;
     temp_vc issuer_vc = temp_vcs[vc_statuses[issuer.id]];
-    if (issuer_vc.creatorid != issuer.id) {
+    if (issuer_vc.creator_id != issuer.id) {
         event.reply(dpp::message("The channel you\'re in does not belong to you!").set_flags(dpp::m_ephemeral));
         co_return;
     }
@@ -357,13 +357,13 @@ dpp::coroutine <void> slash::blocklist::add(const dpp::slashcommand_t& event) {
         event.reply(dpp::message("Requested user not found.").set_flags(dpp::m_ephemeral));
         co_return;
     }
-    dpp::channel* channel = dpp::find_channel(issuer_vc.channelid);
+    dpp::channel* channel = dpp::find_channel(issuer_vc.channel_id);
     const dpp::permission requested_permission = channel->get_user_permissions(requested);
     if (requested_permission.has(dpp::p_administrator)) {
         event.reply(dpp::message("The user has administrator access to this channel!").set_flags(dpp::m_ephemeral));
         co_return;
     }
-    if (banned[issuer_vc.channelid].count(requested_id)) {
+    if (banned[issuer_vc.channel_id].count(requested_id)) {
         event.reply(dpp::message("The user is already in the blocklist!").set_flags(dpp::m_ephemeral));
     }
     else {
@@ -379,9 +379,9 @@ dpp::coroutine <void> slash::blocklist::add(const dpp::slashcommand_t& event) {
 			}
             co_return;
         }
-        banned[issuer_vc.channelid].insert(requested_id);
+        banned[issuer_vc.channel_id].insert(requested_id);
         if (vc_statuses[issuer.id] == vc_statuses[requested_id]) {
-            bot->guild_member_move(0, issuer_vc.guildid, requested_id);
+            bot->guild_member_move(0, issuer_vc.guild_id, requested_id);
         }
         event.reply(dpp::message("The user was added to the blocklist of the current channel.").set_flags(dpp::m_ephemeral));
     }
@@ -390,7 +390,7 @@ dpp::coroutine <void> slash::blocklist::add(const dpp::slashcommand_t& event) {
 dpp::coroutine <void> slash::blocklist::remove(const dpp::slashcommand_t& event) {
     dpp::cluster* bot = event.from()->creator;
     const dpp::user& issuer = event.command.usr;
-    if (temp_vcs[vc_statuses[issuer.id]].creatorid != issuer.id) {
+    if (temp_vcs[vc_statuses[issuer.id]].creator_id != issuer.id) {
         event.reply(dpp::message("The channel you\'re in does not belong to you!").set_flags(dpp::m_ephemeral));
         co_return;
     }
@@ -400,7 +400,7 @@ dpp::coroutine <void> slash::blocklist::remove(const dpp::slashcommand_t& event)
         event.reply(dpp::message("Requested user not found.").set_flags(dpp::m_ephemeral));
         co_return;
     }
-    if (!banned[temp_vcs[vc_statuses[issuer.id]].channelid].count(requested_id)) {
+    if (!banned[temp_vcs[vc_statuses[issuer.id]].channel_id].count(requested_id)) {
         event.reply(dpp::message("The user was not in the blocklist!").set_flags(dpp::m_ephemeral));
     }
     else {
@@ -417,7 +417,7 @@ dpp::coroutine <void> slash::blocklist::remove(const dpp::slashcommand_t& event)
 			}
             co_return;
         }
-        banned[temp_vcs[vc_statuses[issuer.id]].channelid].erase(requested_id);
+        banned[temp_vcs[vc_statuses[issuer.id]].channel_id].erase(requested_id);
         event.reply(dpp::message("The user was removed from the blocklist of the current channel.").set_flags(dpp::m_ephemeral));
     }
 }
@@ -455,8 +455,8 @@ void slash::topgg::guild_set(const dpp::slashcommand_t& event) {
     }
     else {
         ::topgg::guild_choices[event.command.usr.id] = event.command.guild_id;
-        file::delete_line_once(file::getline(event.command.usr.id.str(), file::topgg_guild_choices), file::topgg_guild_choices);
-        file::line_append(event.command.usr.id.str() + ' ' + event.command.guild_id.str(), file::topgg_guild_choices);
+        db::sql << "DELETE FROM topgg_guild_choices WHERE user_id=?;" << event.command.usr.id.str();
+        db::sql << "INSERT INTO topgg_guild_choices VALUES (?, ?);" << event.command.usr.id.str() << event.command.guild_id.str();
         dpp::embed embed = dpp::embed()
             .set_color(dpp::colors::sti_blue)
             .set_title("You're now voting in favour of this guild.")
@@ -473,7 +473,7 @@ void slash::topgg::guild_set(const dpp::slashcommand_t& event) {
 
 void slash::topgg::get_progress(const dpp::slashcommand_t& event) {
     const int8_t limit = ::topgg::jtc::count_jtcs(event.command.guild_id);
-	event.reply(dpp::message(event.command.channel_id, fmt::format("This guild's vote progress is: __{0}__/**{1}**. The maximum amount of JTCs allowed here is {2}.{3}", ::topgg::guild_list[event.command.guild_id], ::topgg::votes_leveling[limit], limit, limit < 10 ? " This is the absolute maximum." : "")).set_flags(dpp::m_ephemeral));
+	event.reply(dpp::message(event.command.channel_id, fmt::format("This guild's vote progress is: __{0}__/**{1}**. The maximum amount of JTCs allowed here is {2}.{3}", ::topgg::guild_votes_amount[event.command.guild_id], ::topgg::votes_leveling[limit], limit, limit < 10 ? " This is the absolute maximum." : "")).set_flags(dpp::m_ephemeral));
 }
 
 dpp::coroutine <void> slash::ticket::create(const dpp::slashcommand_t& event) {
@@ -491,7 +491,7 @@ dpp::coroutine <void> slash::ticket::create(const dpp::slashcommand_t& event) {
     co_await bot->co_message_create(dpp::message(channel.id, fmt::format("<@{}> is contacting you.", user_id)));
     tickets[user_id] = channel.id;
     ck_tickets[channel.id] = user_id;
-    file::line_append(fmt::format("{0} {1}", user_id, channel.id), file::tickets);
+    db::sql << "INSERT INTO tickets VALUES (?, ?);" << user_id.str() << channel.id.str();
     co_await event.co_reply(dpp::message("A ticket has been created.").set_flags(dpp::m_ephemeral));
 }
 
@@ -501,7 +501,7 @@ void slash::ticket::close(const dpp::slashcommand_t& event) {
         event.reply(dpp::message("You don't have a ticket, so no tickets were closed.").set_flags(dpp::m_ephemeral));
         return;
     }
-    file::delete_line_once(fmt::format("{0}, {1}", user_id, tickets[user_id]), file::tickets);
+    db::sql << "DELETE FROM tickets WHERE user_id=?;" << user_id.str();
     ck_tickets.erase(tickets[user_id]);
     tickets.erase(user_id);
     event.reply(dpp::message("Your ticket has been closed! You can create a new one at any point.").set_flags(dpp::m_ephemeral));

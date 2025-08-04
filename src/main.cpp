@@ -1,11 +1,11 @@
 #include "guidingLight/guiding_light.h"
 #include <random>
 #include <csignal>
-#include "file_namespace.h"
 #include "configuration.h"
 #include "ticket_handler.h"
 #include "temp_vc_handler.h"
 #include "logging.h"
+#include "database.h"
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCDFAInspection"
@@ -15,7 +15,7 @@ int main(int argc, char** argv) {
 	std::set <std::string> command_list =
 			{"./guidingLight", "--return", "--noreturn", "--dev"};
 	std::set <std::string> slashcommand_list =
-			{"--chelp", "--csetup", "--cset", "--cguild", "--cget", "--cvote", "--cblocklist", "--clogs", "--cticket", "--call"};
+			{"--chelp", "--csetup", "--cset", "--cguild", "--cget", "--cvote", "--cblocklist", "--clogs", "--cticket", "--cselect", "--call"};
 	command_list.insert(slashcommand_list.begin(), slashcommand_list.end());
 	std::vector <std::string> commands;
 
@@ -65,6 +65,7 @@ int main(int argc, char** argv) {
 			dpp::slashcommand logs("logs", "Drop the logs of choice.", bot.me.id);
 			dpp::slashcommand blocklist("blocklist", "Add/Remove a user from your channel's blocklist", bot.me.id);
 			dpp::slashcommand ticket("ticket", "Create/Delete a ticket.", bot.me.id);
+			dpp::slashcommand select("select", "SELECT everything from one of the tables in the database.", bot.me.id);
 
 			std::vector <dpp::slashcommand> slashcommands_to_create;
 
@@ -138,6 +139,18 @@ int main(int argc, char** argv) {
 			logs.add_option(dpp::command_option(dpp::co_sub_command, "guild", "Guild logs."));
 			logs.set_default_permissions(dpp::permissions::p_administrator);
 
+			select.add_option(dpp::command_option(dpp::co_sub_command, "jtc-vcs", "The table containing JTC VCs."));
+			select.add_option(dpp::command_option(dpp::co_sub_command, "temp_vc_notifications", "The table containing temporary VC notification channels."));
+			select.add_option(dpp::command_option(dpp::co_sub_command, "jtc-default-values", "The table containing the default values of the JTCs."));
+			select.add_option(dpp::command_option(dpp::co_sub_command, "no-temp-ping", "The table containing the IDs of the users who don't want to be auto-pinged in temporary VCs."));
+			select.add_option(dpp::command_option(dpp::co_sub_command, "topgg-guild-choices", "The table containing the IDs of the guilds that the users have chosen for topgg."));
+			select.add_option(dpp::command_option(dpp::co_sub_command, "topgg-guild-votes-amount", "The table containing the amount of votes in favour of the guilds."));
+			select.add_option(dpp::command_option(dpp::co_sub_command, "no-noguild-reminder", "The table containing the user IDs who have been notified that they're not voting for any guilds."));
+			select.add_option(dpp::command_option(dpp::co_sub_command, "topgg-notifications", "The table containing the channels IDs of where it's notified when a user votes for that guild."));
+			select.add_option(dpp::command_option(dpp::co_sub_command, "tickets", "The table containing the IDs of tickets."));
+			select.add_option(dpp::command_option(dpp::co_sub_command, "temp-vcs", "The table containing the IDs of temporary VCs."));
+			logs.set_default_permissions(dpp::permissions::p_administrator);
+
 			ticket.add_option(dpp::command_option(dpp::co_sub_command, "create", "Create a support ticket."));
 			ticket.add_option(dpp::command_option(dpp::co_sub_command, "close", "Delete a support ticket."));
 			ticket.set_dm_permission(true);
@@ -176,7 +189,10 @@ int main(int argc, char** argv) {
 					slashcommands_to_create.push_back(blocklist);
 				}
 				if (s == "--clogs" || s == "--call") {
-					bot.guild_command_create(logs, MY_GUILD_ID, error_callback);
+					bot.guild_command_create(logs, MY_PRIVATE_GUILD_ID, error_callback);
+				}
+				if (s == "--cselect" || s == "--call") {
+					bot.guild_command_create(select, MY_PRIVATE_GUILD_ID, error_callback);
 				}
 				if (s == "--cticket") {
 					slashcommands_to_create.push_back(ticket);
@@ -193,28 +209,28 @@ int main(int argc, char** argv) {
 
 	bot.on_button_click([&bot](const dpp::button_click_t& event) -> void {
 		if (event.custom_id == "temp_ping_toggle") {
-			const dpp::snowflake& userid = event.command.usr.id;
-			if (no_temp_ping[userid]) {
-				file::delete_line_once(userid.str(), file::no_temp_ping);
+			const dpp::snowflake& user_id = event.command.usr.id;
+			if (no_temp_ping[user_id]) {
+				db::sql << "DELETE FROM no_temp_ping WHERE user_id=?;" << user_id.str();
 			}
 			else {
-				file::line_append(userid.str(), file::no_temp_ping);
+				db::sql << "INSERT INTO no_temp_ping VALUES (?);" << user_id.str();
 			}
-			no_temp_ping[userid] = !no_temp_ping[userid];
-			event.reply(dpp::message(event.command.channel_id, (fmt::format("Next time the ping will be: **{}**.", no_temp_ping[userid] == true ? "off" : "on"))).set_flags(dpp::m_ephemeral));
+			no_temp_ping[user_id] = !no_temp_ping[user_id];
+			event.reply(dpp::message(event.command.channel_id, (fmt::format("Next time the ping will be: **{}**.", no_temp_ping[user_id] == true ? "off" : "on"))).set_flags(dpp::m_ephemeral));
 		}
 	});
 
 	bot.on_message_create([&bot](const dpp::message_create_t& event) -> void {
-		const dpp::snowflake& userid = event.msg.author.id;
-		if (userid == bot.me.id) {
+		const dpp::snowflake& user_id = event.msg.author.id;
+		if (user_id == bot.me.id) {
 			return;
 		}
 		const dpp::snowflake& channel_id = event.msg.channel_id;
 		const std::string& msg = event.msg.content;
 		const dpp::snowflake& guild_id = event.msg.guild_id;
 		if (event.msg.is_dm()) {
-			handle_dm_in(userid, event);
+			handle_dm_in(user_id, event);
 		}
 		if (guild_id == TICKETS_GUILD_ID) {
 			handle_dm_out(event);
@@ -223,19 +239,19 @@ int main(int argc, char** argv) {
 			const dpp::snowflake user_id = msg.substr(2, msg.size() - bot.me.id.str().size() - 10);
 			bool weekend = msg[2 + user_id.str().size() + 2] == 't';
 			bool failure = topgg::vote(user_id, weekend, bot);
-			if (failure && !topgg::noguild_reminders[user_id]) {
+			if (failure && !topgg::no_noguild_reminder[user_id]) {
 				bot.direct_message_create(user_id, dpp::message("You have just voted and missed out on the chance to vote in favor of a guild! Choosing a guild with `/guild set` and voting for me on top.gg grants it guild points which can then be turned into JTC VCs!"));
-				topgg::noguild_reminders[user_id] = true;
-				file::line_append(user_id.str(), file::no_noguild_reminder);
+				topgg::no_noguild_reminder[user_id] = true;
+				db::sql << "INSERT INTO no_noguild_reminder VALUES (?);" << user_id.str();
 			}
 		}
 	});
 
 	bot.on_channel_update([&bot](const dpp::channel_update_t& event) -> void {
-		if (!jtc_vcs[event.updated.id].channelid.empty()) {
+		if (!jtc_vcs[event.updated.id].channel_id.empty()) {
 			jtc_channels_map[event.updated.id] = event.updated;
 		}
-		if (!temp_vcs[event.updated.id].channelid.empty()) {
+		if (!temp_vcs[event.updated.id].channel_id.empty()) {
 			auto unbanned = banned[event.updated.id];
 			bool flag{};
 			for (const auto& x : event.updated.permission_overwrites) {
@@ -264,53 +280,48 @@ int main(int argc, char** argv) {
 	});
 
 	bot.on_channel_delete([](const dpp::channel_delete_t& event) -> void {
-		dpp::channel_type type = event.deleted.get_type();
-		dpp::snowflake channelid = event.deleted.id;
-		dpp::snowflake guildid = event.deleted.guild_id;
+		const dpp::channel_type type = event.deleted.get_type();
+		const dpp::snowflake& channel_id = event.deleted.id;
+		const dpp::snowflake& guild_id = event.deleted.guild_id;
 		if (type == dpp::channel_type::CHANNEL_VOICE) {
 			jtc_vc to_erase_jtc;
-			to_erase_jtc.channelid = 0;
+			to_erase_jtc.channel_id = 0;
 			temp_vc to_erase_temp;
-			to_erase_temp.channelid = 0;
-			to_erase_jtc = jtc_vcs[channelid];
-			to_erase_temp = temp_vcs[channelid];
-			if (!to_erase_jtc.channelid.empty()) {
+			to_erase_temp.channel_id = 0;
+			to_erase_jtc = jtc_vcs[channel_id];
+			to_erase_temp = temp_vcs[channel_id];
+			if (!to_erase_jtc.channel_id.empty()) {
 				jtc_defaults jtc_defs_to_erase;
-				jtc_defs_to_erase = jtc_default_values[channelid];
-				jtc_default_values.erase(channelid);
-				jtc_channels_map.erase(channelid);
-				jtc_vcs.erase(channelid);
-				const std::string jtc_line = file::getline(std::to_string(channelid), file::jtc_vcs, -1);
-				file::delete_line_once(jtc_line, file::jtc_vcs);
-				const std::string jtc_defs_line = file::getline(std::to_string(jtc_defs_to_erase.channelid), file::jtc_default_values, -1);
-				file::delete_line_once(jtc_defs_line, file::jtc_default_values);
+				jtc_defs_to_erase = jtc_default_values[channel_id];
+				jtc_default_values.erase(channel_id);
+				jtc_channels_map.erase(channel_id);
+				jtc_vcs.erase(channel_id);
+				--jtc_vc_amount[guild_id];
+				db::sql << "DELETE FROM jtc_vcs WHERE channel_id=?;" << channel_id.str();
+				db::sql << "DELETE FROM jtc_default_values WHERE channel_id=?;" << channel_id.str();
 			}
-			if (!to_erase_temp.channelid.empty()) {
-				--temp_vc_amount[guildid];
-				temp_vcs.erase(channelid);
-				const std::string temp_line = file::getline(std::to_string(channelid), file::temp_vcs, -1);
-				file::delete_line_once(temp_line, file::temp_vcs);
+			if (!to_erase_temp.channel_id.empty()) {
+				--temp_vc_amount[guild_id];
+				temp_vcs.erase(channel_id);
+				db::sql << "DELETE FROM temp_vcs WHERE channel_id=?;" << channel_id.str();
 			}
 		}
 		else {
-			const bool is_ntf = !ntif_chnls[guildid].empty();
+			const bool is_ntf = !temp_vc_notifications[guild_id].empty();
 			if (is_ntf) {
-				const std::string to_remove = channelid.str() + ' ' + guildid.str();
-				file::delete_line_once(to_remove, file::temp_vc_notifications);
-				ntif_chnls.erase(event.deleted.guild_id);
+				db::sql << "DELETE FROM temp_vc_notifications WHERE guild_id=?;" << guild_id.str();
+				temp_vc_notifications.erase(event.deleted.guild_id);
 			}
-			const bool is_topgg_ntf = !topgg_ntif_chnls[guildid].empty();
+			const bool is_topgg_ntf = !topgg_notifications[guild_id].empty();
 			if (is_topgg_ntf) {
-				const std::string to_remove = channelid.str() + ' ' + guildid.str();
-				file::delete_line_once(to_remove, file::topgg_notifications);
-				topgg_ntif_chnls.erase(event.deleted.guild_id);
+				db::sql << "DELETE FROM topgg_notifications WHERE guild_id=?;" << guild_id.str();
+				topgg_notifications.erase(event.deleted.guild_id);
 			}
-			const bool is_ticket = !ck_tickets[channelid].empty();
+			const bool is_ticket = !ck_tickets[channel_id].empty();
 			if (is_ticket) {
-				const std::string to_remove = channelid.str() + ' ' + guildid.str();
-				file::delete_line_once(to_remove, file::tickets);
-				tickets.erase(ck_tickets[channelid]);
-				ck_tickets.erase(channelid);
+				db::sql << "DELETE FROM tickets WHERE user_id=?;" << ck_tickets[channel_id].str();
+				tickets.erase(ck_tickets[channel_id]);
+				ck_tickets.erase(channel_id);
 			}
 		}
 	});
@@ -331,7 +342,7 @@ int main(int argc, char** argv) {
 		dpp::user user = *ptr;
 		dpp::snowflake guild_id = event.state.guild_id;
 		if (!channel_id.empty()) {
-			const bool is_jtc = !jtc_vcs[channel_id].channelid.empty();
+			const bool is_jtc = !jtc_vcs[channel_id].channel_id.empty();
 			if (is_jtc) {
 				const temp_vc_query q = {ptr, channel_id, guild_id};
 				temp_vcs_queue.push(q);
@@ -339,7 +350,7 @@ int main(int argc, char** argv) {
 			}
 		}
 		channel_id = vc_statuses[user_id];
-		const bool is_temp = !temp_vcs[channel_id].channelid.empty();
+		const bool is_temp = !temp_vcs[channel_id].channel_id.empty();
 		if (is_temp && dpp::find_channel(channel_id)->get_voice_members().empty()) {
 			dpp::channel* channel = dpp::find_channel(channel_id);
 			temp_vc_delete_msg(&bot, user, channel);
@@ -365,7 +376,21 @@ int main(int argc, char** argv) {
 				bot.direct_message_create(my_id, dpp::message(fmt::format("Ayo {} checking logs wht", event.command.usr.id)));
 			}
 			std::string_view file_name = (cmd.options[0].name == "dpp" ? "other_logs.log" : (cmd.options[0].name == "mine" ? "my_logs.log" : "guild_logs.log"));
-			dpp::message message = dpp::message().add_file(file_name, dpp::utility::read_file(fmt::format("{0}{1}/{2}", logs_directory, logs_suffix, file_name))).set_flags(dpp::m_ephemeral);
+			const dpp::message message = dpp::message().add_file(file_name, dpp::utility::read_file(fmt::format("{0}{1}/{2}", logs_directory, logs_suffix, file_name))).set_flags(dpp::m_ephemeral);
+			event.reply(message);
+		}
+		if (cmd_name == "select") {
+			if (event.command.usr.id != my_id) {
+				bot.direct_message_create(my_id, dpp::message(fmt::format("Ayo {} selecting wht", event.command.usr.id)));
+			}
+			std::string table_name = cmd.options[0].name;
+			for (char& x : table_name) {
+				if (x == '-') {
+					x = '_';
+				}
+			}
+			system(fmt::format("cd ..; ./select.sh {0} {1}", logs_suffix, table_name).c_str());
+			const dpp::message message = dpp::message().add_file("db.md", dpp::utility::read_file(fmt::format("../database/select/{0}/{1}.md", logs_suffix, table_name))).set_flags(dpp::m_ephemeral);
 			event.reply(message);
 		}
 		if (cmd_name == "vote") {
@@ -392,7 +417,7 @@ int main(int argc, char** argv) {
 			}
 		}
 		if (cmd_name == "setup") {
-			auto& status = slash::in_progress[cmd_name][guild_id];
+			bool& status = slash::in_progress[cmd_name][guild_id];
 			if (status) {
 				event.reply(dpp::message("A channel is already being set up! Try again when it's done.").set_flags(dpp::m_ephemeral));
 				co_return;

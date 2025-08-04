@@ -1,6 +1,10 @@
 # D++ CMake bot, Guiding Light
 
-This is a Discord bot written in C++ using the [D++](https://dpp.dev) library. It's a JTC voice channels manager. It assumes that fmtlib and D++ are already installed.
+This is a Discord bot written in C++ using the [D++](https://dpp.dev) library. It's a JTC voice channels manager. It assumes that D++, along with [fmtlib](https://fmt.dev) are already installed.
+
+## Dependencies
+* D++ 10.1.0+
+* fmtlib (tested on 9.1.0)
 
 ## Compilation
 
@@ -13,27 +17,41 @@ If DPP is installed in a different location you can specify the root directory t
 
     cmake .. -DDPP_ROOT_DIR=<your-path>
 
-## Running the template bot
+If you have the same situation with fmtlib then good luck cuz I'm not a cmake genius
 
-Create a config.json in `Guiding_Light_Config`, located above the `build` directory (I have a private GitHub repository containing only the config file called `Guiding_Light_Config`):
+## Running the bot
+
+Create a config.json in `Guiding_Light_Config`, located above the `build` directory (I have a private GitHub repository containing only the config file called `Guiding_Light_Config`, probably not the best way to do this but that's irrelevant):
 
 ```json
 {
     "BOT_TOKEN": "Bot token here",
     "BOT_TOKEN_DEV" : "Test bot token here (use --dev when starting to test new changes without affecting anything used in production)",
-    "BOT_DM_LOGS_ID" : "ID of the channel for DM logs",
-    "MY_ID" : "Your account's ID",
-    "TOPGG_WEBHOOK_CHANNEL_ID" : "ID of the channel for top.gg vote webhook messages",
-    "MY_GUILD_ID" : "ID of your guild. Used to create a command only administrators (which I know can only be me) can use"
+    "BOT_DM_LOGS_ID" : The ID of the channel for DM logs,
+    "MY_ID" : Your account's ID,
+    "TOPGG_WEBHOOK_CHANNEL_ID" : The ID of the channel for top.gg vote webhook messages,
+    "MY_GUILD_ID" : The ID of your guild. Not used anymore,
+    "MY_PRIVATE_GUILD_ID" : The ID of your guild. Used to create commands only administrators (which I know can only be me) can use
+    "TICKETS_GUILD_ID" : The ID of your guild which contains tickets. Can be the same as MY_PRIVATE_GUILD_ID if you like
 }
 ```
 
-Run the `create_files.sh` script. It'll create all the files for logging and listing the channels, users and servers.
+## Setup
+
+If you don't have the log files already, run the `create_files.sh` script. It'll create all the log files. If you don't have the database files already, run `init_db.sh`. If you've used the version of this bot which used text files as a database, run `conv_db.sh`.
 
 Start the bot:
 
     cd build
     ./guidingLight
+
+## Monitoring
+
+If you want to see what's going on with the bot, you can peek at the logs in `logging/<mode>/<logs type>_logs.log`. You can also use the `select.sh` script which `SELECT`s everything from a table. It takes two parameters: bot running mode (`dev` or `release`) and the table name. For example, you can do:
+
+    ./select.sh dev jtc_vcs
+
+This will create a file in `database/select/dev`, called `jtc_vcs.md`. This is what is run to generate a file when an administrator runs `/select` (that is a guild command, so only one guild gets it, you don't have to worry about that).
 
 ## Extending the bot
 
@@ -41,5 +59,4 @@ You can add as many header files and .cpp files into the src and include folders
 
 ## Renaming the bot
 
-To rename the bot, search and replace "guidingLight" in the `CMakeLists.txt` with your new bots name and then rename the guidingLight folder in include. Rerun `cmake ..` from the `build` directory and rebuild. You might need to re-create the build directory.
-
+To rename the bot, search and replace "guidingLight" in the `CMakeLists.txt` with your new bot's name and then rename the guidingLight folder in include. Rerun `cmake ..` from the `build` directory and rebuild. You might need to re-create the build directory.

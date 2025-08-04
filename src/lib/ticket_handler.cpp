@@ -35,7 +35,7 @@ void handle_dm_out(const dpp::message_create_t& event) {
         return;
     }
     if (ck_tickets[channel_id].empty()) {
-        event.reply("no");
+        bot->message_add_reaction(event.msg, dpp::unicode_emoji::x);
         return;
     }
     msg.content = "From henonicks: " + msg.content;

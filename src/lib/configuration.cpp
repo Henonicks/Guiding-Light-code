@@ -4,8 +4,8 @@ using json = nlohmann::json;
 
 std::string_view logs_directory = "../logging/";
 std::string BOT_TOKEN, logs_suffix;
-dpp::snowflake bot_dm_logs, my_id, TOPGG_WEBHOOK_CHANNEL_ID, MY_GUILD_ID, TICKETS_GUILD_ID;
-std::ofstream my_logs, guild_logs, other_logs;
+dpp::snowflake bot_dm_logs, my_id, TOPGG_WEBHOOK_CHANNEL_ID, MY_GUILD_ID, MY_PRIVATE_GUILD_ID, TICKETS_GUILD_ID;
+std::ofstream my_logs, guild_logs, other_logs, sql_logs;
 dpp::start_type bot_return = dpp::st_wait;
 bool is_dev = false;
 int delay = 5;
@@ -19,6 +19,7 @@ void configuration::configure_bot(const bool& is_dev) {
     bot_dm_logs = config["BOT_DM_LOGS_ID"];
     my_id = config["MY_ID"];
 	MY_GUILD_ID = config["MY_GUILD_ID"];
+	MY_PRIVATE_GUILD_ID = config["MY_PRIVATE_GUILD_ID"];
 	TOPGG_WEBHOOK_CHANNEL_ID = config["TOPGG_WEBHOOK_CHANNEL_ID"];
 	TICKETS_GUILD_ID = config["TICKETS_GUILD_ID"];
 
@@ -29,183 +30,113 @@ void configuration::configure_bot(const bool& is_dev) {
     my_logs.open(fmt::format("{0}{1}/my_logs.log", logs_directory, logs_suffix));
     guild_logs.open(fmt::format("{0}{1}/guild_logs.log", logs_directory, logs_suffix));
     other_logs.open(fmt::format("{0}{1}/other_logs.log", logs_directory, logs_suffix));
-
-	file::temp_vc_notifications = fmt::format("../src/{}/temp_vc_notifications.txt", logs_suffix);
-	file::jtc_vcs = fmt::format("../src/{}/jtc_vcs.txt", logs_suffix);
-	file::temp = fmt::format("../src/{}/temp.txt", logs_suffix);
-	file::jtc_default_values = fmt::format("../src/{}/jtc_default_values.txt", logs_suffix);
-	file::no_temp_ping = fmt::format("../src/{}/no_temp_ping.txt", logs_suffix);
-	file::topgg_guild_votes_amount = fmt::format("../src/{}/topgg_guild_votes_amount.txt", logs_suffix);
-	file::topgg_guild_choices = fmt::format("../src/{}/topgg_guild_choices.txt", logs_suffix);
-	file::no_noguild_reminder = fmt::format("../src/{}/no_noguild_reminder.txt", logs_suffix);
-	file::topgg_notifications = fmt::format("../src/{}/topgg_notifications.txt", logs_suffix);
-	file::tickets = fmt::format("../src/{}/tickets.txt", logs_suffix);
-	file::temp_vcs = fmt::format("../src/{}/temp_vcs.txt", logs_suffix);
 }
 
 void configuration::pray() { // I'll pray that when this function starts executing we have all the cache because Discord doesn't let me know whether all the cache I've received at a certain point is everything or there's more and there's no better way to do this I promise
-	std::string line;
-
-	std::ifstream last_jtc_vcs;
-	last_jtc_vcs.open(file::jtc_vcs);
-	while (std::getline(last_jtc_vcs, line)) {
-		dpp::channel* channel = dpp::find_channel(get_jtc_vc(line).channelid);
+	db::sql << "SELECT * FROM jtc_vcs;" >> [](const db::BIGINT& channel_id, const db::BIGINT& guild_id) {
+		const dpp::channel* channel = dpp::find_channel(channel_id);
 		if (channel != nullptr) {
-			jtc_vc current = get_jtc_vc(line);
-			jtc_vcs[current.channelid] = current;
-			jtc_channels_map[current.channelid] = *channel;
+			jtc_vcs[channel_id] = {channel_id, guild_id};
+			++jtc_vc_amount[guild_id];
+			jtc_channels_map[channel_id] = *channel;
 		}
 		else {
-			file::delete_line_once(line, file::jtc_vcs);
+			db::sql << "DELETE FROM jtc_vcs WHERE channel_id=?;" << channel_id;
 		}
-	}
-
-	last_jtc_vcs.close();
-
-	std::ifstream last_temp_vc_notifications;
-	last_temp_vc_notifications.open(file::temp_vc_notifications);
-
-	while (std::getline(last_temp_vc_notifications, line)) {
-		dpp::channel* channel = dpp::find_channel(get_ntf_chnl(line).channelid);
+	};
+	db::sql << "SELECT * FROM temp_vc_notifications;" >> [](const db::BIGINT& channel_id, const db::BIGINT& guild_id) {
+		const dpp::channel* channel = dpp::find_channel(channel_id);
 		if (channel != nullptr) {
-			notification_chnl current = get_ntf_chnl(line);
-			ntif_chnls[current.guildid] = channel->id;
+			temp_vc_notifications[guild_id] = channel_id;
 		}
 		else {
-			file::delete_line_once(line, file::temp_vc_notifications);
+			db::sql << "DELETE FROM temp_vc_notifications WHERE guild_id=?;" << guild_id;
 		}
-	}
+	};
 
-	last_temp_vc_notifications.close();
-
-	std::ifstream jtc_default_values_file;
-	jtc_default_values_file.open(file::jtc_default_values);
-
-	while (std::getline(jtc_default_values_file, line)) {
-		dpp::channel* channel = dpp::find_channel(get_jtc_defs(line).channelid);
+	db::sql << "SELECT * FROM jtc_default_values;" >> [](const db::BIGINT& channel_id, const std::string& name, const db::TINYINT& limit, const db::MEDIUMINT& bitrate) {
+		const dpp::channel* channel = dpp::find_channel(channel_id);
 		if (channel != nullptr) {
-			jtc_defaults current = get_jtc_defs(line);
-			jtc_default_values[current.channelid] = current;
+			jtc_default_values[channel_id] = {channel_id, name, (int8_t)limit, (int16_t)bitrate};
 		}
 		else {
-			file::delete_line_once(line, file::jtc_default_values);
+			db::sql << "DELETE FROM jtc_default_values WHERE channel_id=?;" << channel_id;
 		}
-	}
+	};
 
-	jtc_default_values_file.close();
-
-	std::ifstream no_temp_ping_file;
-	no_temp_ping_file.open(file::no_temp_ping);
-
-	while (std::getline(no_temp_ping_file, line)) {
-		dpp::user* user = dpp::find_user((dpp::snowflake)line);
+	db::sql << "SELECT * FROM no_temp_ping;" >> [](const db::BIGINT& user_id) {
+		const dpp::user* user = dpp::find_user(user_id);
 		if (user != nullptr) {
-			no_temp_ping[user->id] = true;
+			no_temp_ping[user_id] = true;
 		}
 		else {
-			file::delete_line_once(line, file::no_temp_ping);
+			db::sql << "DELETE FROM no_temp_ping WHERE user_id=?;" << user_id;
 		}
-	}
-
-	no_temp_ping_file.close();
-
-	std::ifstream topgg_guild_choices_file;
-	topgg_guild_choices_file.open(file::topgg_guild_choices);
-
-	while (std::getline(topgg_guild_choices_file, line)) {
-		topgg::guild_choice gc = topgg::get_guild_choice(line);
-		dpp::user* user = dpp::find_user(gc.user_id);
+	};
+	
+	db::sql << "SELECT * FROM topgg_guild_choices;" >> [](const db::BIGINT& user_id, const db::BIGINT& guild_id) {
+		const dpp::user* user = dpp::find_user(user_id);
 		if (user != nullptr) {
-			topgg::guild_choices[user->id] = gc.guild_id;
+			topgg::guild_choices[user_id] = guild_id;
 		}
 		else {
-			file::delete_line_once(line, file::topgg_guild_choices);
+			db::sql << "DELETE FROM topgg_guild_choices WHERE user_id=?;" << user_id;
 		}
-	}
-
-	topgg_guild_choices_file.close();
-
-	std::ifstream topgg_guild_votes_amount_file;
-	topgg_guild_votes_amount_file.open(file::topgg_guild_votes_amount);
-
-	while (std::getline(topgg_guild_votes_amount_file, line)) {
-		topgg::guild_votes_amount gva = topgg::get_guild_votes_amount(line);
-		dpp::guild* guild = dpp::find_guild(gva.guild_id);
+	};
+	
+	db::sql << "SELECT * FROM topgg_guild_votes_amount;" >> [](const db::BIGINT& guild_id, const int& votes) {
+		const dpp::guild* guild = dpp::find_guild(guild_id);
 		if (guild != nullptr) {
-			topgg::guild_list[guild->id] = gva.votes;
+			topgg::guild_votes_amount[guild_id] = votes;
 		}
 		else {
-			file::delete_line_once(line, file::topgg_guild_votes_amount);
+			db::sql << "DELETE FROM topgg_guild_votes_amount WHERE guild_id=?;" << guild_id;
 		}
-	}
-
-	topgg_guild_choices_file.close();
-
-	std::ifstream no_noguild_reminder_file;
-	no_noguild_reminder_file.open(file::no_noguild_reminder);
-
-	while (std::getline(no_noguild_reminder_file, line)) {
-		dpp::user* user = dpp::find_user(line);
+	};
+	
+	db::sql << "SELECT * FROM no_noguild_reminder;" >> [](const db::BIGINT& user_id) {
+		const dpp::user* user = dpp::find_user(user_id);
 		if (user != nullptr) {
-			topgg::noguild_reminders[user->id] = true;
+			topgg::no_noguild_reminder[user_id] = true;
 		}
 		else {
-			file::delete_line_once(line, file::no_noguild_reminder);
+			db::sql << "DELETE FROM no_noguild_reminder WHERE user_id=?;" << user_id;
 		}
-	}
-
-	no_noguild_reminder_file.close();
-
-	std::ifstream topgg_notifications_file;
-	topgg_notifications_file.open(file::topgg_notifications);
-
-	while (std::getline(topgg_notifications_file, line)) {
-		notification_chnl ntif_chnl = get_ntf_chnl(line);
-		dpp::channel* channel = dpp::find_channel(ntif_chnl.channelid);
+	};
+	
+	db::sql << "SELECT * FROM topgg_notifications;" >> [](const db::BIGINT& channel_id, const db::BIGINT& guild_id) {
+		const dpp::channel* channel = dpp::find_channel(channel_id);
 		if (channel != nullptr) {
-			topgg_ntif_chnls[channel->guild_id] = channel->id;
+			topgg_notifications[guild_id] = channel_id;
 		}
 		else {
-			file::delete_line_once(line, file::topgg_notifications);
+			db::sql << "DELETE FROM topgg_notifications WHERE guild_id=?;" << guild_id;
 		}
-	}
-
-	topgg_notifications_file.close();
-
-	std::ifstream tickets_file;
-	tickets_file.open(file::tickets);
-
-	while (std::getline(tickets_file, line)) {
-		ticket tckt = get_ticket(line);
-		dpp::user* user = dpp::find_user(tckt.user_id);
-		dpp::channel* channel = dpp::find_channel(tckt.channel_id);
+	};
+	
+	db::sql << "SELECT * FROM tickets;" >> [](const db::BIGINT user_id, const db::BIGINT channel_id) {
+		const dpp::user* user = dpp::find_user(user_id);
+		const dpp::channel* channel = dpp::find_channel(channel_id);
 		if (user != nullptr && channel != nullptr) {
-			tickets[user->id] = channel->id;
-			ck_tickets[channel->id] = user->id;
+			tickets[user_id] = channel_id;
+			ck_tickets[channel_id] = user_id;
 		}
 		else {
-			file::delete_line_once(line, file::tickets);
+			db::sql << "DELETE FROM tickets WHERE user_id=?;" << user_id;
 		}
-	}
-
-	tickets_file.close();
-
-	std::ifstream last_temp_vcs;
-	last_temp_vcs.open(file::temp_vcs);
-	while (std::getline(last_temp_vcs, line)) {
-		dpp::channel* channel = dpp::find_channel(get_temp_vc(line).channelid);
+	};
+	
+	db::sql << "SELECT * FROM temp_vcs;" >> [](const db::BIGINT& channel_id, const db::BIGINT& guild_id, const db::BIGINT& creator_id, const db::BIGINT& parent_id) {
+		const dpp::channel* channel = dpp::find_channel(channel_id);
 		if (channel != nullptr) {
-			temp_vc current = get_temp_vc(line);
-			++temp_vc_amount[current.guildid];
-			temp_vcs[current.channelid] = current;
+			++temp_vc_amount[guild_id];
+			temp_vcs[channel_id] = {channel_id, guild_id, creator_id, parent_id};
 		}
 		else {
-			file::delete_line_once(line, file::temp_vcs);
+			db::sql << "DELETE FROM temp_vcs WHERE channel_id=?;" << channel_id;
 		}
-	}
-
-	last_temp_vcs.close();
-
+	};
+	
 	slash::enabled = true;
 }
 

@@ -6,7 +6,7 @@
 #include "jtc_defaults.h"
 
 struct temp_vc {
-    dpp::snowflake channelid, guildid, creatorid, parentid;
+    dpp::snowflake channel_id, guild_id, creator_id, parent_id;
 };
 
 bool operator <(temp_vc vc1, temp_vc vc2);

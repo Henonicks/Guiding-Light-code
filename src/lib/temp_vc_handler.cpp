@@ -13,7 +13,7 @@ void temp_vc_create_msg(dpp::cluster* bot, const temp_vc_query& q, const dpp::ch
             dpp::embed temp_vc_create_embed = dpp::embed().
             set_color(dpp::colors::greenish_blue).
             set_description(description);
-    bot->message_create(dpp::message(ntif_chnls[q.guild_id], temp_vc_create_embed), error_callback);
+    bot->message_create(dpp::message(temp_vc_notifications[q.guild_id], temp_vc_create_embed), error_callback);
 }
 
  void temp_vc_create_owner_msg(dpp::cluster* bot, const temp_vc_query& q, const dpp::snowflake& channel_id) {
@@ -42,11 +42,11 @@ void temp_vc_create_msg(dpp::cluster* bot, const temp_vc_query& q, const dpp::ch
 }
 
 void temp_vc_delete_msg(dpp::cluster* bot, const dpp::user& user, const dpp::channel* channel) {
-    log(fmt::format("{0} left a JTC. Guild ID: {1}, channel ID: {2}, channel name: `{3}`, notification channel ID: {4}",
+    log(fmt::format("{0} left a temp VC. Guild ID: {1}, channel ID: {2}, channel name: `{3}`, notification channel ID: {4}",
         user.format_username(), channel->guild_id, channel->id,
-        channel->name, ntif_chnls[channel->guild_id]));
-    const dpp::snowflake ntif_channelid = ntif_chnls[channel->guild_id];
-    if (!ntif_channelid.empty()) {
+        channel->name, temp_vc_notifications[channel->guild_id]));
+    const dpp::snowflake& channel_id = temp_vc_notifications[channel->guild_id];
+    if (!channel_id.empty()) {
         std::string description = "A temporary channel **" + channel->name + "**";
         const dpp::channel* category = dpp::find_channel(channel->parent_id);
         if (category != nullptr) {
@@ -56,7 +56,7 @@ void temp_vc_delete_msg(dpp::cluster* bot, const dpp::user& user, const dpp::cha
         const dpp::embed temp_vc_delete_message = dpp::embed().
         set_color(dpp::colors::blood_night).
         set_description(description);
-        bot->message_create(dpp::message(ntif_channelid, temp_vc_delete_message), error_callback);
+        bot->message_create(dpp::message(channel_id, temp_vc_delete_message), error_callback);
     }
     bot->channel_delete(channel->id, error_callback);
 }
@@ -149,8 +149,8 @@ void temp_vc_create(dpp::cluster* bot, const temp_vc_query& q) {
                     bot->channel_delete(channel.id, error_callback);
                     return;
                 }
-                file::line_append(fmt::format("{0} {1} {2} {3}", channel.id, channel.guild_id, q.usr->id, q.channel_id), file::temp_vcs);
-                if (!ntif_chnls[q.guild_id].empty()) {
+                db::sql << "INSERT INTO temp_vcs VALUES (?, ?, ?, ?);" << channel.id.str() << channel.guild_id.str() << q.usr->id.str() << q.channel_id.str();
+                if (!temp_vc_notifications[q.guild_id].empty()) {
                     temp_vc_create_msg(bot, q, channel);
                 }
             });

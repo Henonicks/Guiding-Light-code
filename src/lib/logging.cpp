@@ -3,6 +3,11 @@
 void bot_log(const dpp::log_t& _log, dpp::cluster& bot) {
 	other_logs << fmt::format("[{0}]: {1}", dpp::utility::current_date_time(), _log.message) << std::endl;
 	if (_log.message == "Shards started.") {
+		if (!db::connection_successful()) {
+			std::cerr << fmt::format("ERROR: connection to DB failed! imma js crash ts g 💔🥀\nHINT: have you imported your database as database/{}.db or initialised the database with init_db.sh?", logs_suffix) << std::endl;
+			bot.shutdown();
+			return;
+		}
 		log("Waiting till we receive all the cache...");
 		bot.start_timer([&bot](dpp::timer h) -> void {
 			const uint64_t new_guild_amount = dpp::get_guild_count();
@@ -33,6 +38,11 @@ void log(std::string_view message) {
 void guild_log(std::string_view message) {
 	guild_logs << fmt::format("[{0}]: {1}", dpp::utility::current_date_time(), message) << std::endl;
 	// no seriously dude don't replace that fr bro no cap youll regret this on god
+}
+
+void sql_log(std::string_view message) {
+	sql_logs << fmt::format("[{0}]: {1}", dpp::utility::current_date_time(), message) << std::endl;
+	// i hope you know the drill by now
 }
 
 void error_callback(const dpp::confirmation_callback_t& callback) {
