@@ -5,10 +5,10 @@
 #include "string_convert.h"
 
 struct jtc_defaults {
-    dpp::snowflake channelid;
+    dpp::snowflake channel_id;
     std::string name;
-    long limit;
-	int bitrate;
+    int8_t limit;
+	int16_t bitrate;
 };
 
 bool operator <(jtc_defaults jd1, jtc_defaults jd2);

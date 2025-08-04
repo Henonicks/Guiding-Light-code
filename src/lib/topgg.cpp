@@ -5,16 +5,16 @@ bool operator <(topgg::guild_choice vc1, topgg::guild_choice vc2) {
     return c1 < c2;
 }
 
-bool operator <(topgg::guild_votes_amount vc1, topgg::guild_votes_amount vc2) {
+bool operator <(topgg::guild vc1, topgg::guild vc2) {
     int c1 = vc1.votes, c2 = vc2.votes;
     return c1 < c2;
 }
 
 int topgg::last_collection_time = 0;
 std::map <user_snowflake, guild_snowflake> topgg::guild_choices;
-std::map <guild_snowflake, int> topgg::guild_list;
+std::map <guild_snowflake, int> topgg::guild_votes_amount;
 std::vector <int> topgg::votes_leveling = {0, 225, 450, 800, 1300, 2000, 2750, 3350, 4350, 5000};
-std::map <user_snowflake, bool> topgg::noguild_reminders;
+std::map <user_snowflake, bool> topgg::no_noguild_reminder;
 
 topgg::guild_choice topgg::get_guild_choice(std::string_view line) {
 	topgg::guild_choice result;
@@ -44,8 +44,8 @@ topgg::guild_choice topgg::get_guild_choice(std::string_view line) {
     return result;
 }
 
-topgg::guild_votes_amount topgg::get_guild_votes_amount(std::string_view line) {
-	topgg::guild_votes_amount result;
+topgg::guild topgg::get_guild_votes_amount(std::string_view line) {
+	topgg::guild result;
     std::string guild_id_line, votes_line;
     int i = 0;
     for (;i < line.size(); i++) {
@@ -78,17 +78,17 @@ bool topgg::vote(const dpp::snowflake& user_id, const bool& weekend, dpp::cluste
         failure = true;
         return failure;
     }
-    file::delete_line_once(fmt::format("{0} {1}", guild_id, guild_list[guild_id]), file::topgg_guild_votes_amount);
-    guild_list[guild_id] += weekend;
-    file::line_append(fmt::format("{0} {1}", guild_id, ++guild_list[guild_id]), file::topgg_guild_votes_amount);
-    dpp::snowflake channel_id = topgg_ntif_chnls[guild_id];
+    guild_votes_amount[guild_id] += weekend;
+    db::sql << "DELETE FROM topgg_guild_votes_amount WHERE guild_id=?;" << guild_id.str();
+    db::sql << "INSERT INTO topgg_guild_votes_amount VALUES (?, ?);" << guild_id.str() << ++guild_votes_amount[guild_id];
+    dpp::snowflake channel_id = topgg_notifications[guild_id];
     bot.message_create(dpp::message(channel_id, fmt::format("<@{0}> has voted.{1}", user_id, weekend ? " A bonus point is granted as today is a weekend!" : "")));
     return failure;
 }
 
 int8_t topgg::jtc::count_jtcs(const dpp::snowflake& guild_id) {
-    const int& guild_votes_amount = ::topgg::guild_list[guild_id];
-    int i = 1;
+    const int8_t& guild_votes_amount = ::topgg::guild_votes_amount[guild_id];
+    int8_t i = 1;
     for (;i < 10; i++) {
         if (::topgg::votes_leveling[i] > guild_votes_amount) {
             break;

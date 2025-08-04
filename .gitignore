@@ -3,10 +3,10 @@ out/
 .vscode/
 .idea/
 tmp/
-cmake-build-debug
+cmake-build-debug/
 build/
 config.json
 logging/
-src/dev/
-src/release/
+database/
 Guiding_Light_Config/
+compile_commands.json

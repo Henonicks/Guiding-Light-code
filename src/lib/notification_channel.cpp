@@ -1,35 +1,8 @@
 #include <notification_channel.h>
 
-bool operator <(notification_chnl chnl1, notification_chnl chnl2) {
-    return chnl1.channelid < chnl2.channelid;
+bool operator <(notification_channel chnl1, notification_channel chnl2) {
+    return chnl1.channel_id < chnl2.channel_id;
 }
 
-notification_chnl get_ntf_chnl(const std::string& line) {
-    notification_chnl result_line;
-    std::string channelid_line, guildid_line;
-    int i = 0;
-    for (;i < line.size(); i++) {
-        //std::cout << i << std::endl;
-        if (line[i] != ' ') {
-            channelid_line += line[i];
-        }
-        else {
-            i++;
-            result_line.channelid = (dpp::snowflake)channelid_line;
-            //std::cout << "Get_info_line " << result_line.channelid << std::endl;
-            break;
-        }
-    }
-    for (;i < line.size(); i++) {
-        //std::cout << i << std::endl;
-        if (line[i] != ' ') {
-            guildid_line += line[i];
-        }
-    }
-    result_line.guildid = (dpp::snowflake)guildid_line;
-    //std::cout << "Get_info_line " << result_line.limit << std::endl;
-    return result_line;
-}
-
-std::map <guild_snowflake, channel_snowflake> ntif_chnls;
-std::map <guild_snowflake, channel_snowflake> topgg_ntif_chnls;
+std::map <guild_snowflake, channel_snowflake> temp_vc_notifications;
+std::map <guild_snowflake, channel_snowflake> topgg_notifications;

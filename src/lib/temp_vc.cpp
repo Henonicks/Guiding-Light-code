@@ -1,56 +1,9 @@
 #include <temp_vc.h>
 
 bool operator <(temp_vc vc1, temp_vc vc2) {
-    long long crtr_id1 = vc1.creatorid;
-    long long crtr_id2 = vc2.creatorid;
+    long long crtr_id1 = vc1.creator_id;
+    long long crtr_id2 = vc2.creator_id;
     return crtr_id1 < crtr_id2;
-}
-
-temp_vc get_temp_vc(std::string_view line) {
-    temp_vc result_line;
-    std::string channelid_line, guildid_line, creatorid_line, parentid_line;
-    int i = 0;
-    for (;i < line.size(); i++) {
-        if (line[i] != ' ') {
-            channelid_line += line[i];
-        }
-        else {
-            ++i;
-            result_line.channelid = (dpp::snowflake)channelid_line;
-            break;
-        }
-    }
-    for (;i < line.size(); i++) {
-        if (line[i] != ' ') {
-            guildid_line += line[i];
-        }
-        else {
-            ++i;
-            result_line.guildid = (dpp::snowflake)guildid_line;
-            break;
-        }
-    }
-    for (;i < line.size(); i++) {
-        if (line[i] != ' ') {
-            creatorid_line += line[i];
-        }
-        else {
-            ++i;
-            result_line.creatorid = (dpp::snowflake)creatorid_line;
-            break;
-        }
-    }
-    for (;i < line.size(); i++) {
-        if (line[i] != ' ') {
-            parentid_line += line[i];
-        }
-        else {
-            ++i;
-            break;
-        }
-    }
-    result_line.guildid = (dpp::snowflake)parentid_line;
-    return result_line;
 }
 
 std::map <channel_snowflake, temp_vc> temp_vcs;

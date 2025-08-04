@@ -1,0 +1,6 @@
+[submodule "sqlite_modern_cpp"]
+	path = sqlite_modern_cpp
+	url = https://github.com/SqliteModernCpp/sqlite_modern_cpp
+[submodule "sqlite3pp"]
+	path = sqlite3pp
+	url = https://github.com/iwongu/sqlite3pp
