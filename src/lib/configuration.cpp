@@ -131,6 +131,11 @@ void configuration::pray() { // I'll pray that when this function starts executi
 		if (channel != nullptr) {
 			++temp_vc_amount[guild_id];
 			temp_vcs[channel_id] = {channel_id, guild_id, creator_id, parent_id};
+			for (const auto& x : channel->permission_overwrites) {
+				if (x.deny.can(dpp::p_view_channel)) {
+					banned[channel->id].insert(x.id);
+				}
+			}
 		}
 		else {
 			db::sql << "DELETE FROM temp_vcs WHERE channel_id=?;" << channel_id;

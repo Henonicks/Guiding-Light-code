@@ -184,3 +184,19 @@ void temp_vc_create(dpp::cluster* bot, const temp_vc_query& q) {
 		}
 	}, 1);
 }
+
+bool blocklist_updated(const dpp::channel& channel) {
+	auto unbanned = banned[channel.id];
+	bool flag{};
+	for (const auto& x : channel.permission_overwrites) {
+		if (banned[channel.id].count(x.id) && (x.allow.can(dpp::p_view_channel) || !x.deny.can(dpp::p_view_channel))) {
+			flag = true;
+			banned[channel.id].erase(x.id);
+		}
+		if (unbanned.count(x.id)) {
+			flag = true;
+			unbanned.erase(x.id);
+		}
+	}
+	return flag;
+}

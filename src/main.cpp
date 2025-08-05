@@ -11,7 +11,7 @@ std::unordered_map <dpp::snowflake, dpp::guild> all_bot_guilds;
 
 int main(int argc, char** argv) {
 	std::set <std::string> command_list =
-			{"./guidingLight", "--return", "--noreturn", "--dev"};
+			{"./guidingLight", "--return", "--rn", "--dev"};
 	std::set <std::string> slashcommand_list =
 			{"--chelp", "--csetup", "--cset", "--cguild", "--cget", "--cvote", "--cblocklist", "--clogs", "--cticket", "--cselect", "--call"};
 	command_list.insert(slashcommand_list.begin(), slashcommand_list.end());
@@ -249,28 +249,7 @@ int main(int argc, char** argv) {
 
 	bot.on_channel_update([&bot](const dpp::channel_update_t& event) -> void {
 		if (!temp_vcs[event.updated.id].channel_id.empty()) {
-			auto unbanned = banned[event.updated.id];
-			bool flag{};
-			for (const auto& x : event.updated.permission_overwrites) {
-				if (banned[event.updated.id].count(x.id) && (x.allow.can(dpp::p_view_channel) || !x.deny.can(dpp::p_view_channel))) {
-					flag = true;
-					banned[event.updated.id].erase(x.id);
-				}
-				if (x.deny.can(dpp::p_view_channel)) {
-					flag = true;
-					banned[event.updated.id].insert(x.id);
-				}
-				if (unbanned.count(x.id)) {
-					unbanned.erase(x.id);
-				}
-			}
-			for (const auto& x : unbanned) {
-				flag = true;
-				if (banned[event.updated.id].count(x)) {
-					banned[event.updated.id].erase(x);
-				}
-			}
-			if (flag) {
+			if (blocklist_updated(event.updated)) {
 				bot.message_create(dpp::message(event.updated.id, "The blocklist of this channel has been updated."));
 			}
 		}
@@ -289,6 +268,7 @@ int main(int argc, char** argv) {
 				db::sql << "DELETE FROM jtc_default_values WHERE channel_id=?;" << channel_id.str();
 			}
 			if (!temp_vcs[channel_id].channel_id.empty()) {
+				banned.erase(channel_id);
 				--temp_vc_amount[guild_id];
 				temp_vcs.erase(channel_id);
 				db::sql << "DELETE FROM temp_vcs WHERE channel_id=?;" << channel_id.str();
@@ -325,10 +305,10 @@ int main(int argc, char** argv) {
 
 	bot.on_voice_state_update([&bot, error_callback](const dpp::voice_state_update_t& event) {
 		dpp::snowflake channel_id = event.state.channel_id;
-		dpp::snowflake user_id = event.state.user_id;
+		const dpp::snowflake& user_id = event.state.user_id;
 		dpp::user* ptr = dpp::find_user(user_id);
-		dpp::user user = *ptr;
-		dpp::snowflake guild_id = event.state.guild_id;
+		const dpp::user user = *ptr;
+		const dpp::snowflake& guild_id = event.state.guild_id;
 		if (!channel_id.empty()) {
 			const bool is_jtc = !jtc_vcs[channel_id].empty();
 			if (is_jtc) {
