@@ -272,7 +272,7 @@ dpp::coroutine <void> slash::setup(dpp::cluster& bot, const dpp::slashcommand_t&
 void slash::blocklist::status(const dpp::slashcommand_t& event) {
 	const dpp::snowflake channel_id = temp_vcs[vc_statuses[event.command.usr.id]].channel_id;
 	if (channel_id.empty()) {
-		event.reply(dpp::message("You're not in a temporary voice channel!").set_flags(dpp::m_ephemeral));
+		event.reply(dpp::message("You're not in a temporary voice channel! Unless you are, in which case simply rejoin.").set_flags(dpp::m_ephemeral));
 		return;
 	}
 	const dpp::snowflake user_id = std::get <dpp::snowflake>(event.get_parameter("user"));
@@ -284,7 +284,7 @@ dpp::coroutine <void> slash::blocklist::add(const dpp::slashcommand_t& event) {
 	dpp::cluster* bot = event.from()->creator;
 	temp_vc issuer_vc = temp_vcs[vc_statuses[issuer.id]];
 	if (issuer_vc.creator_id != issuer.id) {
-		event.reply(dpp::message("The channel you\'re in does not belong to you!").set_flags(dpp::m_ephemeral));
+		event.reply(dpp::message("The channel you\'re in does not belong to you! Unless it does, in which case simply rejoin.").set_flags(dpp::m_ephemeral));
 		co_return;
 	}
 	const dpp::snowflake requested_id = std::get <dpp::snowflake>(event.get_parameter("user"));
@@ -307,12 +307,7 @@ dpp::coroutine <void> slash::blocklist::add(const dpp::slashcommand_t& event) {
 		const dpp::confirmation_callback_t callback = co_await bot->co_channel_edit(*channel);
 		if (callback.is_error()) {
 			event.reply(dpp::message("Error. Couldn't move the user to the blocklist. Tip: the user may have a role that is above my roles.").set_flags(dpp::m_ephemeral));
-			if (!callback.get_error().errors.empty()) {
-				bot->log(dpp::loglevel::ll_error, fmt::format("FIELD: {0} REASON: {1}", callback.get_error().errors[0].field, callback.get_error().errors[0].reason));
-			}
-			else {
-				bot->log(dpp::loglevel::ll_error, callback.get_error().message);
-			}
+			error_callback(callback);
 			co_return;
 		}
 		banned[issuer_vc.channel_id].insert(requested_id);
@@ -327,7 +322,7 @@ dpp::coroutine <void> slash::blocklist::remove(const dpp::slashcommand_t& event)
 	dpp::cluster* bot = event.from()->creator;
 	const dpp::user& issuer = event.command.usr;
 	if (temp_vcs[vc_statuses[issuer.id]].creator_id != issuer.id) {
-		event.reply(dpp::message("The channel you\'re in does not belong to you!").set_flags(dpp::m_ephemeral));
+		event.reply(dpp::message("The channel you\'re in does not belong to you! Unless it does, in which case simply rejoin.").set_flags(dpp::m_ephemeral));
 		co_return;
 	}
 	const dpp::snowflake requested_id = std::get <dpp::snowflake>(event.get_parameter("user"));
