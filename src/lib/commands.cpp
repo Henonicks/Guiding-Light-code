@@ -13,10 +13,8 @@ std::map <std::string, std::string> cli_manual = {
 		"Usage: switch <mode>"},
 	{"init_db", "Initialise the database for the current mode (release or dev). Needs to be done before the bot is launched.\n"
 		"Usage: init_db"},
-	{"conv_db", "Convert the database from text file-based to SQL-based. Needs to be done before the bot is launched if you have a text file-based database (was used before SQLite was introduced).\n"
+	{"conv_db", "Convert the database from text file-based to SQL-based. Needs to be done before the bot is launched if you have a text file-based database (was used before SQLite was introduced). Also changes the values to match the current standard.\n"
 		"Usage: conv_db"},
-	{"100_to_0", "Convert the \"infinite users\" limit in the jtc_default_values table from 100 to 0 (100 was used before this was changed). Needs to be done before the bot is launched. If you have a text file-based database, you need to convert it to SQLite-based first.\n"
-		"Usage: 100_to_0"},
 	{"select", "Make a SELECT query to generate a file in database/select/<mode> where <mode> can either be release or dev."
 		"Usage: select <table>"},
 };
@@ -116,14 +114,12 @@ std::map <std::string, std::function <void(std::vector <std::string>)>> cli_comm
 			std::ifstream file(fmt::format("../src/{0}/{1}.txt", MODE_NAME, x));
 			std::string line;
 			while (std::getline(file, line)) {
-				std::cout << line << '\n';
-				int64_t pos = line.find(' ');
+				uint64_t pos = line.find(' ');
 				while (pos != std::string::npos) {
 					line.replace(pos, 1, "','");
 					pos = (int)line.find(' ');
 				}
 				line = '\'' + line + '\'';
-				std::cout << line << '\n';
 				try {
 					db::sql << "INSERT INTO " + (std::string)x + " VALUES (" + line + ");";
 				}
@@ -135,11 +131,18 @@ std::map <std::string, std::function <void(std::vector <std::string>)>> cli_comm
 		}
 		if (is_error) {
 			std::cout << fmt::format("Errors occured. Check logging/{}/sql_logs.log\n", MODE_NAME);
+			return;
 		}
-	}},
-	{"100_to_0", [](const std::vector <std::string>&) {
 		try {
 			db::sql << "UPDATE jtc_default_values SET vc_limit = REPLACE(vc_limit, 100, 0);";
+		}
+		catch (sqlite::sqlite_exception& e) {
+			sql_log(e);
+			std::cout << fmt::format("Errors occured. Check logging/{}/sql_logs.log\n", MODE_NAME);
+			return;
+		}
+		try {
+			db::sql << "UPDATE jtc_default_values SET name = REPLACE(name, '_', ' ');";
 		}
 		catch (sqlite::sqlite_exception& e) {
 			sql_log(e);
