@@ -1,36 +1,21 @@
 #include "guidingLight/guiding_light.h"
 #include <random>
-#include <csignal>
 #include "configuration.h"
 #include "ticket_handler.h"
 #include "temp_vc_handler.h"
 #include "logging.h"
 #include "database.h"
+#include "commands.h"
 
 std::unordered_map <dpp::snowflake, dpp::guild> all_bot_guilds;
 
 int main(int argc, char** argv) {
-	std::set <std::string> command_list =
-			{"./guidingLight", "--return", "--rn", "--dev"};
-	std::set <std::string> slashcommand_list =
-			{"--chelp", "--csetup", "--cset", "--cguild", "--cget", "--cvote", "--cblocklist", "--clogs", "--cticket", "--cselect", "--call"};
-	command_list.insert(slashcommand_list.begin(), slashcommand_list.end());
 	std::vector <std::string> commands;
 
-	for (int i = 0; i < argc; i++) {
-		if (!command_list.count(std::string(argv[i]))) {
-			std::cout << "Unknown command: " << argv[i] << '\n';
-		}
-		commands.emplace_back(argv[i]);
-		if (strcmp(argv[i], "--return") == 0) {
-			BOT_RETURN = dpp::st_return;
-		}
-		else if (strcmp(argv[i], "--dev") == 0) {
-			IS_DEV = true;
-		}
-	}
+	configuration::read_config();
+	configuration::init_logs();
+	exec_subcommands(argc, argv);
 
-	configuration::configure_bot(IS_DEV);
 	dpp::cluster bot(BOT_TOKEN, dpp::i_guilds | dpp::i_guild_members | dpp::i_guild_voice_states | dpp::i_direct_messages | dpp::i_message_content | dpp::i_guild_webhooks | dpp::i_guild_messages);
 	bot.on_log([&bot](const dpp::log_t& log) -> void {
 		bot_log(log, bot);
@@ -344,7 +329,7 @@ int main(int argc, char** argv) {
 				bot.direct_message_create(MY_ID, dpp::message(fmt::format("Ayo {} checking logs wht", event.command.usr.id)));
 			}
 			std::string_view file_name = (cmd.options[0].name == "dpp" ? "other_logs.log" : (cmd.options[0].name == "mine" ? "my_logs.log" : "guild_logs.log"));
-			const dpp::message message = dpp::message().add_file(file_name, dpp::utility::read_file(fmt::format("{0}{1}/{2}", logs_directory, LOGS_SUFFIX, file_name))).set_flags(dpp::m_ephemeral);
+			const dpp::message message = dpp::message().add_file(file_name, dpp::utility::read_file(fmt::format("{0}{1}/{2}", logs_directory, MODE_NAME, file_name))).set_flags(dpp::m_ephemeral);
 			event.reply(message);
 		}
 		if (cmd_name == "select") {
@@ -357,8 +342,8 @@ int main(int argc, char** argv) {
 					x = '_';
 				}
 			}
-			system(fmt::format("cd ..; ./select.sh {0} {1}", LOGS_SUFFIX, table_name).c_str());
-			const dpp::message message = dpp::message().add_file("db.md", dpp::utility::read_file(fmt::format("../database/select/{0}/{1}.md", LOGS_SUFFIX, table_name))).set_flags(dpp::m_ephemeral);
+			system(fmt::format("database/{0}.db '.mode markdown' \".output database/select/{0}/{1}.md\" \"SELECT * FROM {1};", MODE_NAME, table_name).c_str());
+			const dpp::message message = dpp::message().add_file("db.md", dpp::utility::read_file(fmt::format("../database/select/{0}/{1}.md", MODE_NAME, table_name))).set_flags(dpp::m_ephemeral);
 			event.reply(message);
 		}
 		if (cmd_name == "vote") {
@@ -425,7 +410,7 @@ int main(int argc, char** argv) {
 	signal(SIGINT, [](int) -> void {
 		log("Ну, все, я пішов спати, бувай, добраніч.");
 		std::cout << "Ну, все, я пішов спати, бувай, добраніч." << '\n';
-		system("killall guidingLight");
+		exit(0);
 	});
 
 	bot.start(BOT_RETURN);

@@ -39,7 +39,7 @@ endif()
 
 target_include_directories(${BOT_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/sqlite3pp/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/colorize
     ${OPENSSL_INCLUDE_DIR}
 )
 
@@ -50,6 +50,7 @@ target_link_libraries(${BOT_NAME}
     ${OPENSSL_SSL_LIBRARY}
     sqlite3
     sqlite_modern_cpp
+    readline
 )
 
 target_compile_definitions(${BOT_NAME} PUBLIC DPP_CORO)
