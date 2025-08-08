@@ -12,7 +12,7 @@ namespace slash {
 
 	extern std::map <std::string, std::map <dpp::snowflake, bool>> in_progress; // finished states of commands
 
-	extern std::map <std::string, dpp::slashcommand> created_slashcommands;
+	extern std::map <std::string, dpp::slashcommand> global_created, guild_created;
 	extern dpp::embed help_embed_1;
 	extern dpp::embed help_embed_2;
 	
@@ -26,14 +26,14 @@ namespace slash {
 		 * @param bot cluster which gets the request and handles it.
 		 * @param event the slashcommand event object which contains information about request.
 		 */
-		dpp::coroutine <void> default_values(dpp::cluster& bot, const dpp::slashcommand_t& event);
+		dpp::coroutine <void> default_values(const dpp::slashcommand_t& event);
 
 		/**
 		 * @brief set a value of current temporary VC.
 		 * @param bot cluster which gets the request and handles it.
 		 * @param event the slashcommand event object which contains information about request.
 		 */
-		dpp::coroutine <void> current(dpp::cluster& bot, const dpp::slashcommand_t& event);
+		dpp::coroutine <void> current(const dpp::slashcommand_t& event);
 	}
 
 	/**
@@ -41,7 +41,7 @@ namespace slash {
 	 * @param bot cluster which handles a channel setup request.
 	 * @param event the slashcommand event object which contains information about request.
 	*/
-	dpp::coroutine <void> setup(dpp::cluster& bot, const dpp::slashcommand_t& event);
+	dpp::coroutine <void> setup(const dpp::slashcommand_t& event);
 
 	namespace blocklist {
 		dpp::coroutine <void> add(const dpp::slashcommand_t& event);

@@ -2,16 +2,7 @@
 
 using json = nlohmann::json;
 
-std::string_view logs_directory = "../logging/";
-std::string BOT_TOKEN, LOGS_SUFFIX;
-dpp::snowflake BOT_DM_LOGS, MY_ID, TOPGG_WEBHOOK_CHANNEL_ID, MY_GUILD_ID, MY_PRIVATE_GUILD_ID, TICKETS_GUILD_ID;
-std::ofstream my_logs, guild_logs, other_logs, sql_logs;
-dpp::start_type BOT_RETURN = dpp::st_wait;
-bool IS_DEV = false;
-int DELAY = 5;
-uint64_t guild_amount = 0, channel_amount = 0, user_amount = 0;
-
-void configuration::configure_bot(const bool& is_dev) {
+void configuration::read_config() {
 	json config;
 	std::ifstream config_file_stream("../Guiding_Light_Config/config.json");
 	config_file_stream >> config;
@@ -23,14 +14,31 @@ void configuration::configure_bot(const bool& is_dev) {
 	TOPGG_WEBHOOK_CHANNEL_ID = config["TOPGG_WEBHOOK_CHANNEL_ID"];
 	TICKETS_GUILD_ID = config["TICKETS_GUILD_ID"];
 
-	BOT_TOKEN = (is_dev ? config["BOT_TOKEN_DEV"] : config["BOT_TOKEN"]);
+	BOT_TOKEN = config["BOT_TOKEN"];
+	BOT_TOKEN_DEV = config["BOT_TOKEN_DEV"];
 
-	LOGS_SUFFIX = (is_dev ? "dev" : "release");
+	MODE_NAME = (IS_DEV ? "dev" : "release");
 
-	my_logs.open(fmt::format("{0}{1}/my_logs.log", logs_directory, LOGS_SUFFIX));
-	guild_logs.open(fmt::format("{0}{1}/guild_logs.log", logs_directory, LOGS_SUFFIX));
-	other_logs.open(fmt::format("{0}{1}/other_logs.log", logs_directory, LOGS_SUFFIX));
-	sql_logs.open(fmt::format("{0}{1}/sql_logs.log", logs_directory, LOGS_SUFFIX));
+	logs_directory = fmt::format("../logging/{}/", IS_CLI ? "cli" : "bot");
+}
+
+void configuration::init_logs() {
+	const std::filesystem::path path_release{fmt::format("{}release", logs_directory)};
+	const std::filesystem::path path_dev{fmt::format("{}dev", logs_directory)};
+	if (!std::filesystem::exists(path_release)) {
+		std::filesystem::create_directories(fmt::format("{}release", logs_directory));
+	}
+	if (!std::filesystem::exists(path_dev)) {
+		std::filesystem::create_directories(fmt::format("{}dev", logs_directory));
+	}
+	my_logs_release = std::ofstream(fmt::format("{}release/my_logs.log", logs_directory));
+	my_logs_dev = std::ofstream(fmt::format("{}dev/my_logs.log", logs_directory));
+	guild_logs_release = std::ofstream(fmt::format("{}release/guild_logs.log", logs_directory));
+	guild_logs_dev = std::ofstream(fmt::format("{}dev/guild_logs.log", logs_directory));
+	other_logs_release = std::ofstream(fmt::format("{}release/other_logs.log", logs_directory));
+	other_logs_dev = std::ofstream(fmt::format("{}dev/other_logs.log", logs_directory));
+	sql_logs_release = std::ofstream(fmt::format("{}release/sql_logs.log", logs_directory));
+	sql_logs_dev = std::ofstream(fmt::format("{}dev/sql_logs.log", logs_directory));
 }
 
 void configuration::pray() { // I'll pray that when this function starts executing we have all the cache because Discord doesn't let me know whether all the cache I've received at a certain point is everything or there's more and there's no better way to do this I promise
@@ -145,15 +153,21 @@ void configuration::pray() { // I'll pray that when this function starts executi
 	slash::enabled = true;
 }
 
-void configuration::write_down_slashcommands(dpp::cluster& bot) {
-	bot.global_commands_get([&bot](const dpp::confirmation_callback_t& callback) -> void {
-		auto map = callback.get <dpp::slashcommand_map>();
+void configuration::write_down_slashcommands() {
+	bot->global_commands_get([](const dpp::confirmation_callback_t& callback) -> void {
+		const auto& map = callback.get <dpp::slashcommand_map>();
 		for (const auto& x : map) {
-			slash::created_slashcommands[x.second.name] = x.second;
+			slash::global_created[x.second.name] = x.second;
 		}
+		bot->guild_commands_get(MY_PRIVATE_GUILD_ID, [](const dpp::confirmation_callback_t& callback) -> void {
+			const auto& map = callback.get <dpp::slashcommand_map>();
+			for (const auto& x : map) {
+				slash::guild_created[x.second.name] = x.second;
+			}
+		});
 		slash::help_embed_1 = dpp::embed().
 			set_color(dpp::colors::sti_blue).
-			set_author("Here is what I can do!\n", bot.me.get_url(), bot.me.get_avatar_url()).
+			set_author("Here is what I can do!\n", bot->me.get_url(), bot->me.get_avatar_url()).
 			set_description("## /help\n"
 							"I guess you\'ve just issued this command!\n"
 				"# JTC-related\n"
@@ -238,7 +252,7 @@ void configuration::write_down_slashcommands(dpp::cluster& bot) {
 				"If you vote but don\'t have a guild set to vote in favour of, the point is wasted. The first time you do that, you get a direct message from the bot if your DMs are open."
 			).set_footer(dpp::embed_footer()
 				.set_text("You can always ask the creator of the bot a question in direct messages or on the support server!")
-				.set_icon(bot.me.get_avatar_url())
+				.set_icon(bot->me.get_avatar_url())
 			);
 	});
 }

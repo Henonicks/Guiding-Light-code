@@ -11,6 +11,8 @@ namespace db {
 	using MEDIUMINT = int;
 	using BIGINT = unsigned long long;
 	
+	extern const std::set <std::string> table_names;
+
 	extern sqlite::database sql;
 	bool connection_successful();
 }

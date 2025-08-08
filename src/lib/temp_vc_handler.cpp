@@ -2,7 +2,7 @@
 
 user_snowflake handling_user_id;
 
-void temp_vc_create_msg(dpp::cluster* bot, const temp_vc_query& q, const dpp::channel& channel) {
+void temp_vc_create_msg(const temp_vc_query& q, const dpp::channel& channel) {
 	std::string description = "A new temporary channel has been created ";
 			description += (!channel.parent_id.empty() ?
 			"in the <#" +
@@ -16,7 +16,7 @@ void temp_vc_create_msg(dpp::cluster* bot, const temp_vc_query& q, const dpp::ch
 	bot->message_create(dpp::message(temp_vc_notifications[q.guild_id], temp_vc_create_embed), error_callback);
 }
 
- void temp_vc_create_owner_msg(dpp::cluster* bot, const temp_vc_query& q, const dpp::snowflake& channel_id) {
+ void temp_vc_create_owner_msg(const temp_vc_query& q, const dpp::snowflake& channel_id) {
 	dpp::embed temp_ping_embed = dpp::embed()
 	.set_color(dpp::colors::sti_blue)
 	.set_title(fmt::format("Welcome to <#{}>!", channel_id))
@@ -41,7 +41,7 @@ void temp_vc_create_msg(dpp::cluster* bot, const temp_vc_query& q, const dpp::ch
 	bot->message_create(message, error_callback);
 }
 
-void temp_vc_delete_msg(dpp::cluster* bot, const dpp::user& user, const dpp::channel* channel) {
+void temp_vc_delete_msg(const dpp::user& user, const dpp::channel* channel) {
 	log(fmt::format("{0} left a temp VC. Guild ID: {1}, channel ID: {2}, channel name: `{3}`, notification channel ID: {4}",
 		user.format_username(), channel->guild_id, channel->id,
 		channel->name, temp_vc_notifications[channel->guild_id]));
@@ -61,7 +61,7 @@ void temp_vc_delete_msg(dpp::cluster* bot, const dpp::user& user, const dpp::cha
 	bot->channel_delete(channel->id, error_callback);
 }
 
-void temp_vc_create(dpp::cluster* bot, const temp_vc_query& q) {
+void temp_vc_create(const temp_vc_query& q) {
 	if (q.usr == nullptr) {
 		bot->log(dpp::ll_error, fmt::format("User {0} not found. Channel: {1}", q.usr->id, q.channel_id));
 		if (!q.channel_id.empty()) {
@@ -128,7 +128,7 @@ void temp_vc_create(dpp::cluster* bot, const temp_vc_query& q) {
 	dpp::channel current = *dpp::find_channel(q.channel_id);
 	new_channel.set_parent_id(current.parent_id);
 	new_channel.set_user_limit(limit);
-	const dpp::timer_callback_t timer_function = [new_channel, bot, current, q](const bool& called_separately) -> void {
+	const dpp::timer_callback_t timer_function = [new_channel, current, q](const bool& called_separately) -> void {
 		if (temp_vcs_queue.empty()) {
 			if (called_separately) {
 				return;
@@ -148,23 +148,23 @@ void temp_vc_create(dpp::cluster* bot, const temp_vc_query& q) {
 			return;
 		}
 		handling_user_id = q.usr->id;
-		bot->channel_create(new_channel, [bot, current, q](const dpp::confirmation_callback_t& callback) -> void {
+		bot->channel_create(new_channel, [current, q](const dpp::confirmation_callback_t& callback) -> void {
 			temp_vcs_queue.pop();
 			handling_user_id = 0;
 			++temp_vc_amount[q.guild_id];
 			const auto channel = std::get <dpp::channel>(callback.value);
 			if (!no_temp_ping[q.usr->id]) {
-				temp_vc_create_owner_msg(bot, q, channel.id);
+				temp_vc_create_owner_msg(q, channel.id);
 			}
 			temp_vcs[channel.id] = {channel.id, channel.guild_id, q.usr->id};
-			bot->guild_member_move(channel.id, channel.guild_id, q.usr->id, [bot, channel, q](const dpp::confirmation_callback_t& callback) -> void {
+			bot->guild_member_move(channel.id, channel.guild_id, q.usr->id, [channel, q](const dpp::confirmation_callback_t& callback) -> void {
 				if (callback.is_error()) {
 					bot->channel_delete(channel.id, error_callback);
 					return;
 				}
 				db::sql << "INSERT INTO temp_vcs VALUES (?, ?, ?, ?);" << channel.id.str() << channel.guild_id.str() << q.usr->id.str() << q.channel_id.str();
 				if (!temp_vc_notifications[q.guild_id].empty()) {
-					temp_vc_create_msg(bot, q, channel);
+					temp_vc_create_msg(q, channel);
 				}
 			});
 			error_callback(callback);
@@ -175,7 +175,7 @@ void temp_vc_create(dpp::cluster* bot, const temp_vc_query& q) {
 		throw 0;
 	};
 	timer_function(true);
-	bot->start_timer([new_channel, bot, current, q, timer_function](const dpp::timer& h) -> void {
+	bot->start_timer([new_channel, current, q, timer_function](const dpp::timer& h) -> void {
 		try {
 			timer_function(false);
 		}

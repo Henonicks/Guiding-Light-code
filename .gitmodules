@@ -4,3 +4,6 @@
 [submodule "sqlite3pp"]
 	path = sqlite3pp
 	url = https://github.com/iwongu/sqlite3pp
+[submodule "colorize"]
+	path = colorize
+	url = https://github.com/fengwang/colorize

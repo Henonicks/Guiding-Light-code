@@ -1,12 +1,12 @@
 #include <slash_funcs.h>
 
 std::map <std::string, std::map <dpp::snowflake, bool>> slash::in_progress;
-std::map <std::string, dpp::slashcommand> slash::created_slashcommands;
+std::map <std::string, dpp::slashcommand> slash::global_created, slash::guild_created;
 dpp::embed slash::help_embed_1;
 dpp::embed slash::help_embed_2;
 bool slash::enabled = false;
 
-dpp::coroutine <void> slash::set::current(dpp::cluster &bot, const dpp::slashcommand_t &event) {
+dpp::coroutine <void> slash::set::current(const dpp::slashcommand_t &event) {
 	const dpp::command_interaction cmd = event.command.get_command_interaction();
 	const dpp::user user = event.command.get_issuing_user();
 	const dpp::snowflake& user_id = user.id;
@@ -25,7 +25,7 @@ dpp::coroutine <void> slash::set::current(dpp::cluster &bot, const dpp::slashcom
 			}
 			else {
 				channel.set_name(argument);
-				bot.channel_edit(channel, [event, old_name, channel](const dpp::confirmation_callback_t& callback) {
+				bot->channel_edit(channel, [event, old_name, channel](const dpp::confirmation_callback_t& callback) {
 					if (callback.is_error()) {
 						error_callback(callback);
 						event.reply(fmt::format("Error: {}.", callback.get_error().message));
@@ -58,7 +58,7 @@ dpp::coroutine <void> slash::set::current(dpp::cluster &bot, const dpp::slashcom
 			else {
 				content = fmt::format("Set bitrate to `{}` successfully.", argument);
 				channel.set_bitrate(argument);
-				const dpp::confirmation_callback_t& callback = co_await bot.co_channel_edit(channel);
+				const dpp::confirmation_callback_t& callback = co_await bot->co_channel_edit(channel);
 				if (callback.is_error()) {
 					error_callback(callback);
 					event.reply(fmt::format("Error: {}.", callback.get_error().message));
@@ -75,7 +75,7 @@ dpp::coroutine <void> slash::set::current(dpp::cluster &bot, const dpp::slashcom
 			}
 			else if (argument < 0) {
 				event.reply(dpp::message("Well now we're just being silly, aren't we?").set_flags(dpp::m_ephemeral));
-				bot.guild_member_move(0, temp_vcs[vc_statuses[user_id]].guild_id, user_id, error_callback);
+				bot->guild_member_move(0, temp_vcs[vc_statuses[user_id]].guild_id, user_id, error_callback);
 			}
 			else {
 				if (channel.user_limit == argument) {
@@ -83,7 +83,7 @@ dpp::coroutine <void> slash::set::current(dpp::cluster &bot, const dpp::slashcom
 				}
 				else {
 					channel.set_user_limit(argument);
-					bot.channel_edit(channel, [event, argument](const dpp::confirmation_callback_t callback) {
+					bot->channel_edit(channel, [event, argument](const dpp::confirmation_callback_t callback) {
 						if (callback.is_error()) {
 							error_callback(callback);
 							event.reply(fmt::format("Error: {}.", callback.get_error().message));
@@ -97,7 +97,7 @@ dpp::coroutine <void> slash::set::current(dpp::cluster &bot, const dpp::slashcom
 	}
 }
 
-dpp::coroutine <void> slash::set::default_values(dpp::cluster& bot, const dpp::slashcommand_t& event) {
+dpp::coroutine <void> slash::set::default_values(const dpp::slashcommand_t& event) {
 	const dpp::command_interaction cmd = event.command.get_command_interaction();
 	const dpp::user user = event.command.get_issuing_user();
 	const dpp::snowflake& user_id = user.id;
@@ -107,7 +107,7 @@ dpp::coroutine <void> slash::set::default_values(dpp::cluster& bot, const dpp::s
 		guild = *dpp::find_guild(guild_id);
 	}
 	bool allowed_to_set = guild.owner_id == user_id;
-	const dpp::confirmation_callback_t& confirmation = co_await bot.co_roles_get(guild_id);
+	const dpp::confirmation_callback_t& confirmation = co_await bot->co_roles_get(guild_id);
 	const auto& guild_roles = confirmation.get <dpp::role_map>();
 	dpp::guild_member member = event.command.member;
 	const auto& roles = member.get_roles();
@@ -198,11 +198,11 @@ dpp::coroutine <void> slash::set::default_values(dpp::cluster& bot, const dpp::s
 	}
 }
 
-dpp::coroutine <void> slash::setup(dpp::cluster& bot, const dpp::slashcommand_t& event) {
+dpp::coroutine <void> slash::setup(const dpp::slashcommand_t& event) {
 	const dpp::snowflake& guild_id = event.command.guild_id;
 	const dpp::command_interaction cmd = event.command.get_command_interaction();
 	const dpp::guild guild = *dpp::find_guild(guild_id);
-	const dpp::confirmation_callback_t& confirmation = co_await bot.co_roles_get(guild_id);
+	const dpp::confirmation_callback_t& confirmation = co_await bot->co_roles_get(guild_id);
 	if (cmd.options[0].name == "jtc") {
 		int8_t limit = ::topgg::jtc::count_jtcs(guild_id);
 		if (jtc_vc_amount[guild_id] >= limit) {
@@ -217,9 +217,9 @@ dpp::coroutine <void> slash::setup(dpp::cluster& bot, const dpp::slashcommand_t&
 		channel.set_guild_id(event.command.guild_id);
 		channel.set_bitrate(64);
 		channel.set_user_limit(1);
-		const dpp::confirmation_callback_t& callback = co_await bot.co_channel_create(channel);
+		const dpp::confirmation_callback_t& callback = co_await bot->co_channel_create(channel);
 		if (callback.is_error()) {
-			bot.log(dpp::loglevel::ll_error, callback.http_info.body);
+			bot->log(dpp::loglevel::ll_error, callback.http_info.body);
 			co_await event.co_reply(dpp::message("Tried to create a join-to-create channel but failed. If this happens again, please report the incident by opening a ticket.").set_flags(dpp::m_ephemeral));
 			co_return;
 		}
@@ -251,7 +251,7 @@ dpp::coroutine <void> slash::setup(dpp::cluster& bot, const dpp::slashcommand_t&
 			channel.set_name("topgg-notifications");
 		}
 		if (!is_already_set) {
-			const dpp::confirmation_callback_t& callback = co_await bot.co_channel_create(channel);
+			const dpp::confirmation_callback_t& callback = co_await bot->co_channel_create(channel);
 			const auto newchannel = callback.get <dpp::channel>();
 			const std::string to_add = std::to_string(newchannel.id) + ' ' + std::to_string(newchannel.guild_id);
 			try {
@@ -281,7 +281,6 @@ void slash::blocklist::status(const dpp::slashcommand_t& event) {
 
 dpp::coroutine <void> slash::blocklist::add(const dpp::slashcommand_t& event) {
 	const dpp::user& issuer = event.command.usr;
-	dpp::cluster* bot = event.from()->creator;
 	temp_vc issuer_vc = temp_vcs[vc_statuses[issuer.id]];
 	if (issuer_vc.creator_id != issuer.id) {
 		event.reply(dpp::message("The channel you\'re in does not belong to you! Unless it does, in which case simply rejoin.").set_flags(dpp::m_ephemeral));
@@ -319,7 +318,6 @@ dpp::coroutine <void> slash::blocklist::add(const dpp::slashcommand_t& event) {
 }
 
 dpp::coroutine <void> slash::blocklist::remove(const dpp::slashcommand_t& event) {
-	dpp::cluster* bot = event.from()->creator;
 	const dpp::user& issuer = event.command.usr;
 	if (temp_vcs[vc_statuses[issuer.id]].creator_id != issuer.id) {
 		event.reply(dpp::message("The channel you\'re in does not belong to you! Unless it does, in which case simply rejoin.").set_flags(dpp::m_ephemeral));
@@ -413,7 +411,6 @@ dpp::coroutine <void> slash::ticket::create(const dpp::slashcommand_t& event) {
 		co_await event.co_reply(dpp::message("You already have a ticket! DM the bot to contact the creator!").set_flags(dpp::m_ephemeral));
 		co_return;
 	}
-	dpp::cluster* bot = event.from()->creator;
 	dpp::channel channel = dpp::channel()
 	.set_name(event.command.usr.username)
 	.set_guild_id(TICKETS_GUILD_ID);

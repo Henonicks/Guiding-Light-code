@@ -11,7 +11,7 @@ namespace topgg {
 	extern std::vector <int> votes_leveling;
 	extern std::map <user_snowflake, bool> no_noguild_reminder;
 
-	bool vote(const dpp::snowflake& user_id, const bool& weekend, dpp::cluster& bot);
+	bool vote(const dpp::snowflake& user_id, const bool& weekend);
 
 	namespace jtc {
 		int8_t count_jtcs(const dpp::snowflake& guild_id);
