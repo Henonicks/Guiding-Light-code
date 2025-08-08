@@ -5,8 +5,9 @@ set(BOT_NAME "guidingLight")
 
 aux_source_directory("src" coresrc)
 aux_source_directory("src/lib" codParts)
+aux_source_directory("src/lib/guidingLight" guidingLightCPP)
 aux_source_directory("sqlite3pp/src" sqlite)
-add_executable(${BOT_NAME} ${coresrc} ${codParts} ${sqlite})
+add_executable(${BOT_NAME} ${coresrc} ${codParts} ${sqlite} ${guidingLightCPP})
 
 target_compile_definitions(${BOT_NAME} PUBLIC FMT_HEADER_ONLY)
 

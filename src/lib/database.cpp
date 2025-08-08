@@ -1,7 +1,7 @@
 #include "database.h"
 
 sqlite::database db::sql{""};
-const std::vector <const char*> db::table_names =
+const std::set <std::string> db::table_names =
 {"jtc_vcs", "temp_vc_notifications", "jtc_default_values", "no_temp_ping", "topgg_guild_choices", "topgg_guild_votes_amount", "no_noguild_reminder", "topgg_notifications", "tickets", "temp_vcs"};
 
 bool db::connection_successful() {
