@@ -1,10 +1,13 @@
 # D++ CMake bot, Guiding Light
 
-This is a Discord bot written in C++ using the [D++](https://dpp.dev) library. It's a JTC voice channels manager. It assumes that D++, along with [fmtlib](https://fmt.dev) are already installed.
+This is a Discord bot written in C++ using the [D++](https://dpp.dev) library. It's a JTC voice channels manager. It assumes that D++, along with its dependencies, as well as [fmtlib](https://fmt.dev) are already installed.
 
 ## Dependencies
 * D++ 10.1.0+
 * fmtlib (tested on 9.1.0)
+
+### Compiler
+The bot is tested in-dev with g++-13 and hosted with clang++-18. It is advised to use g++ with the version of at least 13 as it uses coroutines which are unstable on g++-12 and earlier. I'm unaware of the coroutines situation with clang++.
 
 ## Compilation
 
@@ -17,7 +20,12 @@ If DPP is installed in a different location you can specify the root directory t
 
     cmake .. -DDPP_ROOT_DIR=<your-path>
 
-If you have the same situation with fmtlib then good luck cuz I'm not a cmake genius
+If you have the same situation with fmtlib then good luck cuz I'm not a cmake genius and the above line actually comes from templatebot, the repository this one is a fork of.
+
+If you wish to use a non-default compiler, you can specify it while running cmake
+
+    cmake .. -DCMAKE_CXX_COMPILER=<your_compiler>
+
 
 ## Running the bot
 
@@ -76,7 +84,12 @@ Once you're done setting up, you can start the bot.
 
 ## CLI mode
 
-In the CLI mode the bot doesn't handle events, neither does it start. This mode is used to set the bot up and create/delete slashcommands. It supports history but it doesn't have autocomplete because I couldn't figure it out.
+The CLI mode is built into the rest of thhe program. By compiling the bot, you compile the CLI alongside it. In this mode the bot doesn't handle events, neither does it start. This mode is used to set the bot up and create/delete slashcommands. It supports history but it doesn't have autocomplete because I couldn't figure it out.
+When you enter the CLI mode, you're logged into a pseudo-user - `guidingLight`, the release mode user and `curiousLight`, the development mode user. The input line looks something like this:
+
+    guidingLight>
+
+The username is coloured depending on the mode. The `>` sign is coloured depending on the bot running status: red if it's not running, yellow if it's currently launching and green if it's running. This status is independent of anything but the CLI. This means that if you launch the bot and then enter the CLI mode, the status is considered to be "not running". To fix this, do `launch` when in the mode. 
 
 ## Monitoring
 
