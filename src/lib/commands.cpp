@@ -11,7 +11,7 @@ std::map <std::string, std::string> cli_manual = {
 		"Usage: switch <mode>"},
 	{"init_db", "Initialise the database for the current mode (release or dev). Needs to be done before the bot is launched.\n"
 		"Usage: init_db"},
-	{"conv_db", "Convert the database from text file-based to SQL-based. Needs to be done before the bot is launched if you have a text file-based database (was used before SQLite was introduced). Also changes the values to match the current standard.\n"
+	{"conv_db", "Converts the database from text file-based to SQL-based. Needs to be done before the bot is launched if you have a text file-based database (was used before SQLite was introduced). Also changes the values to match the current standard.\n"
 		"Usage: conv_db"},
 	{"select", "Make a SELECT query to generate a file in database/select/<mode> where <mode> can either be release or dev.\n"
 		"Usage: select <table>"},
@@ -23,7 +23,7 @@ std::map <std::string, std::string> cli_manual = {
 		"Usage: cdelete [slashcommand]"},
 	{"launch", "Launch the bot with the same mode as the one being used. Stays launched until the CLI has been exited. Switching the mode will NOT shut down the bot.\n"
 		"Usage: launch"},
-	{"list", "Lists what you ask it to - the log files, database tables or slashcommands that can be created.\n"
+	{"list", "Lists what you ask it to - the log files, database tables or slashcommands that can be created. Acceptable values: logs, slashcommands and tables.\n"
 		"Usage: list <type>"},
 };
 
@@ -449,7 +449,7 @@ std::map <std::string, std::function <void(std::vector <std::string>)>> cli_comm
 			type = cmd[1];
 		}
 		if (type == "logs") {
-			std::cout << fmt::format("Log files are located in logging/<interface>/{}/<file_name>.log\n <interface> is either bot or cli. Here are the possible values for <file_name>:\n", MODE_NAME);
+			std::cout << fmt::format("Log files are located in logging/<interface>/{}/<file_name>.log\n<interface> is either bot or cli. Here are the possible values for <file_name>:\n", MODE_NAME);
 			for (const std::string& x : logs::list) {
 				std::cout << x;
 				if (x != *logs::list.rbegin()) {
@@ -458,7 +458,7 @@ std::map <std::string, std::function <void(std::vector <std::string>)>> cli_comm
 			}
 			std::cout << '\n';
 		}
-		if (type == "slashcommands") {
+		else if (type == "slashcommands") {
 			std::cout << fmt::format("Slashcommands are defined in src/lib/commands.cpp.\nHere is a list of them:\n");
 			std::cout << "Global slashcommands: ";
 			for (const auto& x : slashcommands::list_global) {
@@ -477,7 +477,7 @@ std::map <std::string, std::function <void(std::vector <std::string>)>> cli_comm
 			}
 			std::cout << '\n';
 		}
-		if (type == "tables") {
+		else if (type == "tables") {
 			std::cout << fmt::format("SQL tables are defined in src/lib/database.cpp.\nHere is a list of them:\n");
 			for (const std::string& x : db::table_names) {
 				std::cout << x;
@@ -486,6 +486,9 @@ std::map <std::string, std::function <void(std::vector <std::string>)>> cli_comm
 				}
 			}
 			std::cout << '\n';
+		}
+		else {
+			std::cout << fmt::format("{}: unknown type.\n", type);
 		}
 	}},
 };
