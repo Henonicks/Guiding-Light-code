@@ -10,10 +10,19 @@ This is a Discord bot written in C++ using the [D++](https://dpp.dev) library. I
 The bot is tested in-dev with g++-13 and hosted with clang++-18. It is advised to use g++ with the version of at least 13 as it uses coroutines which are unstable on g++-12 and earlier. I'm unaware of the coroutines situation with clang++.
 
 ## Compilation
+The program assumes it's placed inside a directory below the project's root directory. So make one:
 
     mkdir build
     cd build
+
+Then, generate a Makefile with cmake:
+
     cmake ..
+
+You need to run the command above very time a change is made to `CMakeLists.txt`.
+
+Now you're ready to compile:
+
     make -j
 
 If DPP is installed in a different location you can specify the root directory to look in while running cmake 
