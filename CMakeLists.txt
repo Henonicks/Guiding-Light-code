@@ -7,7 +7,8 @@ aux_source_directory("src" coresrc)
 aux_source_directory("src/lib" codParts)
 aux_source_directory("src/lib/guidingLight" guidingLightCPP)
 aux_source_directory("sqlite3pp/src" sqlite)
-add_executable(${BOT_NAME} ${coresrc} ${codParts} ${sqlite} ${guidingLightCPP})
+aux_source_directory("sqlite_modern_cpp/hdr/sqlite_modern_cpp" sqlite_cpp)
+add_executable(${BOT_NAME} ${coresrc} ${guidingLightCPP} ${codParts} ${sqlite} ${sqlite_cpp})
 
 target_compile_definitions(${BOT_NAME} PUBLIC FMT_HEADER_ONLY)
 
@@ -19,8 +20,6 @@ set_target_properties(${BOT_NAME} PROPERTIES
     CXX_STANDARD 20
     CXX_STANDARD_REQUIRED ON
 )
-
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/sqlite_modern_cpp)
 
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 set(DPP_LIBRARIES dpp)
@@ -40,6 +39,7 @@ endif()
 
 target_include_directories(${BOT_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/sqlite_modern_cpp/hdr
     ${CMAKE_CURRENT_SOURCE_DIR}/colorize
     ${OPENSSL_INCLUDE_DIR}
 )
@@ -50,7 +50,6 @@ target_link_libraries(${BOT_NAME}
     ${OPENSSL_CRYPTO_LIBRARY} 
     ${OPENSSL_SSL_LIBRARY}
     sqlite3
-    sqlite_modern_cpp
     readline
 )
 
