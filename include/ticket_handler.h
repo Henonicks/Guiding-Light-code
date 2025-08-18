@@ -15,10 +15,9 @@ dpp::message preserve_attachments(const dpp::message& msg);
 
 /**
  * @brief Handles a DM from a user.
- * @param user_id The user who has sent the DM.
  * @param event The event object which contains information about the request.
  */
-void handle_dm_in(const dpp::snowflake& user_id, const dpp::message_create_t& event);
+void handle_dm_in(const dpp::message_create_t& event);
 
 /**
  * @brief Sends a DM.
@@ -28,13 +27,13 @@ void handle_dm_out(const dpp::message_create_t& event);
 
 /**
  * @brief Creates a ticket.
- * @param user_id The user creating the ticket.
+ * @param user_id The ID of the user creating the ticket.
  */
 void ticket_create(const dpp::snowflake& user_id);
 
 /**
  * @brief Deletes a ticket.
- * @param user_id The user deleting the ticket.
+ * @param user_id The ID of the user deleting the ticket.
  */
 void ticket_delete(const dpp::snowflake& user_id);
 

@@ -78,8 +78,7 @@ int main(const int argc, char** argv) {
 			return;
 		}
 		// Same as with a button click.
-		dpp::snowflake user_id = event.msg.author.id;
-		if (user_id == bot->me.id) {
+		if (event.msg.author.id == bot->me.id) {
 			return;
 		}
 		// We don't want to reply to any of our own messages.
@@ -87,14 +86,13 @@ int main(const int argc, char** argv) {
 		const std::string& msg = event.msg.content;
 		const dpp::snowflake& guild_id = event.msg.guild_id;
 		if (event.msg.is_dm()) {
-			handle_dm_in(user_id, event);
-			// TODO: we can actually just take the user ID from the event inside the function
+			handle_dm_in(event);
 		}
 		if (guild_id == TICKETS_GUILD_ID) {
 			handle_dm_out(event);
 		}
 		if (channel_id == TOPGG_WEBHOOK_CHANNEL_ID) {
-			user_id = msg.substr(2, msg.size() - bot->me.id.str().size() - 10);
+			const dpp::snowflake user_id = msg.substr(2, msg.size() - bot->me.id.str().size() - 10);
 			const bool weekend = msg[2 + user_id.str().size() + 2] == 't';
 			// The vote messages are formatted like this: <@${user_id}> ${weekend}> <@${bot_id}>
 			// Where ${user_id} is the ID of the user who voted,

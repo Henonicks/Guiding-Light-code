@@ -19,27 +19,26 @@ void configuration::read_config() {
 
 	MODE_NAME = IS_DEV ? "dev" : "release";
 
-	logs_directory = fmt::format("../logging/{}/", IS_CLI ? "cli" : "bot");
-	// TODO: remove the last slash of the string
+	logs_directory = fmt::format("../logging/{}", IS_CLI ? "cli" : "bot");
 }
 
 void configuration::init_logs() {
-	const std::filesystem::path path_release{fmt::format("{}release", logs_directory)};
-	const std::filesystem::path path_dev{fmt::format("{}dev", logs_directory)};
+	const std::filesystem::path path_release{fmt::format("{}/release", logs_directory)};
+	const std::filesystem::path path_dev{fmt::format("{}/dev", logs_directory)};
 	if (!std::filesystem::exists(path_release)) {
-		std::filesystem::create_directories(fmt::format("{}release", logs_directory));
+		std::filesystem::create_directories(fmt::format("{}/release", logs_directory));
 	}
 	if (!std::filesystem::exists(path_dev)) {
-		std::filesystem::create_directories(fmt::format("{}dev", logs_directory));
+		std::filesystem::create_directories(fmt::format("{}/dev", logs_directory));
 	}
-	my_logs_release = std::ofstream(fmt::format("{}release/my_logs.log", logs_directory));
-	my_logs_dev = std::ofstream(fmt::format("{}dev/my_logs.log", logs_directory));
-	guild_logs_release = std::ofstream(fmt::format("{}release/guild_logs.log", logs_directory));
-	guild_logs_dev = std::ofstream(fmt::format("{}dev/guild_logs.log", logs_directory));
-	other_logs_release = std::ofstream(fmt::format("{}release/other_logs.log", logs_directory));
-	other_logs_dev = std::ofstream(fmt::format("{}dev/other_logs.log", logs_directory));
-	sql_logs_release = std::ofstream(fmt::format("{}release/sql_logs.log", logs_directory));
-	sql_logs_dev = std::ofstream(fmt::format("{}dev/sql_logs.log", logs_directory));
+	my_logs_release = std::ofstream(fmt::format("{}/release/my_logs.log", logs_directory));
+	my_logs_dev = std::ofstream(fmt::format("{}/dev/my_logs.log", logs_directory));
+	guild_logs_release = std::ofstream(fmt::format("{}/release/guild_logs.log", logs_directory));
+	guild_logs_dev = std::ofstream(fmt::format("{}/dev/guild_logs.log", logs_directory));
+	other_logs_release = std::ofstream(fmt::format("{}/release/other_logs.log", logs_directory));
+	other_logs_dev = std::ofstream(fmt::format("{}/dev/other_logs.log", logs_directory));
+	sql_logs_release = std::ofstream(fmt::format("{}/release/sql_logs.log", logs_directory));
+	sql_logs_dev = std::ofstream(fmt::format("{}/dev/sql_logs.log", logs_directory));
 }
 
 void configuration::pray() { // I'll pray that when this function starts executing we have all the cache because Discord doesn't let me know whether all the cache I've received at a certain point is everything or there's more and there's no better way to do this I promise

@@ -8,7 +8,8 @@ dpp::message preserve_attachments(const dpp::message& msg) {
 	return repost;
 }
 
-void handle_dm_in(const dpp::snowflake& user_id, const dpp::message_create_t& event) {
+void handle_dm_in(const dpp::message_create_t& event) {
+	const dpp::snowflake& user_id = event.msg.author.id;
 	if (tickets[user_id].empty()) {
 		bot->direct_message_create(user_id,dpp::message(
 			fmt::format("To contact the creator of this bot you need to create a ticket. Issue {0} to allow your messages in this"
