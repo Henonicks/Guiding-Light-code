@@ -1,7 +1,6 @@
 #ifndef TOPGG_H
 #define TOPGG_H
 
-#include <dpp/cluster.h>
 #include "notification_channel.h"
 
 namespace topgg {
@@ -11,10 +10,21 @@ namespace topgg {
 	extern std::vector <int> votes_leveling;
 	extern std::map <user_snowflake, bool> no_noguild_reminder;
 
+	/**
+	 * @brief Handles a top.gg vote for the bot.
+	 * @param user_id The ID of the user who voted.
+	 * @param weekend True if it's a weekend, false otherwise.
+	 * @return True if the user voted in favour of a guild, false otherwise.
+	 */
 	bool vote(const dpp::snowflake& user_id, const bool& weekend);
 
 	namespace jtc {
-		int8_t count_jtcs(const dpp::snowflake& guild_id);
+		/**
+		 * @brief Counts the amount of allowed JTCs in a guild.
+		 * @param guild_id The ID of the guild where the JTCs are counted.
+		 * @return The amount of the JTCs.
+		 */
+		int8_t count_allowed_jtcs(const dpp::snowflake& guild_id);
 	}
 }
 

@@ -3,33 +3,29 @@
 user_snowflake handling_user_id;
 
 void temp_vc_create_msg(const temp_vc_query& q, const dpp::channel& channel) {
-	std::string description = "A new temporary channel has been created ";
-			description += (!channel.parent_id.empty() ?
-			"in the <#" +
-			channel.parent_id.str() + "> category"
-			: "outside the categories");
-			description += ". Join the channel, **" + channel.name + "** (<#" +
-			channel.id.str() + ">)!";
-			dpp::embed temp_vc_create_embed = dpp::embed().
-			set_color(dpp::colors::greenish_blue).
-			set_description(description);
+	const std::string description = fmt::format("A new temporary channel has been created {0}. Join the channel, **{1}** (<#{2}>)!",
+		!channel.parent_id.empty() ? fmt::format("in the <#{}> category", channel.parent_id) : "outside the categories",
+		channel.name, channel.id.str());
+	const dpp::embed temp_vc_create_embed = dpp::embed()
+		.set_color(dpp::colors::greenish_blue)
+		.set_description(description);
 	bot->message_create(dpp::message(temp_vc_notifications[q.guild_id], temp_vc_create_embed), error_callback);
 }
 
- void temp_vc_create_owner_msg(const temp_vc_query& q, const dpp::snowflake& channel_id) {
-	dpp::embed temp_ping_embed = dpp::embed()
-	.set_color(dpp::colors::sti_blue)
-	.set_title(fmt::format("Welcome to <#{}>!", channel_id))
-	.set_author(fmt::format("This VC belongs to {}.", q.usr->username), q.usr->get_url(), q.usr->get_avatar_url())
-	.add_field(
-		"You're able to edit the channel!",
-		"Use a subcommand of the `/set` command to change the name, limit, or bitrate of your channel to whatever value your soul desires. See `/help` (not to be confused with \"seek help\") for more information."
-	)
-	.set_footer(
-		dpp::embed_footer()
-		.set_text("Use the button bellow to toggle the temporary VC creation ping on/off. Have fun!")
-	);
-	dpp::message message = dpp::message(channel_id, q.usr->get_mention()).add_embed(temp_ping_embed).add_component(
+void temp_vc_create_owner_msg(const temp_vc_query& q, const dpp::snowflake& channel_id) {
+	const dpp::embed temp_ping_embed = dpp::embed()
+		.set_color(dpp::colors::sti_blue)
+		.set_title(fmt::format("Welcome to <#{}>!", channel_id))
+		.set_author(fmt::format("This VC belongs to {}.", q.usr->username), q.usr->get_url(), q.usr->get_avatar_url())
+		.add_field(
+			"You're able to edit the channel!",
+			"Use a subcommand of the `/set` command to change the name, limit, or bitrate of your channel to whatever value your soul desires. See `/help` (not to be confused with \"seek help\") for more information."
+		)
+		.set_footer(
+			dpp::embed_footer()
+			.set_text("Use the button bellow to toggle the temporary VC creation ping on/off. Have fun!")
+		);
+	const dpp::message message = dpp::message(channel_id, q.usr->get_mention()).add_embed(temp_ping_embed).add_component(
 		dpp::component().add_component(
 			dpp::component()
 			.set_type(dpp::cot_button)
@@ -52,7 +48,7 @@ void temp_vc_delete_msg(const dpp::user& user, const dpp::channel* channel) {
 		if (category != nullptr) {
 			description += " in the **" + category->get_mention() + "** category";
 		}
-		description += " has been deleted deleted.";
+		description += " has been deleted.";
 		const dpp::embed temp_vc_delete_message = dpp::embed().
 		set_color(dpp::colors::blood_night).
 		set_description(description);
@@ -63,7 +59,7 @@ void temp_vc_delete_msg(const dpp::user& user, const dpp::channel* channel) {
 
 void temp_vc_create(const temp_vc_query& q) {
 	if (q.usr == nullptr) {
-		bot->log(dpp::ll_error, fmt::format("User {0} not found. Channel: {1}", q.usr->id, q.channel_id));
+		log(fmt::format("User not found. Channel: {}", q.channel_id));
 		if (!q.channel_id.empty()) {
 			bot->message_create(dpp::message(q.channel_id, fmt::format("<@{}> I could not find your user information. Leave and try again in a few seconds.", q.usr->id)).set_allowed_mentions(true), error_callback);
 		}
@@ -80,11 +76,11 @@ void temp_vc_create(const temp_vc_query& q) {
 		bot->guild_member_move(0, q.guild_id, q.usr->id, error_callback);
 		return;
 	}
-	std::string username = q.usr->username;
+	const std::string& username = q.usr->username;
 	std::string new_name;
 	dpp::channel new_channel;
 	new_channel.set_type(dpp::channel_type::CHANNEL_VOICE);
-	jtc_defaults defs = jtc_default_values[q.channel_id];
+	const jtc_defaults& defs = jtc_default_values[q.channel_id];
 	for (int i = 0; i < (int)defs.name.size(); i++) {
 		if (defs.name[i] == '{') {
 			if (defs.name.size() - i >= 10) { // text {username}
@@ -102,6 +98,10 @@ void temp_vc_create(const temp_vc_query& q) {
 		new_name += defs.name[i];
 	}
 	if (new_name.size() > 100) {
+		// Usernames come in different shapes and sizes which means
+		// they can make the size of the name higher than 100.
+		// In that case we're gonna replace each occurrence with
+		// Its first 10 letters.
 		std::string newer_name;
 		for (int i = 0; i < (int)defs.name.size(); i++) {
 			if (defs.name[i] == '{') {
@@ -121,7 +121,7 @@ void temp_vc_create(const temp_vc_query& q) {
 		}
 		new_name = newer_name;
 	}
-	int limit = (int)defs.limit;
+	const int8_t& limit = defs.limit;
 	new_channel.set_name(new_name);
 	new_channel.set_guild_id(q.guild_id);
 	new_channel.set_bitrate(defs.bitrate);
@@ -133,7 +133,8 @@ void temp_vc_create(const temp_vc_query& q) {
 			if (called_separately) {
 				return;
 			}
-			throw 0;
+			throw success_exception{};
+			// We'll throw this exception as a sign that we've fully completed what we had to successfully.
 		}
 		if (temp_vcs_queue.front().usr->id != q.usr->id) {
 			return;
@@ -156,7 +157,7 @@ void temp_vc_create(const temp_vc_query& q) {
 			if (!no_temp_ping[q.usr->id]) {
 				temp_vc_create_owner_msg(q, channel.id);
 			}
-			temp_vcs[channel.id] = {channel.id, channel.guild_id, q.usr->id};
+			temp_vcs[channel.id] = {channel.id, channel.guild_id, q.usr->id, q.channel_id};
 			bot->guild_member_move(channel.id, channel.guild_id, q.usr->id, [channel, q](const dpp::confirmation_callback_t& callback) -> void {
 				if (callback.is_error()) {
 					bot->channel_delete(channel.id, error_callback);
@@ -172,15 +173,21 @@ void temp_vc_create(const temp_vc_query& q) {
 		if (called_separately) {
 			return;
 		}
-		throw 0;
+		throw success_exception{};
+		// We'll throw this exception as a sign that we've fully completed what we had to successfully.
 	};
 	timer_function(true);
-	bot->start_timer([new_channel, current, q, timer_function](const dpp::timer& h) -> void {
+	bot->start_timer([timer_function](const dpp::timer& h) -> void {
 		try {
 			timer_function(false);
 		}
-		catch (...) {
-			bot->stop_timer(h);
+		catch (const std::exception& e) { // Now make sure to catch the success exception or else it's not going to be so successful.
+			if (e.what() == std::string("success")) {
+				bot->stop_timer(h);
+			}
+			else {
+				log(fmt::format("Exception at the temp VC timer function: ", e.what()));
+			}
 		}
 	}, 1);
 }
@@ -189,11 +196,11 @@ bool blocklist_updated(const dpp::channel& channel) {
 	auto unbanned = banned[channel.id];
 	bool flag{};
 	for (const auto& x : channel.permission_overwrites) {
-		if (banned[channel.id].count(x.id) && (x.allow.can(dpp::p_view_channel) || !x.deny.can(dpp::p_view_channel))) {
+		if (banned[channel.id].contains(x.id) && (x.allow.can(dpp::p_view_channel) || !x.deny.can(dpp::p_view_channel))) {
 			flag = true;
 			banned[channel.id].erase(x.id);
 		}
-		if (unbanned.count(x.id)) {
+		if (unbanned.contains(x.id)) {
 			flag = true;
 			unbanned.erase(x.id);
 		}

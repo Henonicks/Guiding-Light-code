@@ -6,10 +6,36 @@
 #include "ticket.h"
 #include "slash_funcs.h"
 
-dpp::message preserve_attachments(const dpp::message& msg); // put attachment links inside the message to preserve them when sharing
-void handle_dm_in(const dpp::snowflake& user_id, const dpp::message_create_t& event); // handle a DM
-void handle_dm_out(const dpp::message_create_t& event); // handle a DM
-void ticket_create(const dpp::snowflake& user_id); // create a ticket for the user
-void ticket_delete(const dpp::snowflake& user_id); // delete the user's ticket
+/**
+ * @brief Puts attachment links inside the message to preserve them when sharing.
+ * @param msg The message.
+ * @returns The message with the links inserted.
+ */
+dpp::message preserve_attachments(const dpp::message& msg);
+
+/**
+ * @brief Handles a DM from a user.
+ * @param user_id The user who has sent the DM.
+ * @param event The event object which contains information about the request.
+ */
+void handle_dm_in(const dpp::snowflake& user_id, const dpp::message_create_t& event);
+
+/**
+ * @brief Sends a DM.
+ * @param event The event object which contains information about the request.
+ */
+void handle_dm_out(const dpp::message_create_t& event);
+
+/**
+ * @brief Creates a ticket.
+ * @param user_id The user creating the ticket.
+ */
+void ticket_create(const dpp::snowflake& user_id);
+
+/**
+ * @brief Deletes a ticket.
+ * @param user_id The user deleting the ticket.
+ */
+void ticket_delete(const dpp::snowflake& user_id);
 
 #endif

@@ -1,4 +1,5 @@
 #include "logging.h"
+#include "configuration.h"
 
 void bot_log(const dpp::log_t& _log) {
 	std::ofstream* other_logs = &(IS_DEV ? other_logs_dev : other_logs_release);
@@ -34,6 +35,7 @@ void bot_log(const dpp::log_t& _log) {
 void log(std::string_view message) {
 	std::ofstream* my_logs = &(IS_DEV ? my_logs_dev : my_logs_release);
 	*my_logs << fmt::format("[{0}]: {1}", dpp::utility::current_date_time(), message) << std::endl;
+	// Here's a note to myself,
 	// i know you're itching to replace "std::endl" with "'\n'" but please don't do it cuz then the logs won't work bro trust
 }
 
@@ -43,7 +45,7 @@ void guild_log(std::string_view message) {
 	// i hope you know the drill by now
 }
 
-void sql_log(sqlite::sqlite_exception e) {
+void sql_log(const sqlite::sqlite_exception& e) {
 	std::ofstream* sql_logs = &(IS_DEV? sql_logs_dev : sql_logs_release);
 	*sql_logs << fmt::format("[{0}]: Error code: {1}, error: {2}, query: {3}", dpp::utility::current_date_time(), e.get_code(), e.what(), e.get_sql()) << std::endl;
 	// this ain't a drill, this is the way that I dream of goin' out
@@ -57,5 +59,29 @@ void error_callback(const dpp::confirmation_callback_t& callback) {
 		else {
 			log("ERROR!" + callback.get_error().message);
 		}
+	}
+}
+
+void error_feedback(const dpp::confirmation_callback_t& callback, const dpp::interaction_create_t& event, std::string_view error_intro) {
+	if (callback.is_error()) {
+		if (!callback.get_error().errors.empty()) {
+			log(fmt::format("ERROR! FIELD: {0} REASON: {1}", callback.get_error().errors[0].field, callback.get_error().errors[0].reason));
+		}
+		else {
+			log("ERROR!" + callback.get_error().message);
+		}
+		event.reply(fmt::format("{0}: {1}.", error_intro, callback.get_error().message), error_callback);
+	}
+}
+
+void error_feedback(const dpp::confirmation_callback_t& callback, const dpp::message_create_t& event, std::string_view error_intro) {
+	if (callback.is_error()) {
+		if (!callback.get_error().errors.empty()) {
+			log(fmt::format("ERROR! FIELD: {0} REASON: {1}", callback.get_error().errors[0].field, callback.get_error().errors[0].reason));
+		}
+		else {
+			log("ERROR!" + callback.get_error().message);
+		}
+		event.reply(fmt::format("{0}: {1}.", error_intro, callback.get_error().message), error_callback);
 	}
 }
