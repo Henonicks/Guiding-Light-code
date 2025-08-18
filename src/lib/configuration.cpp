@@ -17,9 +17,10 @@ void configuration::read_config() {
 	BOT_TOKEN = config["BOT_TOKEN"];
 	BOT_TOKEN_DEV = config["BOT_TOKEN_DEV"];
 
-	MODE_NAME = (IS_DEV ? "dev" : "release");
+	MODE_NAME = IS_DEV ? "dev" : "release";
 
 	logs_directory = fmt::format("../logging/{}/", IS_CLI ? "cli" : "bot");
+	// TODO: remove the last slash of the string
 }
 
 void configuration::init_logs() {

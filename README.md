@@ -44,12 +44,12 @@ Create a config.json in `Guiding_Light_Config`, located above the `build` direct
 {
     "BOT_TOKEN": "Bot token here",
     "BOT_TOKEN_DEV" : "Test bot token here (use --dev when starting to test new changes without affecting anything used in production)",
-    "BOT_DM_LOGS_ID" : The ID of the channel for DM logs,
-    "MY_ID" : Your account's ID,
-    "TOPGG_WEBHOOK_CHANNEL_ID" : The ID of the channel for top.gg vote webhook messages,
-    "MY_GUILD_ID" : The ID of your guild. Not used anymore,
-    "MY_PRIVATE_GUILD_ID" : The ID of your guild. Used to create commands only administrators (which I know can only be me) can use
-    "TICKETS_GUILD_ID" : The ID of your guild which contains tickets. Can be the same as MY_PRIVATE_GUILD_ID if you like
+    "BOT_DM_LOGS_ID" : "(integer) The ID of the channel for DM logs",
+    "MY_ID" : "(integer) Your account's ID",
+    "TOPGG_WEBHOOK_CHANNEL_ID" : "(integer) The ID of the channel for top.gg vote webhook messages",
+    "MY_GUILD_ID" : "(integer) The ID of your guild. Not used anymore",
+    "MY_PRIVATE_GUILD_ID" : "(integer) The ID of your guild. Used to create commands only administrators (which I know can only be me) can use",
+    "TICKETS_GUILD_ID" : "(integer) The ID of your guild which contains tickets. Can be the same as MY_PRIVATE_GUILD_ID if you like"
 }
 ```
 
@@ -93,7 +93,7 @@ Once you're done setting up, you can start the bot.
 
 ## CLI mode
 
-The CLI mode is built into the rest of thhe program. By compiling the bot, you compile the CLI alongside it. In this mode the bot doesn't handle events, neither does it start. This mode is used to set the bot up and create/delete slashcommands. It supports history but it doesn't have autocomplete because I couldn't figure it out.
+The CLI mode is built into the rest of thhe program. By compiling the bot, you compile the CLI alongside it. In this mode the bot doesn't handle events, neither does it start. This mode is used to set the bot up and create/delete slashcommands. It supports history, but it doesn't have autocomplete because I couldn't figure it out.
 When you enter the CLI mode, you're logged into a pseudo-user - `guidingLight`, the release mode user and `curiousLight`, the development mode user. The input line looks something like this:
 
     guidingLight>
@@ -118,4 +118,4 @@ To rename the bot, search and replace "guidingLight" in the `CMakeLists.txt` wit
 
 ## Curious Light? Guiding Light? What do the names have to do with the bot's function?
 
-Back in late 2023 this bot used to be a simple, tip-providing Discord bot about Doors the Roblox game, hence the name, Guiding Light. Later I decided to expand it to join-to-create voice channels as there was no bot that notified about new channels being created which was quite annoying as I really liked talking to the members of our friend Discord server, Central City. So, at first, the bot simply had extra functionality in Central City, and then it was expanded as a full-blown, public, join-to-create Discord bot. The name stayed the same and Curious Light became a nod to another Doors entity (taken from Rooms). **In this program's case, Curious Light is the in-development version of Guiding Light.** That's also why when in the CLI mode, the colour of `guidingLight` is cyan while that of `curiousLight` is yellow.
+Back in late 2023 this bot used to be a simple, tip-providing Discord bot about Doors the Roblox (#freeschlep) game, hence the name, Guiding Light. Later I decided to expand it to join-to-create voice channels as there was no bot that notified about new channels being created which was quite annoying as I really liked talking to the members of our friend Discord server, Central City. So, at first, the bot simply had extra functionality in Central City, and then it was expanded as a full-blown, public, join-to-create Discord bot. The name stayed the same and Curious Light became a nod to another Doors entity (taken from Rooms). **In this program's case, Curious Light is the in-development version of Guiding Light.** That's also why when in the CLI mode, the colour of `guidingLight` is cyan while that of `curiousLight` is yellow.

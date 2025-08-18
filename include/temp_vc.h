@@ -3,7 +3,6 @@
 
 #include "guidingLight/guiding_light.h"
 #include <unordered_set>
-#include "jtc_defaults.h"
 
 struct temp_vc {
 	dpp::snowflake channel_id, guild_id, creator_id, parent_id;
