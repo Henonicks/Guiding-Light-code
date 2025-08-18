@@ -27,7 +27,7 @@ Now you're ready to compile:
 
 If DPP is installed in a different location you can specify the root directory to look in while running cmake 
 
-    cmake .. -DDPP_ROOT_DIR=<your-path>
+    cmake .. -DCMAKE_PREFIX_PATH=<your/path>
 
 If you have the same situation with fmtlib then good luck cuz I'm not a cmake genius and the above line actually comes from templatebot, the repository this one is a fork of.
 

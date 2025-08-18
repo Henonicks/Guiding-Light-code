@@ -220,7 +220,7 @@ int main(const int argc, char** argv) {
 				bot->direct_message_create(MY_ID, dpp::message(fmt::format("Ayo {} checking logs wht", event.command.usr.id)));
 			}
 			std::string_view file_name = cmd.options[0].name == "dpp" ? "other_logs.log" : cmd.options[0].name == "mine" ? "my_logs.log" : cmd.options[0].name == "guild" ? "guild_logs.log" : "sql_logs.log";
-			const dpp::message message = dpp::message().add_file(file_name, dpp::utility::read_file(fmt::format("{0}{1}/{2}", logs_directory, MODE_NAME, file_name))).set_flags(dpp::m_ephemeral);
+			const dpp::message message = dpp::message().add_file(file_name, dpp::utility::read_file(fmt::format("{0}/{1}/{2}", logs_directory, MODE_NAME, file_name))).set_flags(dpp::m_ephemeral);
 			event.reply(message);
 		}
 		if (cmd_name == "select") {
