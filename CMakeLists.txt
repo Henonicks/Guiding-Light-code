@@ -5,6 +5,10 @@ set(BOT_NAME "guidingLight")
 
 project(${BOT_NAME})
 
+if (CMAKE_PREFIX_PATH)
+    link_directories(${CMAKE_PREFIX_PATH}/lib)
+endif()
+
 aux_source_directory("src" coresrc)
 aux_source_directory("src/lib" codParts)
 aux_source_directory("src/lib/guidingLight" guidingLightCPP)
