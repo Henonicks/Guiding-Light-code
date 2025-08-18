@@ -1,5 +1,7 @@
 #include "cli.h"
 
+std::string last_command;
+
 void read_until_provided(std::string& line) {
 	std::vector <std::string> tokens;
 	while (tokens.empty()) {
@@ -386,7 +388,10 @@ void enter_cli() {
 		std::string line = readline(fmt::format("{} ", (!IS_DEV ? color::rize("guidingLight", "Cyan") : color::rize("curiousLight", "Yellow")) + color::rize(">", is_running() ? "Green" : *bot_is_starting ? "Yellow" : "Red")).c_str());
 		std::vector <std::string> command = tokenise(line);
 		if (!command.empty()) {
-			add_history(line.c_str());
+			if (last_command.empty() || last_command != line) {
+				add_history(line.c_str());
+			}
+			last_command = line;
 			exec_cli_command(command);
 		}
 	}
