@@ -1,10 +1,9 @@
 #ifndef COMMANDS_H
 #define COMMANDS_H
 
-#include "configuration.h"
+#include "guiding_light/configuration.hpp"
 
-extern std::set <std::string> subcommand_list;
-extern std::map <std::string, std::string> cli_manual;
+extern const std::set <std::string> subcommand_list;
 
 namespace logs {
     extern std::set <std::string> list;
@@ -13,8 +12,6 @@ namespace logs {
 namespace slashcommands {
     extern std::map <std::string, dpp::slashcommand> list_global;
     extern std::map <std::string, dpp::slashcommand> list_guild;
-    extern std::vector <dpp::slashcommand> list_global_vector;
-    extern std::vector <dpp::slashcommand> list_guild_vector;
 
     /**
      * @brief Initialises the slashcommands list.

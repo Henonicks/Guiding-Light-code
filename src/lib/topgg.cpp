@@ -1,5 +1,5 @@
-#include "topgg.h"
-#include "database.h"
+#include "guiding_light/topgg.hpp"
+#include "guiding_light/database.hpp"
 
 int topgg::last_collection_time = 0;
 std::map <user_snowflake, guild_snowflake> topgg::guild_choices;

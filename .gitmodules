@@ -1,9 +1,9 @@
-[submodule "sqlite3pp"]
-	path = sqlite3pp
-	url = https://github.com/iwongu/sqlite3pp
 [submodule "colorize"]
 	path = colorize
 	url = https://github.com/fengwang/colorize
 [submodule "sqlite_modern_cpp"]
 	path = sqlite_modern_cpp
 	url = https://github.com/Henonicks/sqlite_modern_cpp
+[submodule "cpp-linenoise"]
+	path = cpp-linenoise
+	url = https://github.com/Henonicks/cpp-linenoise

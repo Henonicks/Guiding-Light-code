@@ -1,19 +1,57 @@
-#include "cli.h"
+#include "guiding_light/cli.hpp"
+#include "guiding_light/commands.tpp"
 
-std::string last_command;
+std::string cli::last_command;
 
-void read_until_provided(std::string& line) {
+const std::map <std::string, std::string> cli::manual = {
+	{"help", "Shows this message.\n"
+		"Usage: \"help [cmd1] [cmd2]... [cmdN]\" or \"help ...\""},
+	{"quit", "Quit the CLI. If the Discord bot is running, it won't stop simply because of this command.\n"
+		"Usage: quit"},
+	{"switch", "Switch between release and dev (guidingLight and curiousLight).\n"
+		"Usage: switch <mode>"},
+	{"init_db", "Initialise the database for the current mode (release or dev). Needs to be done before the bot is launched.\n"
+		"Usage: init_db"},
+	{"conv_db", "Converts the database from text file-based to SQL-based. Needs to be done before the bot is launched if you have a text file-based database (was used before SQLite was introduced). Also changes the values to match the current standard.\n"
+		"Usage: conv_db"},
+	{"select", "Make a SELECT query to generate a file in database/select/<mode> where <mode> can either be release or dev.\n"
+		"Usage: select <table>"},
+	{"globalcreate", "Create a global slashcommand. Multiple arguments can be provided for multiple slashcommands to be created. Commands are created in bulk, so only the commands provided will exist. The rest, if they exist, will be deleted.\n"
+		"Usage: \"ccreate <slashcommand> [slashcommand2]... [slashcommandN]\" or \"cdelete ...\""},
+	{"guildcreate", "Create a guild slashcommand. Multiple arguments can be provided for multiple slashcommands to be created. Commands are created in bulk, so only the commands provided will exist. The rest, if they exist, will be deleted from the guild.\n"
+		"Usage: \"ccreate <slashcommand> [slashcommand2]... [slashcommandN]\" or \"cdelete ...\""},
+	{"cdelete", "Delete a slashcommand. Leave no parameters for every slashcommand to be deleted.\n"
+		"Usage: cdelete [slashcommand]"},
+	{"launch", "Launch the bot with the same mode as the one being used. Stays launched until the CLI has been exited. Switching the mode will NOT shut down the bot.\n"
+		"Usage: launch"},
+	{"list", "Lists what you ask it to - the log files, database tables or slashcommands that can be created. Acceptable values: logs, slashcommands and tables.\n"
+		"Usage: list <type>"},
+};
+
+std::map <std::string, std::vector <std::string>> cli::completions;
+
+void cli::read_until_provided(std::string& line) {
 	std::vector <std::string> tokens;
 	while (tokens.empty()) {
-		line = readline(color::rize("> ", "Magenta").c_str()); // Purple is my favourite colour, this is as close as I can get
+		const bool quit = linenoise::Readline(color::rize("> ", "Magenta").c_str(), line); // Purple is my favourite colour, this is as close as I can get
+		if (quit) {
+			line = "";
+			std::cout << "Cancelled.\n";
+			return;
+		}
 		tokens = tokenise(line);
 	}
 	line = tokens[0];
 }
 
-bool confirmation(std::string_view line) {
+bool cli::confirmation(std::string_view line) {
 	while (true) {
-		std::string input = readline(fmt::format("{} (Y/n) ", line).c_str());
+		std::string input;
+		const bool quit = linenoise::Readline(fmt::format("{} (Y/n) ", line).c_str(), input);
+		if (quit || (!input.empty() && tolower(input[0]) == 'n')) {
+			std::cout << "Cancelled." << '\n';
+			return false;
+		}
 		if (input.size() > 1) {
 			std::cout << "Input one letter or simply press enter for Y as the default.\n";
 			continue;
@@ -21,22 +59,18 @@ bool confirmation(std::string_view line) {
 		if (input.empty() || tolower(input[0]) == 'y') {
 			return true;
 		}
-		if (tolower(input[0]) == 'n') {
-			std::cout << "Cancelled.\n";
-			return false;
-		}
 		std::cout << "Invalid choice.\n";
 	}
 }
 
-const std::map <std::string, std::function <void(std::vector <std::string>)>> cli_commands = {
+const std::map <std::string, std::function <void(std::vector <std::string>)>> cli::commands = {
 	{"help", [](const std::vector <std::string>& cmd) {
 		if (cmd.size() == 1) {
 			std::cout << "Usage: <command> [subcommand]\nTry help <command> to see how to use one of the commands or "
 			"help <list of commands> to see how to use multiple at once. Example:\nhelp cmd1 cmd2 cmd3.\nhelp ... explains every command.\nCommands: ";
-			for (const auto& x : cli_manual) {
+			for (const auto& x : manual) {
 				std::cout << x.first;
-				if (x.first != cli_manual.rbegin()->first) {
+				if (x.first != manual.rbegin()->first) {
 					std::cout << ", ";
 				}
 			}
@@ -52,29 +86,33 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 				requested.insert(cmd[i]);
 			}
 			if (requested.empty()) {
-				for (const auto& x : cli_manual) {
+				for (const auto& x : manual) {
 					std::cout << fmt::format("{0}: {1}\n\n", x.first, x.second);
 				}
 			}
 			else {
 				for (const std::string& x : requested) {
-					if (!cli_manual.contains(x)) {
+					if (!manual.contains(x)) {
 						std::cout << fmt::format("{}: doesn't exist.\n", x);
 					}
 					else {
-						std::cout << fmt::format("{0}: {1}\n", x, cli_manual[x]);
+						std::cout << fmt::format("{0}: {1}\n", x, manual.at(x));
 					}
 				}
 			}
 		}
 	}},
 	{"quit", [](const std::vector <std::string>&) {
-		std::exit(0);
+		linenoise::SaveHistory(HISTORY_PATH);
+		std::exit(0); // this is a point of no return
 	}},
 	{"switch", [](const std::vector <std::string>& cmd) {
 		std::string requested_mode;
 		if (cmd.size() == 1) {
 			read_until_provided(requested_mode);
+			if (requested_mode.empty()) {
+				return;
+			}
 		}
 		else {
 			requested_mode = cmd[1];
@@ -156,6 +194,9 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 		std::string table_name;
 		if (cmd.size() == 1) {
 			read_until_provided(table_name);
+			if (table_name.empty()) {
+				return;
+			}
 		}
 		else {
 			table_name = cmd[1];
@@ -198,7 +239,7 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 			}
 		}
 		if (created.empty() && not_created.empty()) {
-			bot->global_bulk_command_create(slashcommands::list_global_vector);
+			bot->global_bulk_command_create(map_values_to_vector(slashcommands::list_global));
 		}
 		else {
 			if (!created.empty()) {
@@ -216,7 +257,7 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 			return;
 		}
 		if (cmd.size() == 1) {
-			std::cout << "You need to provide at least one slashcommand. See help globalcreate for more info.\n";
+			std::cout << "You need to provide at least one slashcommand. See help guildcreate for more info.\n";
 			return;
 		}
 		std::vector <dpp::slashcommand> created;
@@ -240,7 +281,7 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 			}
 		}
 		if (created.empty() && not_created.empty()) {
-			bot->guild_bulk_command_create(slashcommands::list_guild_vector, MY_PRIVATE_GUILD_ID);
+			bot->guild_bulk_command_create(map_values_to_vector(slashcommands::list_guild), MY_PRIVATE_GUILD_ID);
 		}
 		else {
 			if (!created.empty()) {
@@ -304,6 +345,9 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 		std::string type;
 		if (cmd.size() == 1) {
 			read_until_provided(type);
+			if (type.empty()) {
+				return;
+			}
 		}
 		else {
 			type = cmd[1];
@@ -353,7 +397,7 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 	}},
 };
 
-std::vector <std::string> tokenise(std::string_view line) {
+std::vector <std::string> cli::tokenise(std::string_view line) {
 	std::string token;
 	std::vector <std::string> tokens;
 	for (const char& x : line) {
@@ -364,7 +408,7 @@ std::vector <std::string> tokenise(std::string_view line) {
 			}
 		}
 		else {
-			token += x;
+			token += tolower(x);
 		}
 	}
 	if (!token.empty()) {
@@ -373,26 +417,94 @@ std::vector <std::string> tokenise(std::string_view line) {
 	return tokens;
 }
 
-void exec_cli_command(const std::vector <std::string>& cmd) {
-	if (!cli_manual.contains(cmd[0])) {
+void cli::exec_command(const std::vector <std::string>& cmd) {
+	if (!manual.contains(cmd[0])) {
 		std::cout << fmt::format("Unknown command: {}. Try help to see the list of available commands.\n", cmd[0]);
 		return;
 	}
-	cli_commands.at(cmd[0])(cmd);
+	commands.at(cmd[0])(cmd);
 }
 
-void enter_cli() {
+void cli::init() {
 	configuration::read_config();
 	slashcommands::init();
+	const std::filesystem::path history_path(HISTORY_PATH);
+	if (!std::filesystem::exists(history_path)) {
+		std::filesystem::create_directory("cli");
+	}
+	completions = {
+		{"help", concat_vectors <std::string>( {{"..."}, map_keys_to_vector(manual)} )},
+		{"quit", {"smoking"}},
+		{"switch", {"release", "dev"}},
+		{"select", std::vector(db::table_names.begin(), db::table_names.end())},
+		{"globalcreate", concat_vectors <std::string>( {{"..."}, map_keys_to_vector(slashcommands::list_global)} )},
+		{"guildcreate", concat_vectors <std::string>( {{"..."}, map_keys_to_vector(slashcommands::list_guild)} )},
+		{"cdelete", concat_vectors <std::string>( {map_keys_to_vector(slashcommands::list_global), map_keys_to_vector(slashcommands::list_global)} )},
+		{"list", {"logs", "slashcommands", "tables"}},
+	};
+	linenoise::SetCompletionCallback([](const char* edit_buffer, std::vector <std::string>& completion) {
+		std::string line = edit_buffer;
+		const std::vector <std::string> cmd = tokenise(line);
+		if (cmd.empty() || *line.rbegin() == ' ') {
+			return;
+		}
+		std::vector <std::string> valid_completions;
+		if (completions.contains(cmd[0])) {
+			line = "";
+			for (auto it = cmd.begin(); it != cmd.end() - 1; ++it) {
+				line += *it;
+			}
+			for (const auto& x : completions.at(cmd[0])) {
+				if (x.starts_with(*cmd.rbegin())) {
+					valid_completions.push_back(x);
+				}
+			}
+			if (!valid_completions.empty()) {
+				completion = {line + ' ' + valid_completions[0]};
+			}
+		}
+		else {
+			for (const auto& x : map_keys_to_vector(completions)) {
+				if (x.starts_with(cmd[0])) {
+					valid_completions.push_back(x);
+				}
+			}
+			if (!valid_completions.empty()) {
+				completion = {valid_completions[0] + ' '};
+			}
+		}
+		if (valid_completions.size() > 1) {
+			completion = {edit_buffer};
+			linenoise::linenoiseWipeLine(); // Wipe the line so that the tips appear without any other text.
+			for (const std::string& x : valid_completions) {
+				std::cout << x << ' ';
+			}
+			std::cout << '\n';
+		}
+	});
+	linenoise::LoadHistory(HISTORY_PATH);
+}
+
+void cli::enter() {
+	init();
 	while (true) {
-		std::string line = readline(fmt::format("{} ", (!IS_DEV ? color::rize("guidingLight", "Cyan") : color::rize("curiousLight", "Yellow")) + color::rize(">", is_running() ? "Green" : *bot_is_starting ? "Yellow" : "Red")).c_str());
-		std::vector <std::string> command = tokenise(line);
+		std::string line;
+		const bool quit = linenoise::Readline(
+			fmt::format("{} ",
+				(!IS_DEV ? color::rize("guidingLight", "Cyan") : color::rize("curiousLight", "Yellow"))
+				+ color::rize(">", is_running() ? "Green" : *bot_is_starting ? "Yellow" : "Red")).c_str(),
+		line);
+		const std::vector <std::string> command = tokenise(line);
 		if (!command.empty()) {
 			if (last_command.empty() || last_command != line) {
-				add_history(line.c_str());
+				linenoise::AddHistory(line.c_str());
 			}
 			last_command = line;
-			exec_cli_command(command);
+			exec_command(command);
+		}
+		if (quit) {
+			break;
 		}
 	}
+	commands.at("quit")({});
 }

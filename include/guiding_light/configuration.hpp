@@ -1,13 +1,13 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
-#include "notification_channel.h"
-#include "jtc_vc.h"
-#include "jtc_defaults.h"
-#include "logging.h"
-#include "slash_funcs.h"
-#include "topgg.h"
-#include "ticket.h"
+#include "notification_channel.hpp"
+#include "jtc_vc.hpp"
+#include "jtc_defaults.hpp"
+#include "logging.hpp"
+#include "slash_funcs.hpp"
+#include "topgg.hpp"
+#include "ticket.hpp"
 
 namespace configuration {
 	/**

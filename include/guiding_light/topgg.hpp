@@ -1,7 +1,7 @@
 #ifndef TOPGG_H
 #define TOPGG_H
 
-#include "notification_channel.h"
+#include "notification_channel.hpp"
 
 namespace topgg {
 	extern int last_collection_time;

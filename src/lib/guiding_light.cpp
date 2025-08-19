@@ -1,4 +1,4 @@
-#include "guidingLight/guiding_light.h"
+#include "guiding_light/guiding_light.hpp"
 
 dpp::cluster *bot, *bot_dev, *bot_release;
 bool bot_dev_is_starting, bot_release_is_starting, *bot_is_starting;

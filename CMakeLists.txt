@@ -11,9 +11,7 @@ endif()
 
 aux_source_directory("src" coresrc)
 aux_source_directory("src/lib" codParts)
-aux_source_directory("src/lib/guidingLight" guidingLightCPP)
-#aux_source_directory("sqlite3pp/src" sqlite)
-add_executable(${BOT_NAME} ${coresrc} ${guidingLightCPP} ${codParts})
+add_executable(${BOT_NAME} ${coresrc} ${codParts})
 
 target_compile_definitions(${BOT_NAME} PUBLIC FMT_HEADER_ONLY)
 
@@ -50,6 +48,7 @@ target_include_directories(${BOT_NAME} PUBLIC
 
 add_subdirectory(colorize)
 add_subdirectory(sqlite_modern_cpp)
+add_subdirectory(cpp-linenoise)
 
 set_target_properties(${BOT_NAME} PROPERTIES COMPILE_FLAGS "-Wall -Wextra -Wpedantic")
 #get_target_property(OPTIONS_TO_PRINT ${BOT_NAME} COMPILE_FLAGS)
@@ -66,7 +65,7 @@ target_link_libraries(${BOT_NAME}
     ${OPENSSL_CRYPTO_LIBRARY} 
     ${OPENSSL_SSL_LIBRARY}
     sqlite_modern_cpp
-    readline
+    linenoise
     colorize
 )
 

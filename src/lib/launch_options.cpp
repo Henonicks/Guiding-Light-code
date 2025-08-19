@@ -1,4 +1,4 @@
-#include "launch_options.h"
+#include "guiding_light/launch_options.hpp"
 
 void exec_subcommand(std::string_view cmd) {
     if (!subcommand_list.contains(std::string(cmd))) {

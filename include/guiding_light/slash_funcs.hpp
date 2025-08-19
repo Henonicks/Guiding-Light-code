@@ -1,20 +1,19 @@
 #ifndef SLASH_FUNCS_H
 #define SLASH_FUNCS_H
 
-#include "database.h"
-#include "ticket.h"
-#include "topgg.h"
-#include "logging.h"
-#include "notification_channel.h"
-#include "jtc_vc.h"
-#include "jtc_defaults.h"
-#include "temp_vc.h"
+#include "database.hpp"
+#include "ticket.hpp"
+#include "topgg.hpp"
+#include "logging.hpp"
+#include "notification_channel.hpp"
+#include "jtc_vc.hpp"
+#include "jtc_defaults.hpp"
+#include "temp_vc.hpp"
 
 /**
  * @brief Every function that's used directly in the slashcommand handler.
  */
 namespace slash {
-
 	extern bool enabled;
 
 	extern std::map <std::string, std::map <dpp::snowflake, bool>> in_progress; // finished states of commands
@@ -27,7 +26,6 @@ namespace slash {
 	 * @brief set a JTC value - either default or current one.
 	 */
 	namespace set {
-
 		/**
 		 * @brief set a default value of a VCs that belong to a JTC.
 		 * @param event The slashcommand event object which contains information about the request.

@@ -1,7 +1,7 @@
 #ifndef OPTIONS_H
 #define OPTIONS_H
 
-#include "commands.h"
+#include "commands.hpp"
 
 /**
  * @brief Handles a launch option.

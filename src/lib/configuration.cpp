@@ -1,4 +1,4 @@
-#include <configuration.h>
+#include "guiding_light/configuration.hpp"
 
 using json = nlohmann::json;
 
@@ -6,6 +6,10 @@ void configuration::read_config() {
 	json config;
 	std::ifstream config_file_stream("../Guiding_Light_Config/config.json");
 	config_file_stream >> config;
+
+	json random_responses;
+	std::ifstream responses_file_stream("../additional/random_responses.json");
+	responses_file_stream >> random_responses;
 
 	BOT_DM_LOGS = config["BOT_DM_LOGS_ID"];
 	MY_ID = config["MY_ID"];
@@ -20,6 +24,8 @@ void configuration::read_config() {
 	MODE_NAME = IS_DEV ? "dev" : "release";
 
 	logs_directory = fmt::format("../logging/{}", IS_CLI ? "cli" : "bot");
+
+	PING_RESPONSES = random_responses["PING_RESPONSES"].get <std::vector<std::string>>();
 }
 
 void configuration::init_logs() {

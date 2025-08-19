@@ -11,5 +11,6 @@ extern dpp::start_type BOT_RETURN;
 extern bool IS_DEV, IS_CLI;
 extern int DELAY;
 extern uint64_t guild_amount, channel_amount, user_amount;
+extern std::vector <std::string> PING_RESPONSES;
 
 #endif

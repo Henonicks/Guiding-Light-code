@@ -1,4 +1,4 @@
-#include <slash_funcs.h>
+#include "guiding_light/slash_funcs.hpp"
 
 std::map <std::string, std::map <dpp::snowflake, bool>> slash::in_progress;
 std::map <std::string, dpp::slashcommand> slash::global_created, slash::guild_created;

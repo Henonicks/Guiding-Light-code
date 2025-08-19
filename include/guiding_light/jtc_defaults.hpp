@@ -1,7 +1,7 @@
 #ifndef JTC_DEFAULTS_H
 #define JTC_DEFAULTS_H
 
-#include "guidingLight/guiding_light.h"
+#include "guiding_light.hpp"
 
 struct jtc_defaults {
 	dpp::snowflake channel_id;
