@@ -1,5 +1,5 @@
-#include "logging.h"
-#include "configuration.h"
+#include "guiding_light/logging.hpp"
+#include "guiding_light/configuration.hpp"
 
 void bot_log(const dpp::log_t& _log) {
 	std::ofstream* other_logs = &(IS_DEV ? other_logs_dev : other_logs_release);

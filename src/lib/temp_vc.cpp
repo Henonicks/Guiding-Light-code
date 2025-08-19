@@ -1,4 +1,4 @@
-#include <temp_vc.h>
+#include "guiding_light/temp_vc.hpp"
 
 std::map <channel_snowflake, temp_vc> temp_vcs;
 std::map <user_snowflake, uint64_t> join_time;

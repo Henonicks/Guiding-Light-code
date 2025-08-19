@@ -1,5 +1,5 @@
-#include "database.h"
-#include "configuration.h"
+#include "guiding_light/database.hpp"
+#include "guiding_light/configuration.hpp"
 
 sqlite::database db::sql{""};
 const std::set <std::string> db::table_names =

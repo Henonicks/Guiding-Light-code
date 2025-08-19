@@ -1,8 +1,9 @@
-#include "guidingLight/guiding_light.h"
-#include "ticket_handler.h"
-#include "temp_vc_handler.h"
-#include "launch_options.h"
-#include "cli.h"
+#include "guiding_light/guiding_light.hpp"
+#include "guiding_light/ticket_handler.hpp"
+#include "guiding_light/temp_vc_handler.hpp"
+#include "guiding_light/launch_options.hpp"
+#include "guiding_light/cli.hpp"
+#include "guiding_light/ping.hpp"
 
 std::unordered_map <dpp::snowflake, dpp::guild> all_bot_guilds;
 
@@ -39,7 +40,7 @@ int main(const int argc, char** argv) {
 	});
 
 	if (IS_CLI) {
-		enter_cli();
+		cli::enter();
 	}
 
 	/* Register slash commands here in on_ready */
@@ -82,30 +83,34 @@ int main(const int argc, char** argv) {
 			return;
 		}
 		// We don't want to reply to any of our own messages.
+		const dpp::snowflake& user_id = event.msg.author.id;
 		const dpp::snowflake& channel_id = event.msg.channel_id;
 		const std::string& msg = event.msg.content;
 		const dpp::snowflake& guild_id = event.msg.guild_id;
 		if (event.msg.is_dm()) {
 			handle_dm_in(event);
 		}
+		else if (event.msg.content.find(fmt::format("<@{}>", bot->me.id)) != std::string::npos) {
+			event.reply(random_response(user_id), error_callback);
+		}
 		if (guild_id == TICKETS_GUILD_ID) {
 			handle_dm_out(event);
 		}
 		if (channel_id == TOPGG_WEBHOOK_CHANNEL_ID) {
-			const dpp::snowflake user_id = msg.substr(2, msg.size() - bot->me.id.str().size() - 10);
-			const bool weekend = msg[2 + user_id.str().size() + 2] == 't';
+			const dpp::snowflake voted_user_id = msg.substr(2, msg.size() - bot->me.id.str().size() - 10);
+			const bool weekend = msg[2 + voted_user_id.str().size() + 2] == 't';
 			// The vote messages are formatted like this: <@${user_id}> ${weekend}> <@${bot_id}>
 			// Where ${user_id} is the ID of the user who voted,
 			// ${weekend} is a boolean stating whether it's a weekend or not
 			// And ${bot_id} is the ID of the bot which was voted for.
-			const bool failure = topgg::vote(user_id, weekend);
-			if (failure && !topgg::no_noguild_reminder[user_id]) {
+			const bool failure = topgg::vote(voted_user_id, weekend);
+			if (failure && !topgg::no_noguild_reminder[voted_user_id]) {
 				// If there was a failure in granting a guild a vote point
 				// and the user has not been notified about that before,
 				// notify them.
-				bot->direct_message_create(user_id, dpp::message("You have just voted and missed out on the chance to vote in favor of a guild! Choosing a guild with `/guild set` and voting for me on top.gg grants it guild points which can then be turned into JTC VCs!"));
-				topgg::no_noguild_reminder[user_id] = true;
-				db::sql << "INSERT INTO no_noguild_reminder VALUES (?);" << user_id.str();
+				bot->direct_message_create(voted_user_id, dpp::message("You have just voted and missed out on the chance to vote in favor of a guild! Choosing a guild with `/guild set` and voting for me on top.gg grants it guild points which can then be turned into JTC VCs!"));
+				topgg::no_noguild_reminder[voted_user_id] = true;
+				db::sql << "INSERT INTO no_noguild_reminder VALUES (?);" << voted_user_id.str();
 			}
 		}
 	});

@@ -1,8 +1,8 @@
 #ifndef LOGGING_H
 #define LOGGING_H
 
-#include <guidingLight/guiding_light.h>
-#include "database.h"
+#include "guiding_light/guiding_light.hpp"
+#include "database.hpp"
 
 /**
  * @brief Logs a message along with other logs from Discord.
