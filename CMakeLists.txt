@@ -11,7 +11,6 @@ endif()
 
 aux_source_directory("src" coresrc)
 aux_source_directory("src/lib" codParts)
-#aux_source_directory("sqlite3pp/src" sqlite)
 add_executable(${BOT_NAME} ${coresrc} ${codParts})
 
 target_compile_definitions(${BOT_NAME} PUBLIC FMT_HEADER_ONLY)
@@ -67,7 +66,6 @@ target_link_libraries(${BOT_NAME}
     ${OPENSSL_SSL_LIBRARY}
     sqlite_modern_cpp
     linenoise
-    readline
     colorize
 )
 
