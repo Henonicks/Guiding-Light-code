@@ -48,7 +48,7 @@ void configuration::init_logs() {
 }
 
 void configuration::pray() { // I'll pray that when this function starts executing we have all the cache because Discord doesn't let me know whether all the cache I've received at a certain point is everything or there's more and there's no better way to do this I promise
-	db::sql << "SELECT * FROM jtc_vcs;" + db::line_comment("pray::jtc_vcs") >> [](const db::BIGINT& channel_id, const db::BIGINT& guild_id) {
+	db::sql << "SELECT * FROM jtc_vcs;" >> [](const db::BIGINT& channel_id, const db::BIGINT& guild_id) {
 		const dpp::channel* channel = dpp::find_channel(channel_id);
 		if (channel != nullptr) {
 			jtc_vcs[channel_id] = guild_id;
@@ -58,7 +58,7 @@ void configuration::pray() { // I'll pray that when this function starts executi
 			db::sql << "DELETE FROM jtc_vcs WHERE channel_id=?;" << channel_id;
 		}
 	};
-	db::sql << "SELECT * FROM temp_vc_notifications;" + db::line_comment("pray::temp_vc_notifications") >> [](const db::BIGINT& channel_id, const db::BIGINT& guild_id) {
+	db::sql << "SELECT * FROM temp_vc_notifications;" >> [](const db::BIGINT& channel_id, const db::BIGINT& guild_id) {
 		const dpp::channel* channel = dpp::find_channel(channel_id);
 		if (channel != nullptr) {
 			temp_vc_notifications[guild_id] = channel_id;
@@ -68,7 +68,7 @@ void configuration::pray() { // I'll pray that when this function starts executi
 		}
 	};
 
-	db::sql << "SELECT * FROM jtc_default_values;" + db::line_comment("pray::jtc_default_values") >> [](const db::BIGINT& channel_id, const std::string& name, const db::TINYINT& limit, const db::MEDIUMINT& bitrate) {
+	db::sql << "SELECT * FROM jtc_default_values;" >> [](const db::BIGINT& channel_id, const std::string& name, const db::TINYINT& limit, const db::MEDIUMINT& bitrate) {
 		const dpp::channel* channel = dpp::find_channel(channel_id);
 		if (channel != nullptr) {
 			jtc_default_values[channel_id] = {channel_id, name, (int8_t)limit, (int16_t)bitrate};
@@ -78,7 +78,7 @@ void configuration::pray() { // I'll pray that when this function starts executi
 		}
 	};
 
-	db::sql << "SELECT * FROM no_temp_ping;" + db::line_comment("pray::no_temp_ping") >> [](const db::BIGINT& user_id) {
+	db::sql << "SELECT * FROM no_temp_ping;" >> [](const db::BIGINT& user_id) {
 		const dpp::user* user = dpp::find_user(user_id);
 		if (user != nullptr) {
 			no_temp_ping[user_id] = true;
@@ -88,7 +88,7 @@ void configuration::pray() { // I'll pray that when this function starts executi
 		}
 	};
 	
-	db::sql << "SELECT * FROM topgg_guild_choices;" + db::line_comment("pray::jtc_vcs") >> [](const db::BIGINT& user_id, const db::BIGINT& guild_id) {
+	db::sql << "SELECT * FROM topgg_guild_choices;" >> [](const db::BIGINT& user_id, const db::BIGINT& guild_id) {
 		const dpp::user* user = dpp::find_user(user_id);
 		if (user != nullptr) {
 			topgg::guild_choices[user_id] = guild_id;
@@ -98,7 +98,7 @@ void configuration::pray() { // I'll pray that when this function starts executi
 		}
 	};
 	
-	db::sql << "SELECT * FROM topgg_guild_votes_amount;" + db::line_comment("pray::guild_votes_amount") >> [](const db::BIGINT& guild_id, const int& votes) {
+	db::sql << "SELECT * FROM topgg_guild_votes_amount;" >> [](const db::BIGINT& guild_id, const int& votes) {
 		const dpp::guild* guild = dpp::find_guild(guild_id);
 		if (guild != nullptr) {
 			topgg::guild_votes_amount[guild_id] = votes;
@@ -108,7 +108,7 @@ void configuration::pray() { // I'll pray that when this function starts executi
 		}
 	};
 	
-	db::sql << "SELECT * FROM no_noguild_reminder;" + db::line_comment("pray::no_noguild_reminder") >> [](const db::BIGINT& user_id) {
+	db::sql << "SELECT * FROM no_noguild_reminder;" >> [](const db::BIGINT& user_id) {
 		const dpp::user* user = dpp::find_user(user_id);
 		if (user != nullptr) {
 			topgg::no_noguild_reminder[user_id] = true;
@@ -118,7 +118,7 @@ void configuration::pray() { // I'll pray that when this function starts executi
 		}
 	};
 	
-	db::sql << "SELECT * FROM topgg_notifications;" + db::line_comment("pray::topgg_notifications") >> [](const db::BIGINT& channel_id, const db::BIGINT& guild_id) {
+	db::sql << "SELECT * FROM topgg_notifications;" >> [](const db::BIGINT& channel_id, const db::BIGINT& guild_id) {
 		const dpp::channel* channel = dpp::find_channel(channel_id);
 		if (channel != nullptr) {
 			topgg_notifications[guild_id] = channel_id;
@@ -128,7 +128,7 @@ void configuration::pray() { // I'll pray that when this function starts executi
 		}
 	};
 	
-	db::sql << "SELECT * FROM tickets;" + db::line_comment("pray::tickets") >> [](const db::BIGINT user_id, const db::BIGINT channel_id) {
+	db::sql << "SELECT * FROM tickets;" >> [](const db::BIGINT user_id, const db::BIGINT channel_id) {
 		const dpp::user* user = dpp::find_user(user_id);
 		const dpp::channel* channel = dpp::find_channel(channel_id);
 		if (user != nullptr && channel != nullptr) {
@@ -140,7 +140,7 @@ void configuration::pray() { // I'll pray that when this function starts executi
 		}
 	};
 	
-	db::sql << "SELECT * FROM temp_vcs;" + db::line_comment("pray::temp_vcs") >> [](const db::BIGINT& channel_id, const db::BIGINT& guild_id, const db::BIGINT& creator_id, const db::BIGINT& parent_id) {
+	db::sql << "SELECT * FROM temp_vcs;" >> [](const db::BIGINT& channel_id, const db::BIGINT& guild_id, const db::BIGINT& creator_id, const db::BIGINT& parent_id) {
 		const dpp::channel* channel = dpp::find_channel(channel_id);
 		if (channel != nullptr) {
 			++temp_vc_amount[guild_id];
@@ -155,7 +155,7 @@ void configuration::pray() { // I'll pray that when this function starts executi
 			db::sql << "DELETE FROM temp_vcs WHERE channel_id=?;" << channel_id;
 		}
 	};
-
+	
 	slash::enabled = true;
 }
 
