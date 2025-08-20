@@ -32,10 +32,10 @@ namespace db {
 
 		/**
 		 * @brief Handle an SQL query and catch any exceptions on failure.
-		 * @param query The SQL query to handle.
+		 * @param _query The SQL query to handle.
 		 * @return I've honestly got no clue what a database_binder is
 		 */
-		sqlite::database_binder operator <<(sqlite::str_ref query);
+		sqlite::database_binder operator <<(sqlite::str_ref _query);
 	};
 
 	// A map with true/false values representing the existence of potential

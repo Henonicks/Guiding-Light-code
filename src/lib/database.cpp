@@ -11,10 +11,12 @@ std::map <std::string, bool> db::errors_pending;
 db::wrapper::operator_with_error::operator_with_error(wrapper& _wrapper) : _wrapper(_wrapper) {}
 
 sqlite::database_binder db::wrapper::operator_with_error::operator <<(sqlite::str_ref query) const {
-	return _wrapper << query;
+	return _wrapper.database::operator <<(query);
 }
 
-sqlite::database_binder db::wrapper::operator <<(sqlite::str_ref query) {
+sqlite::database_binder db::wrapper::operator <<(sqlite::str_ref _query) {
+	const size_t pos = _query.find("--");
+	const std::string_view query = _query.substr(0, pos - 1);
 	try {
 		// try to return the result of the original operator
 		return database::operator <<(query);
@@ -22,10 +24,9 @@ sqlite::database_binder db::wrapper::operator <<(sqlite::str_ref query) {
 	catch (const sqlite::sqlite_exception& e) {
 		// catch an exception if there is, log it
 		// if there's a comment, see where we came from
-		const size_t pos = query.find("--");
 		std::string function;
 		if (pos != std::string::npos) {
-			function = query.substr(pos + 3).data();
+			function = _query.substr(pos + 3).data();
 			if (errors_pending[function]) {
 				errors_pending[function] = false;
 				std::cerr << fmt::format(
@@ -35,8 +36,8 @@ sqlite::database_binder db::wrapper::operator <<(sqlite::str_ref query) {
 			}
 		}
 		sql_log(e, function);
+		return database::operator <<(";");
 	}
-	return database::operator <<(";");
 }
 
 std::string db::line_comment(std::string_view comment) {

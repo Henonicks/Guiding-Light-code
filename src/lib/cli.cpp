@@ -126,10 +126,7 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 			IS_DEV = !IS_DEV;
 			MODE_NAME = IS_DEV ? "dev" : "release";
 			if (!db::connection_successful()) {
-				std::cout << fmt::format("ERROR: Failed to connect to the database in the {0} mode. Staying in the {1} mode.\n", requested_mode, MODE_NAME);
-				IS_DEV = !IS_DEV;
-				MODE_NAME = IS_DEV ? "dev" : "release";
-				return;
+				std::cout << fmt::format("{0} Failed to connect to the database in the {1} mode.\n", color::rize("Warning:", "Yellow"), requested_mode);
 			}
 			bot = get_bot();
 			bot_is_starting = &(!IS_DEV ? bot_release_is_starting : bot_dev_is_starting);
@@ -138,16 +135,16 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 	{"init_db", [](const std::vector <std::string>&) {
 		db::errors_pending["init_db"] = true;
 		const std::string comment = db::line_comment("init_db");
-		db::sql << "CREATE TABLE jtc_vcs (channel_id BIGINT PRIMARY KEY, guild_id BIGINT)" + comment;
-		db::sql << "CREATE TABLE temp_vc_notifications (channel_id BIGINT, guild_id BIGINT PRIMARY KEY)" + comment;
-		db::sql << "CREATE TABLE jtc_default_values (channel_id BIGINT PRIMARY KEY, name VARCHAR(100), vc_limit SMALLINT, bitrate SMALLINT)" + comment;
-		db::sql << "CREATE TABLE no_temp_ping (user_id BIGINT PRIMARY KEY)" + comment;
-		db::sql << "CREATE TABLE topgg_guild_choices (user_id BIGINT PRIMARY KEY, guild_id BIGINT)" + comment;
-		db::sql << "CREATE TABLE topgg_guild_votes_amount (guild_id BIGINT PRIMARY KEY, votes INT)" + comment;
-		db::sql << "CREATE TABLE no_noguild_reminder (user_id BIGINT PRIMARY KEY)" + comment;
-		db::sql << "CREATE TABLE topgg_notifications (channel_id BIGINT PRIMARY KEY, guild_id BIGINT)" + comment;
-		db::sql << "CREATE TABLE tickets (user_id BIGINT PRIMARY KEY, channel_id BIGINT)" + comment;
-		db::sql << "CREATE TABLE temp_vcs (channel_id BIGINT PRIMARY KEY, guild_id BIGINT, creator_id BIGINT, parent_id BIGINT)" + comment;
+		db::sql << "CREATE TABLE jtc_vcs (channel_id BIGINT PRIMARY KEY, guild_id BIGINT);" + comment;
+		db::sql << "CREATE TABLE temp_vc_notifications (channel_id BIGINT, guild_id BIGINT PRIMARY KEY);" + comment;
+		db::sql << "CREATE TABLE jtc_default_values (channel_id BIGINT PRIMARY KEY, name VARCHAR(100), vc_limit SMALLINT, bitrate SMALLINT);" + comment;
+		db::sql << "CREATE TABLE no_temp_ping (user_id BIGINT PRIMARY KEY);" + comment;
+		db::sql << "CREATE TABLE topgg_guild_choices (user_id BIGINT PRIMARY KEY, guild_id BIGINT);" + comment;
+		db::sql << "CREATE TABLE topgg_guild_votes_amount (guild_id BIGINT PRIMARY KEY, votes INT);" + comment;
+		db::sql << "CREATE TABLE no_noguild_reminder (user_id BIGINT PRIMARY KEY);" + comment;
+		db::sql << "CREATE TABLE topgg_notifications (channel_id BIGINT PRIMARY KEY, guild_id BIGINT);" + comment;
+		db::sql << "CREATE TABLE tickets (user_id BIGINT PRIMARY KEY, channel_id BIGINT);" + comment;
+		db::sql << "CREATE TABLE temp_vcs (channel_id BIGINT PRIMARY KEY, guild_id BIGINT, creator_id BIGINT, parent_id BIGINT);" + comment;
 	}},
 	{"conv_db", [](const std::vector <std::string>&) {
 		bool is_error{};
@@ -492,6 +489,7 @@ void cli::init() {
 
 void cli::enter() {
 	init();
+	std::cout << fmt::format("{0} Failed to connect to the database in the {1} mode.\n", color::rize("Warning:", "Yellow"), MODE_NAME);
 	while (true) {
 		std::string line;
 		const bool quit = linenoise::Readline(
