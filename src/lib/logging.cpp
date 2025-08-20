@@ -1,4 +1,5 @@
 #include "guiding_light/logging.hpp"
+#include "guiding_light/configuration.hpp"
 
 void bot_log(const dpp::log_t& _log) {
 	std::ofstream* other_logs = &(IS_DEV ? other_logs_dev : other_logs_release);
@@ -10,7 +11,7 @@ void bot_log(const dpp::log_t& _log) {
 			return;
 		}
 		log("Waiting till we receive all the cache...");
-		bot->start_timer([](const dpp::timer& h) -> void {
+		bot->start_timer([](dpp::timer h) -> void {
 			const uint64_t new_guild_amount = dpp::get_guild_count();
 			const uint64_t new_channel_amount = dpp::get_channel_count();
 			const uint64_t new_user_amount = dpp::get_user_count();
@@ -44,12 +45,9 @@ void guild_log(std::string_view message) {
 	// i hope you know the drill by now
 }
 
-void sql_log(const sqlite::sqlite_exception& e, std::string_view function) {
+void sql_log(const sqlite::sqlite_exception& e) {
 	std::ofstream* sql_logs = &(IS_DEV? sql_logs_dev : sql_logs_release);
-	*sql_logs << fmt::format(
-		"[{0}]:{1} Error code: {2}, error: {3}, query: {4}",
-		dpp::utility::current_date_time(), !function.empty() ? fmt::format(" In {}:", function) : "", e.get_code(), e.what(), e.get_sql()
-	) << std::endl;
+	*sql_logs << fmt::format("[{0}]: Error code: {1}, error: {2}, query: {3}", dpp::utility::current_date_time(), e.get_code(), e.what(), e.get_sql()) << std::endl;
 	// this ain't a drill, this is the way that I dream of goin' out
 }
 
