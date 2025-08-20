@@ -1,6 +1,8 @@
 #include "guiding_light/cli.hpp"
 #include "guiding_light/commands.tpp"
 
+std::string cli::last_command;
+
 const std::map <std::string, std::string> cli::manual = {
 	{"help", "Shows this message.\n"
 		"Usage: \"help [cmd1] [cmd2]... [cmdN]\" or \"help ...\""},
@@ -159,9 +161,10 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 				}
 				line = '\'' + line + '\'';
 				try {
-					db::sql << "INSERT INTO " + x + " VALUES (" + line + ");";
+					db::sql << "INSERT INTO " + (std::string)x + " VALUES (" + line + ");";
 				}
 				catch (sqlite::sqlite_exception& e) {
+					sql_log(e);
 					is_error = true;
 				}
 			}
@@ -187,10 +190,6 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 		}
 	}},
 	{"select", [](const std::vector <std::string>& cmd) {
-		const std::filesystem::path select_path(fmt::format("{0}/{1}", db::SELECT_LOCATION, MODE_NAME));
-		if (!std::filesystem::exists(select_path)) {
-			std::filesystem::create_directory(select_path);
-		}
 		std::string table_name;
 		if (cmd.size() == 1) {
 			read_until_provided(table_name);
@@ -203,7 +202,7 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 		}
 		if (db::table_names.contains(table_name)) {
 			const int code = system(fmt::format(R"(sqlite '../database/{0}.db' '.mode markdown' ".output ../database/select/{0}/{1}.md" "SELECT * FROM {1}";)", MODE_NAME, table_name).c_str());
-			std::cout << (code == 0 ? fmt::format("Generated a .md file in database/select/{0}/{1}.md\n", MODE_NAME, table_name) : "An error occurred. Could not generate the .md file.\n");
+			std::cout << (code == 0 ? fmt::format("Generated an .md file in database/select/{0}/{1}.md\n", MODE_NAME, table_name) : "An error occured. Could not generate the .md file.\n");
 		}
 		else {
 			std::cout << fmt::format("The table {} doesn't exist.\n", table_name);
@@ -428,8 +427,6 @@ void cli::exec_command(const std::vector <std::string>& cmd) {
 void cli::init() {
 	configuration::read_config();
 	slashcommands::init();
-	// assert(db::connection_successful());
-	db::connection_successful();
 	const std::filesystem::path history_path(HISTORY_PATH);
 	if (!std::filesystem::exists(history_path)) {
 		std::filesystem::create_directory("cli");
@@ -499,7 +496,10 @@ void cli::enter() {
 		line);
 		const std::vector <std::string> command = tokenise(line);
 		if (!command.empty()) {
-			linenoise::AddHistory(line.c_str());
+			if (last_command.empty() || last_command != line) {
+				linenoise::AddHistory(line.c_str());
+			}
+			last_command = line;
 			exec_command(command);
 		}
 		if (quit) {
