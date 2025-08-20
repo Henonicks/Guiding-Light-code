@@ -4,6 +4,44 @@
 sqlite::database db::sql{""};
 const std::set <std::string> db::table_names =
 {"jtc_vcs", "temp_vc_notifications", "jtc_default_values", "no_temp_ping", "topgg_guild_choices", "topgg_guild_votes_amount", "no_noguild_reminder", "topgg_notifications", "tickets", "temp_vcs"};
+db::wrapper db::sql{""};
+std::map <std::string, bool> db::errors_pending;
+
+db::wrapper::operator_with_error::operator_with_error(wrapper& _wrapper) : _wrapper(_wrapper) {}
+
+sqlite::database_binder db::wrapper::operator_with_error::operator <<(sqlite::str_ref query) const {
+	return _wrapper.database::operator <<(query);
+}
+
+sqlite::database_binder db::wrapper::operator <<(sqlite::str_ref _query) {
+	const size_t pos = _query.find("--");
+	const std::string_view query = _query.substr(0, pos - 1);
+	try {
+		// try to return the result of the original operator
+		return database::operator <<(query);
+	}
+	catch (const sqlite::sqlite_exception& e) {
+		// catch an exception if there is, log it
+		// if there's a comment, see where we came from
+		std::string function;
+		if (pos != std::string::npos) {
+			function = _query.substr(pos + 3).data();
+			if (errors_pending[function]) {
+				errors_pending[function] = false;
+				std::cerr << fmt::format(
+					"SQL errors occurred. Check logging/{0}/{1}/sql_logs.log for more info.\n",
+					IS_CLI ? "cli" : "bot", MODE_NAME
+				);
+			}
+		}
+		sql_log(e, function);
+		return database::operator <<(";");
+	}
+}
+
+std::string db::line_comment(std::string_view comment) {
+	return fmt::format(" -- {}", comment);
+}
 
 bool db::connection_successful() {
 	sqlite::error_log([](const sqlite::sqlite_exception& e) {

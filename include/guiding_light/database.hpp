@@ -14,7 +14,35 @@ namespace db {
 
 	extern const std::set <std::string> table_names;
 
-	extern sqlite::database sql;
+	class wrapper : public sqlite::database {
+	public:
+		class operator_with_error {
+		public:
+			wrapper& _wrapper;
+			operator_with_error() = delete; // the whole point of this class is to have a ref to the parent
+			explicit operator_with_error(wrapper&);
+			sqlite::database_binder operator <<(sqlite::str_ref query) const;
+		};
+		using database::database;
+		using database::operator=;
+
+		operator_with_error with_error{*this};
+
+		/**
+		 * @brief Handle an SQL query and catch any exceptions on failure.
+		 * @param _query The SQL query to handle.
+		 * @return I've honestly got no clue what a database_binder is
+		 */
+		sqlite::database_binder operator <<(sqlite::str_ref _query);
+	};
+
+	// A map with true/false values representing the existence of potential
+	// pending errors, caught during an SQL query in functions.
+	extern std::map <std::string, bool> errors_pending;
+
+	std::string line_comment(std::string_view comment);
+
+	extern wrapper sql;
 
 	/**
 	 * @brief Tries to connect to the database and reports whether the connection was successful.
