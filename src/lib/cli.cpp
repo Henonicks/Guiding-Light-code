@@ -499,12 +499,12 @@ void cli::enter() {
 		line);
 		const std::vector <std::string> command = tokenise(line);
 		if (!command.empty()) {
-			linenoise::AddHistory(line.c_str());
 			exec_command(command);
 		}
 		if (quit) {
 			break;
 		}
+		linenoise::AddHistory(line.c_str());
 	}
 	commands.at("quit")({});
 }
