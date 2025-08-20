@@ -2,7 +2,8 @@
 #define LOGGING_H
 
 #include "guiding_light/guiding_light.hpp"
-#include "database.hpp"
+#include "guiding_light/database.hpp"
+#include "guiding_light/configuration.hpp"
 
 /**
  * @brief Logs a message along with other logs from Discord.
@@ -25,9 +26,10 @@ void guild_log(std::string_view message);
 
 /**
  * @brief Logs the cause of an exception from an SQL query.
- * @param e The exception
+ * @param e The exception.
+ * @param function The function the query, along with the exception, came from.
  */
-void sql_log(const sqlite::sqlite_exception& e);
+void sql_log(const sqlite::sqlite_exception& e, std::string_view function = {});
 
 /**
  * @brief Prints the error of a request made by the bot.

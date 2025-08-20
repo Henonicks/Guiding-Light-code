@@ -8,8 +8,6 @@
 namespace cli {
     inline const auto HISTORY_PATH = "cli/history.txt";
 
-    extern std::string last_command;
-
     extern const std::map <std::string, std::function <void(std::vector <std::string>)>> commands;
     extern const std::map <std::string, std::string> manual;
     extern std::map <std::string, std::vector <std::string>> completions;
