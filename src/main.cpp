@@ -11,6 +11,8 @@ int main(const int argc, char** argv) {
 	std::vector <std::string> commands;
 	// Is this used?
 
+	configuration::check_sqlite3();
+	// Check if we have sqlite3 installed
 	exec_subcommands(argc, argv);
 	// Execute any subcommands provided with ./guidingLight <subcommands>.
 	configuration::read_config();

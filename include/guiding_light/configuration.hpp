@@ -1,15 +1,21 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
-#include "notification_channel.hpp"
-#include "jtc_vc.hpp"
-#include "jtc_defaults.hpp"
-#include "logging.hpp"
-#include "slash_funcs.hpp"
-#include "topgg.hpp"
-#include "ticket.hpp"
+#include "guiding_light/commands.hpp"
+#include "guiding_light/notification_channel.hpp"
+#include "guiding_light/jtc_vc.hpp"
+#include "guiding_light/jtc_defaults.hpp"
+#include "guiding_light/logging.hpp"
+#include "guiding_light/slash_funcs.hpp"
+#include "guiding_light/topgg.hpp"
+#include "guiding_light/ticket.hpp"
+#include "color.hpp"
 
 namespace configuration {
+	/**
+	 * @brief Checks if sqlite3 is installed. If it's not, the program crashes.
+	 */
+	void check_sqlite3();
 	/**
 	 * @brief Reads the config and writes down the values.
 	 */

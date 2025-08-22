@@ -53,11 +53,13 @@ bool db::connection_successful() {
 	// for some reason if I try to assign an instance of wrapper it tells me that the operator= is deleted
 	// but then why can I do this? I'm confused.
 	try {
-		sql.with_error << "SELECT 1 FROM jtc_vcs;"; // try to select a random value from jtc_vcs. If the table doesn't exist, we need to handle an exception.
+		sql.with_error << "SELECT 1 FROM jtc_vcs;";
+		// try to select a random value from jtc_vcs.
+		// If the table doesn't exist, we need to handle an exception.
+		return true;
 	}
 	catch (const std::exception& e) { // wait till the user finds out we're gonna crash their shi 🔥
 		log(fmt::format("Error connecting to the database: {}", e.what()));
 		return false;
 	}
-	return true;
 }

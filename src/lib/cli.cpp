@@ -438,10 +438,13 @@ void cli::init() {
 		{"help", concat_vectors <std::string>( {{"..."}, map_keys_to_vector(manual)} )},
 		{"quit", {"smoking"}},
 		{"switch", {"release", "dev"}},
+		{"init_db", {}},
+		{"conv_db", {}},
 		{"select", std::vector(db::table_names.begin(), db::table_names.end())},
 		{"globalcreate", concat_vectors <std::string>( {{"..."}, map_keys_to_vector(slashcommands::list_global)} )},
 		{"guildcreate", concat_vectors <std::string>( {{"..."}, map_keys_to_vector(slashcommands::list_guild)} )},
 		{"cdelete", concat_vectors <std::string>( {map_keys_to_vector(slashcommands::list_global), map_keys_to_vector(slashcommands::list_global)} )},
+		{"launch", {}},
 		{"list", {"logs", "slashcommands", "tables"}},
 	};
 	linenoise::SetCompletionCallback([](const char* edit_buffer, std::vector <std::string>& completion) {
@@ -489,7 +492,9 @@ void cli::init() {
 
 void cli::enter() {
 	init();
-	std::cout << fmt::format("{0} Failed to connect to the database in the {1} mode.\n", color::rize("Warning:", "Yellow"), MODE_NAME);
+	if (!db::connection_successful()) {
+		std::cout << fmt::format("{0} Failed to connect to the database in the {1} mode.\n", color::rize("Warning:", "Yellow"), MODE_NAME);
+	}
 	while (true) {
 		std::string line;
 		const bool quit = linenoise::Readline(
