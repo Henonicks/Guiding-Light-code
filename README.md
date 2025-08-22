@@ -55,7 +55,12 @@ Create a config.json in `Guiding_Light_Config`, located above the `build` direct
 
 ## Setup
 
-If you don't have the log files already, they will be created automatically as soon as the program tries to open them. Whenever it does, the files are cleared so back them up if you want to. Any other setup steps involve you [launching the CLI version of the program](#cli-mode). Once done, you need to run commands inside of it. You can get assistance from the `help` command. If you don't have the database files already, run init_db. If you've used the version of this bot which used text files as a database, run conv_db. Here is what it does step-by-step:
+If you don't have the log files already, they will be created automatically as soon as the program tries to open them.
+Whenever it does, the files are cleared so back them up if you want to.
+Any other setup steps involve you [launching the CLI version of the program](#cli-mode).
+Once done, you need to run commands inside of it. You can get assistance from the `help` command.
+If you don't have the database files already, run init_db.
+If you've used the version of this bot which used text files as a database, run conv_db. Here is what it does step-by-step:
 
 * Read the text files and add the values to the database.
 * Convert the "infinite" value of the VC user limit from 100 to 0.
@@ -93,7 +98,7 @@ Once you're done setting up, you can start the bot.
 
 ## CLI mode
 
-The CLI mode is built into the rest of the program. By compiling the bot, you compile the CLI alongside it. In this mode the bot doesn't handle events, neither does it start. This mode is used to set the bot up and create/delete slashcommands. It supports history, but it doesn't have autocomplete because I couldn't figure it out.
+The CLI mode is built into the rest of the program. By compiling the bot, you compile the CLI alongside it. In this mode the bot doesn't handle events, neither does it start. This mode is used to set the bot up and create/delete slashcommands. It supports history and autocomplete.
 When you enter the CLI mode, you're logged into a pseudo-user - `guidingLight`, the release mode user and `curiousLight`, the development mode user. The input line looks something like this:
 
     guidingLight>
