@@ -8,6 +8,16 @@ std::set <std::string> logs::list = {"guild_logs", "my_logs", "other_logs", "sql
 std::map <std::string, dpp::slashcommand> slashcommands::list_global;
 std::map <std::string, dpp::slashcommand> slashcommands::list_guild;
 
+/**
+ * @brief Checks if a bash command exists.
+ */
+bool command_exists(std::string_view command) {
+	return !system(fmt::format("which {} >>/dev/null 2>>/dev/null", command).c_str());
+}
+
+/**
+ * @brief Initialises the slashcommands so they can be created in the future.
+ */
 void slashcommands::init() {
 	dpp::slashcommand help("help", "See what I can do!", bot->me.id);
 	dpp::slashcommand setup("setup", "Set up a part of JTC feature.", bot->me.id);

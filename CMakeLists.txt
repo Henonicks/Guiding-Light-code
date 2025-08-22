@@ -13,6 +13,8 @@ aux_source_directory("src" coresrc)
 aux_source_directory("src/lib" codParts)
 add_executable(${BOT_NAME} ${coresrc} ${codParts})
 
+find_package(FMT REQUIRED MODULE)
+
 target_compile_definitions(${BOT_NAME} PUBLIC FMT_HEADER_ONLY)
 
 string(ASCII 27 Esc)

@@ -2,6 +2,14 @@
 
 using json = nlohmann::json;
 
+void configuration::check_sqlite3() {
+	if (!command_exists("sqlite3")) {
+		std::cerr << fmt::format("{} The sqlite3 executable hasn't been found. Please install sqlite3.\n", color::rize("ERROR:", "Red"));
+		log("ERROR: The sqlite3 executable hasn't been found. Please install sqlite3.");
+		std::exit(1);
+	}
+}
+
 void configuration::read_config() {
 	json config;
 	std::ifstream config_file_stream("../Guiding_Light_Config/config.json");

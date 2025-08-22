@@ -1,13 +1,15 @@
 #ifndef COMMANDS_H
 #define COMMANDS_H
 
-#include "guiding_light/configuration.hpp"
+#include "guiding_light/guiding_light.hpp"
 
 extern const std::set <std::string> subcommand_list;
 
 namespace logs {
     extern std::set <std::string> list;
 }
+
+bool command_exists(std::string_view command);
 
 namespace slashcommands {
     extern std::map <std::string, dpp::slashcommand> list_global;
