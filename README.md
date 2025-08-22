@@ -4,7 +4,9 @@ This is a Discord bot written in C++ using the [D++](https://dpp.dev) library. I
 
 ## Dependencies
 * D++ 10.1.0+
-* fmtlib (tested on 9.1.0)
+* fmtlib (developed on 9.1.0)
+* libsqlite3 (developed on 3.46.1-7)
+* sqlite3 (developed with 3.46.1)
 
 ### Compiler
 The bot is tested in-dev with g++-13 and hosted with clang++-18. It is advised to use g++ with the version of at least 13 as it uses coroutines which are unstable on g++-12 and earlier. I'm unaware of the coroutines situation with clang++.
