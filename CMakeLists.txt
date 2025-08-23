@@ -13,7 +13,6 @@ aux_source_directory("src" coresrc)
 aux_source_directory("src/lib" codParts)
 add_executable(${BOT_NAME} ${coresrc} ${codParts})
 
-find_package(FMT REQUIRED MODULE)
 
 target_compile_definitions(${BOT_NAME} PUBLIC FMT_HEADER_ONLY)
 
@@ -46,8 +45,7 @@ target_include_directories(${BOT_NAME} PUBLIC
     ${OPENSSL_INCLUDE_DIR}
 )
 
-#target_link_libraries(${BOT_NAME} sqlite_modern_cpp)
-
+find_package(FMT)
 add_subdirectory(colorize)
 add_subdirectory(cpp-linenoise)
 add_subdirectory(sqlite_modern_cpp)
@@ -82,15 +80,25 @@ else()
 
     FetchContent_GetProperties(libdpp)
     if(NOT libdpp_POPULATED)
-        FetchContent_Populate(libdpp)
-        target_include_directories(${BOT_NAME} PUBLIC
-            ${libdpp_SOURCE_DIR}/include
-        )
-        add_subdirectory(
-            ${libdpp_SOURCE_DIR}
-            ${libdpp_BINARY_DIR}
-            EXCLUDE_FROM_ALL)
+        FetchContent_MakeAvailable(libdpp)
     endif()
-
     target_link_libraries(${BOT_NAME} dpp)
+endif()
+
+if (NOT FMT_FOUND)
+    message(WARNING "Could not find libfmt install. Installing in the build directory.")
+    include(FetchContent)
+
+    FetchContent_Declare(
+            libfmt
+            GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+            GIT_TAG master)
+
+    FetchContent_GetProperties(libfmt)
+    if(NOT libfmt_POPULATED)
+        FetchContent_MakeAvailable(libfmt)
+    endif()
+    target_include_directories(${BOT_NAME} PUBLIC
+        ${libfmt_SOURCE_DIR}/include
+    )
 endif()

@@ -1,7 +1,7 @@
 #ifndef CONFIG_VALUES_H
 #define CONFIG_VALUES_H
 
-#include <dpp/cluster.h>
+#include <no_warns/dpp/dpp.h>
 #include "fstream"
 
 extern std::string BOT_TOKEN, BOT_TOKEN_DEV, MODE_NAME, logs_directory;

@@ -2,7 +2,7 @@
 #define PING_H
 
 #include <random>
-#include <dpp/snowflake.h>
+#include <no_warns/dpp/dpp.h>
 
 std::string random_response(const dpp::snowflake& user_id);
 
