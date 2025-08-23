@@ -49,17 +49,10 @@ target_include_directories(${BOT_NAME} PUBLIC
 #target_link_libraries(${BOT_NAME} sqlite_modern_cpp)
 
 add_subdirectory(colorize)
-add_subdirectory(sqlite_modern_cpp)
 add_subdirectory(cpp-linenoise)
+add_subdirectory(sqlite_modern_cpp)
 
-set_target_properties(${BOT_NAME} PROPERTIES COMPILE_FLAGS "-Wall -Wextra -Wpedantic")
-#get_target_property(OPTIONS_TO_PRINT ${BOT_NAME} COMPILE_FLAGS)
-#message(STATUS "Options: ${OPTIONS_TO_PRINT}")
-#add_compile_options(-Wall -Wextra -Wpedantic)
-#file(GLOB_RECURSE SRC_DIR "*.cpp" "*.h")
-#set_source_files_properties(${SRC_DIR} PROPERTIES COMPILE_FLAGS "-Wall -Wextra -Wpedantic")
-#target_compile_options(${BOT_NAME} PRIVATE -g -Wall -Wextra -Wpedantic)
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic")
+target_compile_options(${BOT_NAME} PRIVATE -Wall -Wextra -Wpedantic)
 
 target_link_libraries(${BOT_NAME}
     dl

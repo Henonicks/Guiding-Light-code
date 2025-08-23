@@ -84,6 +84,6 @@ void error_feedback(const dpp::confirmation_callback_t& callback, const dpp::mes
 		else {
 			log("ERROR!" + callback.get_error().message);
 		}
-		event.reply(fmt::format("{0}: {1}.", error_intro, callback.get_error().message), error_callback);
+		event.reply(fmt::format("{0}: {1}.", error_intro, callback.get_error().message), true, error_callback);
 	}
 }
