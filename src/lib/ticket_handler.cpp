@@ -10,11 +10,16 @@ dpp::message preserve_attachments(const dpp::message& msg) {
 
 void handle_dm_in(const dpp::message_create_t& event) {
 	const dpp::snowflake& user_id = event.msg.author.id;
+	if (!slash::enabled) {
+		bot->direct_message_create(user_id, dpp::message("Some data is still being loaded, please wait."), error_callback);
+		return;
+	}
 	if (tickets[user_id].empty()) {
-		bot->direct_message_create(user_id,dpp::message(
-			fmt::format("To contact the creator of this bot you need to create a ticket. Issue {0} to allow your messages in this"
+		bot->direct_message_create(user_id, dpp::message(
+			fmt::format("To contact the creator of this bot you need to create a ticket. Issue {0} to allow your messages in this "
 			"chat to be sent to the creator, and the creator's messages to be sent in this chat. You can always close the ticket by issuing {1}.",
-			fmt::format("</ticket open:{}>", slash::global_created["ticket"].id), fmt::format("</ticket close:{}>", slash::global_created["ticket"].id))));
+			slash::get_mention("ticket create"), slash::get_mention("ticket close"))
+		), error_callback);
 		return;
 	}
 	dpp::message msg = event.msg;
