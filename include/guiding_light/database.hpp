@@ -3,7 +3,7 @@
 
 #include <map>
 #include <set>
-#include "sqlite_modern_cpp.h"
+#include "no_warns/sqlite.hpp"
 
 namespace db {
 	using TINYINT = int16_t; // bro why is there no int8_t which isn't a char in c++ twin icl ts pmo lwk 💔🥀

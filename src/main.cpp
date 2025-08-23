@@ -93,7 +93,7 @@ int main(const int argc, char** argv) {
 			handle_dm_in(event);
 		}
 		else if (event.msg.content.find(fmt::format("<@{}>", bot->me.id)) != std::string::npos) {
-			event.reply(random_response(user_id), error_callback);
+			event.reply(random_response(user_id), true, error_callback);
 		}
 		if (guild_id == TICKETS_GUILD_ID) {
 			handle_dm_out(event);
