@@ -182,78 +182,91 @@ void configuration::write_down_slashcommands() {
 		slash::help_embed_1 = dpp::embed().
 			set_color(dpp::colors::sti_blue).
 			set_author("Here is what I can do!\n", bot->me.get_url(), bot->me.get_avatar_url()).
-			set_description("## /help\n"
-							"I guess you\'ve just issued this command!\n"
-				"# JTC-related\n"
+			set_description(
+				fmt::format(
+					"## {0}\n"
+					"I guess you\'ve just issued this command!\n"
+					"# JTC-related\n"
 
-				"A Join-To-Create Voice Channel, or, as referred to, a JTC VC (or simply JTC), is a voice channel which you can join so that a temporary voice is created. "
-				"When you do so, you\'re moved to a newly created temporary channel which you can edit with the `/set` command. "
-				"A moderator can also edit the default settings of the temporary channels, created with a certain JTC by running the `/set` command with a sub-command of `default`. "
-				"When everyone leaves a temporary channel, it gets automatically deleted, hence the \"temporary\" in the name. Then there are notification channels. "
-				"Every time a temporary channel is created/deleted, a message about this is sent in such channel. Notification channels are text-only; "
-				"if the guild they\'re set up in has community enabled, the channel will be an announcement channel, otherwise it\'s a normal text channel with sending messages disabled for the `@everyone` role.\n"
+					"A Join-To-Create Voice Channel, or, as referred to, a JTC VC (or simply JTC), is a voice channel which you can join so that a temporary voice is created. "
+					"When you do so, you\'re moved to a newly created temporary channel which you can edit with the `/set` command. "
+					"A moderator can also edit the default settings of the temporary channels, created with a certain JTC by running the `/set` command with a sub-command of `default`. "
+					"When everyone leaves a temporary channel, it gets automatically deleted, hence the \"temporary\" in the name. Then there are notification channels. "
+					"Every time a temporary channel is created/deleted, a message about this is sent in such channel. Notification channels are text-only; "
+					"if the guild they\'re set up in has community enabled, the channel will be an announcement channel, otherwise it\'s a normal text channel with sending messages disabled for the `@everyone` role.\n"
 
-				"## /setup\n"
+					"## /setup\n"
 
-				"Create a JTC VC or a notification channel. If the limit wasn't hit.\n"
+					"Create a JTC VC ({1}) or a notification channel (for temporary VCs/top.gg votes in the guild's favour) ({2}/{3}). If the limit wasn't hit.\n"
 
-				"## /set\n"
+					"## /set\n"
 
-				"This command has two types of subcommands: set current and set default.\n"
+					"This command has two types of subcommands: set current and set default.\n"
 
-				"__**set current**__ sets a current value (currently supports the channel name/limit/bitrate) to a user-defined one. Some limitations apply. "
-				"You cannot change the values of a channel that doesn\'t belong to you (was requested by someone else)\n"
+					"__**set current**__ sets a current value (currently supports the channel name/limit/bitrate) to a user-defined one. Some limitations apply. "
+					"You cannot change the values of a channel that doesn\'t belong to you (was requested by someone else)\n"
 
-				"__**set default**__ sets a default value (currently supports the channel name/limit/bitrate) to a user-defined one. Some limitations apply. "
-				"You cannot use this if you don\'t have the permissions to edit a channel.\n"
+					"__**set default**__ sets a default value (currently supports the channel name/limit/bitrate) to a user-defined one. Some limitations apply. "
+					"You cannot use this if you don\'t have the permissions to edit a channel.\n"
 
-				"# top.gg-related\n"
+					"# top.gg-related\n"
 
-				"Voting for the bot is done on the top.gg website. Your vote counts as two if you vote on a weekend and therefore you get more points. "
-				"You can only get points from voting if you\'ve selected a guild with `/guild set`. Voting for the bot while a guild `X` is selected will be referred to as \"Voting in favour of the guild `X`\". "
-				"Voting in favour of a guild will get it points which add up from all of its members. Points are not subtracted when a member leaves, not even if they've voted. "
-				"When a guild reaches a certain level, a new JTC is unlocked. There can be up to 10 JTCs while on the 1st level there\'s only 1.\n"
+					"Voting for the bot is done on the top.gg website. Your vote counts as two if you vote on a weekend and therefore you get more points. "
+					"You can only get points from voting if you\'ve selected a guild with {5}. Voting for the bot while a guild `X` is selected will be referred to as \"Voting in favour of the guild `X`\". "
+					"Voting in favour of a guild will get it points which add up from all of its members. Points are not subtracted when a member leaves, not even if they've voted. "
+					"When a guild reaches a certain level, a new JTC is unlocked. There can be up to 10 JTCs while on the 1st level there\'s only 1.\n"
 
-				"## /vote\n"
+					"## {4}\n"
 
-				"Issuing this command will show the link to the page where you can vote for me. "
-				"Voting in favour of a certain guild a certain amount of times lets there be more JTCs and therefore more different default settings at once.\n"
+					"Issuing this command will show the link to the page where you can vote for me. "
+					"Voting in favour of a certain guild a certain amount of times lets there be more JTCs and therefore more different default settings at once.\n"
 
-				"## /guild\n"
+					"## /guild\n"
 
-				"This command\'s purpose is to set/get the guild you want to vote in favour of, "
-				"`set` if you know which guild you want to vote in favour of and `get` if you forgot.\n"
+					"This command\'s purpose is to set/get the guild you want to vote in favour of, "
+					"`set` if you know which guild you want to vote in favour of and `get` if you forgot which one you were voting in favour of before.\n"
 
-				"__**set**__ sets the guild you\'re issuing the command in. This means that if you issue this sub-command in the guild `X`, "
-				"your next vote will be made in favour of this guild unless you change the guild to `Y`. "
-				"Then the vote will be made in favour of `Y`.\n"
+					"__**{5}**__ sets the guild you\'re issuing the command in. This means that if you issue this sub-command in the guild `X`, "
+					"your next vote will be made in favour of this guild unless you change the guild to `Y`. "
+					"Then the vote will be made in favour of `Y`.\n"
 
-				"__**get**__ gets the guild you\'re currently voting in favour of. "
-				"If you\'ve issued the `set` sub-command in the gulid `X`, that\'ll be the guild returned.\n"
+					"__**{6}**__ gets the guild you\'re currently voting in favour of. "
+					"If you\'ve issued the `set` sub-command in the gulid `X`, that\'ll be the guild returned.\n"
 
-				"## /blocklist\n"
+					"## /blocklist\n"
 
-				"### Note: this command is in beta. If something goes wrong, please report it by creating a ticket.\n"
+					"### Note: this command is in beta. If something goes wrong, please report it by creating a ticket.\n"
 
-				"A blocklist is a list of users who aren\'t allowed to join your voice channel.\n"
+					"A blocklist is a list of users who aren\'t allowed to join your voice channel.\n"
 
-				"__**add**__ adds a user to the blocklist of the channel if a user is provided as the parameter.\n"
+					"__**{7}**__ adds a user to the blocklist of the channel if a user is provided as the parameter.\n"
 
-				"__**remove**__ removes a user from the blocklist of the channel if a user is provided as the parameter.\n"
+					"__**{8}**__ removes a user from the blocklist of the channel if a user is provided as the parameter.\n"
 
-				"__**status**__ tells you whether the requested user is in the blocklist or not.\n"
+					"__**{9}**__ tells you whether the requested user is in the blocklist or not.\n"
 
-				"# Ticket-related\n"
+					"# Ticket-related\n"
 
-				"Whenever you find something that works incorrectly (at least, in your opinion) you can contact the creator of the bot by DMing it. "
-				"But first, you need to open a ticket.\n"
+					"Whenever you find something that works incorrectly (at least, in your opinion) you can contact the creator of the bot by DMing it. "
+					"But first, you need to open a ticket.\n"
 
-				"## /ticket\n"
+					"## /ticket\n"
 
-				"### Note: this command is in beta. If something goes wrong... well, this is the tickets command, so you're on your own. Unless you're in the Discord server.\n"
+					"### Note: this command is in beta. If something goes wrong... well, this is the tickets command, so you're on your own. Unless you're in the Discord server.\n"
 
-				"__**create**__ allows the creator of the bot to talk to you through the bot's DMs.\n"
-				"__**close**__ closes a ticket, ending any conversation between the creator of the bot and you."
+					"__**create**__ allows the creator of the bot to talk to you through the bot's DMs.\n"
+					"__**close**__ closes a ticket, ending any conversation between the creator of the bot and you."
+					, slash::get_mention("help")
+					, slash::get_mention("setup jtc")
+					, slash::get_mention("setup notification jtc")
+					, slash::get_mention("setup notification topgg")
+					, slash::get_mention("vote")
+					, slash::get_mention("guild set")
+					, slash::get_mention("guild get")
+					, slash::get_mention("blocklist add")
+					, slash::get_mention("blocklist remove")
+					, slash::get_mention("blocklist status")
+				)
 			);
 		slash::help_embed_2 = dpp::embed().
 			set_color(dpp::colors::sti_blue).

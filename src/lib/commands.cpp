@@ -1,5 +1,8 @@
 #include "guiding_light/commands.hpp"
 
+#include "guiding_light/cli.hpp"
+#include "guiding_light/slash_funcs.hpp"
+
 const std::set <std::string> subcommand_list =
 	{"--return", "--dev", "--cli"};
 
@@ -120,4 +123,21 @@ void slashcommands::init() {
 
 	list_global = { {"help", help}, {"setup", setup}, {"set", set}, {"guild", guild}, {"get", get}, {"vote", vote}, {"blocklist", blocklist}, {"ticket", ticket} };
 	list_guild = { {"logs", logs}, {"select", select} };
+}
+
+std::string slash::get_mention(std::string_view command) {
+	std::string name = command.data();
+	if (name.starts_with('/')) {
+		name = name.substr(1);
+		// If the commands starts with a slash, remove it.
+		// We're going to insert a slash on our own.
+	}
+	const std::string slashcommand_name = cli::tokenise(name)[0];
+	const bool	is_global{global_created.contains(slashcommand_name)},
+				exists{is_global || guild_created.contains(slashcommand_name)};
+	const std::string mention = fmt::format("</{0}:{1}>", name,
+		is_global ? global_created[slashcommand_name].id.str() :
+		exists ? guild_created[slashcommand_name].id.str() :
+		"ERROR COMMAND DOESN'T EXIST");
+	return mention;
 }

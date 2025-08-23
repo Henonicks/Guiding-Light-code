@@ -85,6 +85,10 @@ int main(const int argc, char** argv) {
 			return;
 		}
 		// We don't want to reply to any of our own messages.
+		if (event.msg.channel_id == TOPGG_WEBHOOK_CHANNEL_ID) {
+			return;
+		}
+		// Make sure we don't reply to any messages sent through the top.gg webhook.
 		const dpp::snowflake& user_id = event.msg.author.id;
 		const dpp::snowflake& channel_id = event.msg.channel_id;
 		const std::string& msg = event.msg.content;
