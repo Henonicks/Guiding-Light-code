@@ -223,7 +223,11 @@ int main(const int argc, char** argv) {
 		const std::string cmd_name = event.command.get_command_name();
 		const dpp::command_interaction cmd = event.command.get_command_interaction();
 		if (cmd_name == "help") {
-			event.reply(dpp::message(event.command.channel_id, slash::help_embed_1).add_embed(slash::help_embed_2).set_flags(dpp::m_ephemeral));
+			dpp::message help_msg = dpp::message().set_channel_id(event.command.channel_id);
+			for (const dpp::embed& x : slash::help_embeds) {
+				help_msg.add_embed(x);
+			}
+			event.reply(help_msg.set_flags(dpp::m_ephemeral));
 			co_return;
 		}
 		if (cmd_name == "logs") {

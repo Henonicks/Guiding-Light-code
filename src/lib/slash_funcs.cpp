@@ -2,8 +2,7 @@
 
 std::map <std::string, std::map <dpp::snowflake, bool>> slash::in_progress;
 std::map <std::string, dpp::slashcommand> slash::global_created, slash::guild_created;
-dpp::embed slash::help_embed_1;
-dpp::embed slash::help_embed_2;
+std::vector <dpp::embed> slash::help_embeds;
 bool slash::enabled = false;
 
 dpp::coroutine <> slash::set::current(const dpp::slashcommand_t &event) {
