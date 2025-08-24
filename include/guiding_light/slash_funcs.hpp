@@ -19,8 +19,7 @@ namespace slash {
 	extern std::map <std::string, std::map <dpp::snowflake, bool>> in_progress; // finished states of commands
 
 	extern std::map <std::string, dpp::slashcommand> global_created, guild_created;
-	extern dpp::embed help_embed_1;
-	extern dpp::embed help_embed_2;
+	extern std::vector <dpp::embed> help_embeds;
 	
 	/**
 	 * @brief set a JTC value - either default or current one.
