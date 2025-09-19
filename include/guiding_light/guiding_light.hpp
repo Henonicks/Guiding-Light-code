@@ -4,6 +4,7 @@
 #include <no_warns/dpp/dpp.h>
 #include <dpp/nlohmann/json.hpp>
 #include <fmt/format.h>
+#include <fmt/args.h>
 #include "config_values.hpp"
 
 using user_snowflake = dpp::snowflake;

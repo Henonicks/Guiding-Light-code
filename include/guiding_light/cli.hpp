@@ -1,7 +1,7 @@
 #ifndef CLI_H
 #define CLI_H
 
-#include "guiding_light/configuration.hpp"
+#include "guiding_light/cfg.hpp"
 #include "linenoise.hpp"
 #include "color.hpp"
 

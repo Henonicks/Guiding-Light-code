@@ -49,8 +49,9 @@ find_package(FMT)
 add_subdirectory(colorize)
 add_subdirectory(cpp-linenoise)
 add_subdirectory(sqlite_modern_cpp)
+add_subdirectory(Henifig)
 
-target_compile_options(${BOT_NAME} PRIVATE -Wall -Wextra -Wpedantic)
+target_compile_options(${BOT_NAME} PRIVATE -Wall -Wextra -Wpedantic -g)
 
 target_link_libraries(${BOT_NAME}
     dl
@@ -60,6 +61,7 @@ target_link_libraries(${BOT_NAME}
     sqlite_modern_cpp
     linenoise
     colorize
+    henifig
 )
 
 target_compile_definitions(${BOT_NAME} PUBLIC DPP_CORO)

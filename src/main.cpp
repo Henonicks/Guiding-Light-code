@@ -11,13 +11,13 @@ int main(const int argc, char** argv) {
 	std::vector <std::string> commands;
 	// Is this used?
 
-	configuration::check_sqlite3();
+	cfg::check_sqlite3();
 	// Check if we have sqlite3 installed
 	exec_subcommands(argc, argv);
 	// Execute any subcommands provided with ./guidingLight <subcommands>.
-	configuration::read_config();
+	cfg::read_config();
 	// Write down the values from the config into variables.
-	configuration::init_logs();
+	cfg::init_logs();
 	// Open the log files. Create them if needed.
 
 	dpp::cluster _bot_release(BOT_TOKEN, IS_CLI ? dpp::i_default_intents : dpp::i_guilds | dpp::i_guild_members | dpp::i_guild_voice_states | dpp::i_direct_messages | dpp::i_message_content | dpp::i_guild_webhooks | dpp::i_guild_messages);

@@ -9,9 +9,13 @@
 #include "guiding_light/slash_funcs.hpp"
 #include "guiding_light/topgg.hpp"
 #include "guiding_light/ticket.hpp"
+
 #include "color.hpp"
 
-namespace configuration {
+#include "henifig/henifig.hpp"
+
+namespace cfg {
+	extern henifig::config_t config, responses;
 	/**
 	 * @brief Checks if sqlite3 is installed. If it's not, the program crashes.
 	 */

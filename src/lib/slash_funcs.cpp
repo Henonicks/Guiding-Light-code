@@ -385,6 +385,10 @@ dpp::coroutine <> slash::ticket::create(const dpp::slashcommand_t& event) {
 		.set_name(event.command.usr.username)
 		.set_guild_id(TICKETS_GUILD_ID);
 	const dpp::confirmation_callback_t& callback = co_await bot->co_channel_create(channel);
+	if (error_feedback(callback, event, "Couldn't create a channel for the ticket")) {
+		std::cout << cfg::config["TICKETS_GUILD_ID"].get <dpp::snowflake>() << '\n';
+		co_return;
+	}
 	channel = callback.get <dpp::channel>();
 	co_await bot->co_message_create(dpp::message(channel.id, fmt::format("<@{}> is contacting you.", user_id)));
 	tickets[user_id] = channel.id;
