@@ -189,7 +189,7 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 	{"select", [](const std::vector <std::string>& cmd) {
 		const std::filesystem::path select_path(fmt::format("{0}/{1}", db::SELECT_LOCATION, MODE_NAME));
 		if (!std::filesystem::exists(select_path)) {
-			std::filesystem::create_directory(select_path);
+			std::filesystem::create_directories(select_path);
 		}
 		std::string table_name;
 		if (cmd.size() == 1) {
@@ -202,7 +202,7 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 			table_name = cmd[1];
 		}
 		if (db::table_names.contains(table_name)) {
-			const int code = system(fmt::format(R"(sqlite '../database/{0}.db' '.mode markdown' ".output ../database/select/{0}/{1}.md" "SELECT * FROM {1}";)", MODE_NAME, table_name).c_str());
+			const int code = system(fmt::format(R"(sqlite3 '../database/{0}.db' '.mode markdown' ".output ../database/select/{0}/{1}.md" "SELECT * FROM {1}";)", MODE_NAME, table_name).c_str());
 			std::cout << (code == 0 ? fmt::format("Generated a .md file in database/select/{0}/{1}.md\n", MODE_NAME, table_name) : "An error occurred. Could not generate the .md file.\n");
 		}
 		else {
@@ -249,7 +249,7 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 				std::cout << fmt::format("{}: global slashcommand has NOT been defined.\n", x);
 			}
 		}
-		configuration::write_down_slashcommands();
+		cfg::write_down_slashcommands();
 	}},
 	{"guildcreate", [](const std::vector <std::string>& cmd) {
 		if (!is_running()) {
@@ -291,14 +291,14 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 				std::cout << fmt::format("{}: guild slashcommand has NOT been defined.\n", x);
 			}
 		}
-		configuration::write_down_slashcommands();
+		cfg::write_down_slashcommands();
 	}},
 	{"cdelete", [](const std::vector <std::string>& cmd) {
 		if (!is_running()) {
 			std::cout << fmt::format("{} isn't running. Use the launch command to launch it.\n", bot_name());
 			return;
 		}
-		configuration::write_down_slashcommands();
+		cfg::write_down_slashcommands();
 		if (cmd.size() == 1) {
 			bot->global_bulk_command_delete();
 			bot->guild_bulk_command_delete(MY_PRIVATE_GUILD_ID);
@@ -329,7 +329,7 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 			if (to_start) {
 				*bot_is_starting = true;
 				bot->on_ready([](const dpp::ready_t&) {
-					configuration::write_down_slashcommands();
+					cfg::write_down_slashcommands();
 				});
 				std::thread start([] {
 					bot->start();
@@ -426,7 +426,7 @@ void cli::exec_command(const std::vector <std::string>& cmd) {
 }
 
 void cli::init() {
-	configuration::read_config();
+	cfg::read_config();
 	slashcommands::init();
 	// assert(db::connection_successful());
 	db::connection_successful();

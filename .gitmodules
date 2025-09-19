@@ -7,3 +7,6 @@
 [submodule "cpp-linenoise"]
 	path = cpp-linenoise
 	url = https://github.com/Henonicks/cpp-linenoise
+[submodule "Henifig"]
+	path = Henifig
+	url = https://github.com/Henonicks/Henifig

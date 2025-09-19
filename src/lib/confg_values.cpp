@@ -7,4 +7,4 @@ dpp::start_type BOT_RETURN = dpp::st_wait;
 bool IS_DEV{}, IS_CLI{};
 int DELAY = 5;
 uint64_t guild_amount = 0, channel_amount = 0, user_amount = 0;
-std::vector <std::string> PING_RESPONSES;
+henifig::value_array PING_RESPONSES;

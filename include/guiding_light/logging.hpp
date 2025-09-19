@@ -3,7 +3,7 @@
 
 #include "guiding_light/guiding_light.hpp"
 #include "guiding_light/database.hpp"
-#include "guiding_light/configuration.hpp"
+#include "guiding_light/cfg.hpp"
 
 /**
  * @brief Logs a message along with other logs from Discord.
@@ -44,7 +44,8 @@ void error_callback(const dpp::confirmation_callback_t& callback);
  * @param error_intro The part of the error message before
  * the actual error ("Error" by default).
  */
-void error_feedback(const dpp::confirmation_callback_t& callback, const dpp::interaction_create_t& event, std::string_view error_intro = "Error");
+bool error_feedback(const dpp::confirmation_callback_t& callback, const dpp::interaction_create_t& event,
+                    std::string_view error_intro = "Error");
 
 /**
  *
@@ -53,6 +54,7 @@ void error_feedback(const dpp::confirmation_callback_t& callback, const dpp::int
  * @param error_intro The part of the error message before
  * the actual error ("Error" by default).
  */
-void error_feedback(const dpp::confirmation_callback_t& callback, const dpp::message_create_t& event, std::string_view error_intro = "Error");
+bool error_feedback(const dpp::confirmation_callback_t& callback, const dpp::message_create_t& event,
+                    std::string_view error_intro = "Error");
 
 #endif

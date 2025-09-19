@@ -16,8 +16,8 @@ void bot_log(const dpp::log_t& _log) {
 			const uint64_t new_user_amount = dpp::get_user_count();
 			if (!(new_guild_amount > guild_amount || new_channel_amount > channel_amount || new_user_amount > user_amount)) {
 				log("Done! Doing stuff...");
-				configuration::pray();
-				configuration::write_down_slashcommands();
+				cfg::pray();
+				cfg::write_down_slashcommands();
 				log("Done doing stuff!");
 				bot->stop_timer(h);
 			}
@@ -64,26 +64,30 @@ void error_callback(const dpp::confirmation_callback_t& callback) {
 	}
 }
 
-void error_feedback(const dpp::confirmation_callback_t& callback, const dpp::interaction_create_t& event, std::string_view error_intro) {
+bool error_feedback(const dpp::confirmation_callback_t& callback, const dpp::interaction_create_t& event, std::string_view error_intro) {
 	if (callback.is_error()) {
 		if (!callback.get_error().errors.empty()) {
 			log(fmt::format("ERROR! FIELD: {0} REASON: {1}", callback.get_error().errors[0].field, callback.get_error().errors[0].reason));
 		}
 		else {
-			log("ERROR!" + callback.get_error().message);
+			log("ERROR! " + callback.get_error().message);
 		}
 		event.reply(fmt::format("{0}: {1}.", error_intro, callback.get_error().message), error_callback);
+		return true;
 	}
+	return false;
 }
 
-void error_feedback(const dpp::confirmation_callback_t& callback, const dpp::message_create_t& event, std::string_view error_intro) {
+bool error_feedback(const dpp::confirmation_callback_t& callback, const dpp::message_create_t& event, std::string_view error_intro) {
 	if (callback.is_error()) {
 		if (!callback.get_error().errors.empty()) {
 			log(fmt::format("ERROR! FIELD: {0} REASON: {1}", callback.get_error().errors[0].field, callback.get_error().errors[0].reason));
 		}
 		else {
-			log("ERROR!" + callback.get_error().message);
+			log("ERROR! " + callback.get_error().message);
 		}
 		event.reply(fmt::format("{0}: {1}.", error_intro, callback.get_error().message), true, error_callback);
+		return true;
 	}
+	return false;
 }

@@ -1,5 +1,5 @@
 #include "guiding_light/database.hpp"
-#include "guiding_light/configuration.hpp"
+#include "guiding_light/cfg.hpp"
 
 std::string_view db::LOCATION = "../database";
 std::string_view db::SELECT_LOCATION = "../database/select";
