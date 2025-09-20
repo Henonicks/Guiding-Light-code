@@ -24,7 +24,7 @@ bool topgg::vote(const dpp::snowflake& user_id, const bool& weekend) {
 }
 
 int8_t topgg::jtc::count_allowed_jtcs(const dpp::snowflake& guild_id) {
-	const int8_t& votes = guild_votes_amount[guild_id];
+	const int& votes = guild_votes_amount[guild_id];
 	int8_t i = 1;
 	for (;i < 10; i++) {
 		if (votes_leveling[i] > votes) {

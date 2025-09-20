@@ -80,28 +80,14 @@ int main(const int argc, char** argv) {
 		if (IS_CLI) {
 			return;
 		}
-		// Same as with a button click.
-		if (event.msg.author.id == bot->me.id) {
-			return;
-		}
-		// We don't want to reply to any of our own messages.
-		if (event.msg.channel_id == TOPGG_WEBHOOK_CHANNEL_ID) {
-			return;
-		}
-		// Make sure we don't reply to any messages sent through the top.gg webhook.
 		const dpp::snowflake& user_id = event.msg.author.id;
-		const dpp::snowflake& channel_id = event.msg.channel_id;
+		// Same as with a button click.
+		if (user_id == bot->me.id) {
+			return;
+		}
 		const std::string& msg = event.msg.content;
-		const dpp::snowflake& guild_id = event.msg.guild_id;
-		if (event.msg.is_dm()) {
-			handle_dm_in(event);
-		}
-		else if (event.msg.content.find(fmt::format("<@{}>", bot->me.id)) != std::string::npos) {
-			event.reply(random_response(user_id), true, error_callback);
-		}
-		if (guild_id == TICKETS_GUILD_ID) {
-			handle_dm_out(event);
-		}
+		const dpp::snowflake& channel_id = event.msg.channel_id;
+		// We don't want to reply to any of our own messages.
 		if (channel_id == TOPGG_WEBHOOK_CHANNEL_ID) {
 			const dpp::snowflake voted_user_id = msg.substr(2, msg.size() - bot->me.id.str().size() - 10);
 			const bool weekend = msg[2 + voted_user_id.str().size() + 2] == 't';
@@ -118,6 +104,17 @@ int main(const int argc, char** argv) {
 				topgg::no_noguild_reminder[voted_user_id] = true;
 				db::sql << "INSERT INTO no_noguild_reminder VALUES (?);" << voted_user_id.str();
 			}
+			return;
+		}
+		const dpp::snowflake& guild_id = event.msg.guild_id;
+		if (event.msg.is_dm()) {
+			handle_dm_in(event);
+		}
+		else if (event.msg.content.find(fmt::format("<@{}>", bot->me.id)) != std::string::npos) {
+			event.reply(random_response(user_id), true, error_callback);
+		}
+		if (guild_id == TICKETS_GUILD_ID) {
+			handle_dm_out(event);
 		}
 	});
 
