@@ -1,7 +1,5 @@
 #include "guiding_light/cfg.hpp"
 
-henifig::config_t cfg::config, cfg::responses;
-
 void cfg::check_sqlite3() {
 	if (!command_exists("sqlite3")) {
 		std::cerr << fmt::format("{} The sqlite3 executable hasn't been found. Please install sqlite3.\n", color::rize("ERROR:", "Red"));

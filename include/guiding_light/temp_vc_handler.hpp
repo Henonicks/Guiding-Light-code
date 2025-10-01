@@ -7,7 +7,7 @@
 #include "logging.hpp"
 #include "exception.hpp"
 
-extern user_snowflake handling_user_id; // the ID of the user that a VC is being created for
+inline user_snowflake handling_user_id; // the ID of the user that a VC is being created for
 
 void temp_vc_create_msg(const temp_vc_query& q, const dpp::channel& channel);
 void temp_vc_delete_msg(const dpp::user& user, const dpp::channel* channel);

@@ -1,10 +1,5 @@
 #include "guiding_light/slash_funcs.hpp"
 
-std::map <std::string, std::map <dpp::snowflake, bool>> slash::in_progress;
-std::map <std::string, dpp::slashcommand> slash::global_created, slash::guild_created;
-std::vector <dpp::embed> slash::help_embeds;
-bool slash::enabled = false;
-
 dpp::coroutine <> slash::set::current(const dpp::slashcommand_t &event) {
 	const dpp::command_interaction cmd = event.command.get_command_interaction();
 	const dpp::user user = event.command.get_issuing_user();

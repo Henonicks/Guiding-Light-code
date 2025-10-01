@@ -1,7 +1,7 @@
 #include "guiding_light/launch_options.hpp"
 
 void exec_subcommand(std::string_view cmd) {
-    if (!subcommand_list.contains(std::string(cmd))) {
+    if (!command_options_list.contains(std::string(cmd))) {
         std::cout << "Unknown command: " << cmd << '\n';
     }
     if (cmd == "--dev") {

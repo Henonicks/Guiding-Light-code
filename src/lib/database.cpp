@@ -1,13 +1,6 @@
 #include "guiding_light/database.hpp"
 #include "guiding_light/cfg.hpp"
 
-std::string_view db::LOCATION = "../database";
-std::string_view db::SELECT_LOCATION = "../database/select";
-const std::set <std::string> db::table_names =
-{"jtc_vcs", "temp_vc_notifications", "jtc_default_values", "no_temp_ping", "topgg_guild_choices", "topgg_guild_votes_amount", "no_noguild_reminder", "topgg_notifications", "tickets", "temp_vcs"};
-db::wrapper db::sql{""};
-std::map <std::string, bool> db::errors_pending;
-
 db::wrapper::operator_with_error::operator_with_error(wrapper& _wrapper) : _wrapper(_wrapper) {}
 
 sqlite::database_binder db::wrapper::operator_with_error::operator <<(sqlite::str_ref query) const {
@@ -53,6 +46,7 @@ bool db::connection_successful() {
 	// for some reason if I try to assign an instance of wrapper it tells me that the operator= is deleted
 	// but then why can I do this? I'm confused.
 	try {
+		sql.with_error << "SELECT 1 FROM jtc_vcs; -- hello";
 		sql.with_error << "SELECT 1 FROM jtc_vcs;";
 		// try to select a random value from jtc_vcs.
 		// If the table doesn't exist, we need to handle an exception.

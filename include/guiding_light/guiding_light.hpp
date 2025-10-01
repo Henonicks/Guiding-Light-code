@@ -11,8 +11,8 @@ using user_snowflake = dpp::snowflake;
 using channel_snowflake = dpp::snowflake;
 using guild_snowflake = dpp::snowflake;
 
-extern dpp::cluster *bot, *bot_dev, *bot_release;
-extern bool bot_dev_is_starting, bot_release_is_starting, *bot_is_starting;
+inline dpp::cluster *bot, *bot_dev, *bot_release;
+inline bool bot_dev_is_starting, bot_release_is_starting, *bot_is_starting;
 
 /**
  * @brief Get the pointer to the bot for the mode we're on.

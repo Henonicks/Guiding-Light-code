@@ -15,7 +15,7 @@
 #include "henifig/henifig.hpp"
 
 namespace cfg {
-	extern henifig::config_t config, responses;
+	inline henifig::config_t config, responses;
 	/**
 	 * @brief Checks if sqlite3 is installed. If it's not, the program crashes.
 	 */

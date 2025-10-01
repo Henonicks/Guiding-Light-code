@@ -1,12 +1,6 @@
 #include "guiding_light/topgg.hpp"
 #include "guiding_light/database.hpp"
 
-int topgg::last_collection_time = 0;
-std::map <user_snowflake, guild_snowflake> topgg::guild_choices;
-std::map <guild_snowflake, int> topgg::guild_votes_amount;
-std::vector <int> topgg::votes_leveling = {0, 225, 450, 800, 1300, 2000, 2750, 3350, 4350, 5000};
-std::map <user_snowflake, bool> topgg::no_noguild_reminder;
-
 bool topgg::vote(const dpp::snowflake& user_id, const bool& weekend) {
 	bool failure = false;
 	const dpp::snowflake& guild_id = guild_choices[user_id];
@@ -26,7 +20,7 @@ bool topgg::vote(const dpp::snowflake& user_id, const bool& weekend) {
 int8_t topgg::jtc::count_allowed_jtcs(const dpp::snowflake& guild_id) {
 	const int& votes = guild_votes_amount[guild_id];
 	int8_t i = 1;
-	for (;i < 10; i++) {
+	for (;i < static_cast <int8_t>(votes_leveling.size()); i++) {
 		if (votes_leveling[i] > votes) {
 			break;
 		}

@@ -225,9 +225,8 @@ int main(const int argc, char** argv) {
 				help_msg.add_embed(x);
 			}
 			event.reply(help_msg.set_flags(dpp::m_ephemeral));
-			co_return;
 		}
-		if (cmd_name == "logs") {
+		else if (cmd_name == "logs") {
 			if (event.command.usr.id != MY_ID) {
 				bot->direct_message_create(MY_ID, dpp::message(fmt::format("Ayo {} checking logs wht", event.command.usr.id)));
 			}
@@ -235,7 +234,7 @@ int main(const int argc, char** argv) {
 			const dpp::message message = dpp::message().add_file(file_name, dpp::utility::read_file(fmt::format("{0}/{1}/{2}", logs_directory, MODE_NAME, file_name))).set_flags(dpp::m_ephemeral);
 			event.reply(message);
 		}
-		if (cmd_name == "select") {
+		else if (cmd_name == "select") {
 			if (event.command.usr.id != MY_ID) {
 				bot->direct_message_create(MY_ID, dpp::message(fmt::format("Ayo {} selecting wht", event.command.usr.id)));
 			}
@@ -249,11 +248,11 @@ int main(const int argc, char** argv) {
 			const dpp::message message = dpp::message().add_file("db.md", dpp::utility::read_file(fmt::format("../database/select/{0}/{1}.md", MODE_NAME, table_name))).set_flags(dpp::m_ephemeral);
 			event.reply(message);
 		}
-		if (cmd_name == "vote") {
+		else if (cmd_name == "vote") {
 			event.reply(dpp::message(fmt::format("Vote [here](https://top.gg/bot/{}/vote) and earn JTC points for a chosen guild! See `/help` for more information.", bot->me.id)).set_flags(dpp::m_ephemeral));
 			co_return;
 		}
-		if (cmd_name == "guild") {
+		else if (cmd_name == "guild") {
 			if (cmd.options[0].name == "get") {
 				slash::topgg::guild_get(event);
 			}
@@ -261,10 +260,10 @@ int main(const int argc, char** argv) {
 				slash::topgg::guild_set(event);
 			}
 		}
-		if (cmd_name == "get") {
+		else if (cmd_name == "get") {
 			slash::topgg::get_progress(event);
 		}
-		if (cmd_name == "set") {
+		else if (cmd_name == "set") {
 			if (cmd.options[0].name == "default") {
 				co_await slash::set::default_values(event);
 			}
@@ -272,7 +271,7 @@ int main(const int argc, char** argv) {
 				co_await slash::set::current(event);
 			}
 		}
-		if (cmd_name == "setup") {
+		else if (cmd_name == "setup") {
 			bool& creation_status = slash::in_progress[cmd_name][guild_id];
 			if (creation_status) {
 				event.reply(dpp::message("A channel is already being set up! Try again when it's done.").set_flags(dpp::m_ephemeral));
@@ -282,7 +281,7 @@ int main(const int argc, char** argv) {
 			co_await slash::setup(event);
 			creation_status = false;
 		}
-		if (cmd_name == "blocklist") {
+		else if (cmd_name == "blocklist") {
 			if (cmd.options[0].name == "add") {
 				co_await slash::blocklist::add(event);
 			}
@@ -293,7 +292,7 @@ int main(const int argc, char** argv) {
 				slash::blocklist::status(event);
 			}
 		}
-		if (cmd_name == "ticket") {
+		else if (cmd_name == "ticket") {
 			auto& creation_status = slash::in_progress[cmd_name][user_id];
 			if (creation_status) {
 				event.reply(dpp::message("A ticket is already being created! Try again when it's done.").set_flags(dpp::m_ephemeral));
@@ -307,6 +306,21 @@ int main(const int argc, char** argv) {
 			if (cmd.options[0].name == "close") {
 				slash::ticket::close(event);
 			}
+		}
+		else if (cmd_name == "reload") {
+			log("Started reloading...");
+			cfg::read_config();
+			cfg::pray();
+			if (!db::connection_successful()) {
+				event.reply(dpp::message("COULDN'T CONNECT TO THE DATABASE! THIS IS A DISASTER! RUN WHILE YOU CAN!").set_flags(dpp::m_ephemeral));
+				log("Reload: COULDN'T CONNECT TO THE DATABASE! THIS IS A DISASTER! RUN WHILE YOU CAN!");
+				co_return;
+			}
+			event.reply(dpp::message("Reloaded").set_flags(dpp::m_ephemeral));
+			log("Finished reloading.");
+		}
+		else {
+			event.reply(dpp::message("Undefined command, can't handle.").set_flags(dpp::m_ephemeral));
 		}
 	});
 

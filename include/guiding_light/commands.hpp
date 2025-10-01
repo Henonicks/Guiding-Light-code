@@ -3,12 +3,19 @@
 
 #include "guiding_light/guiding_light.hpp"
 
-extern const std::set <std::string> subcommand_list;
+inline const std::set <std::string> command_options_list =
+    {"--return", "--dev", "--cli", "--killall"};
 
 namespace logs {
-    extern std::set <std::string> list;
+	inline const std::set <std::string> list =
+		{"guild_logs", "my_logs", "other_logs", "sql_logs"};
 }
 
+/**
+ * @brief Checks if an executable exists and is usable as a command line command.
+ * @param command The name of the executable.
+ * @return True if the executable exists, false otherwise
+ */
 bool command_exists(std::string_view command);
 
 namespace slash {
@@ -21,8 +28,8 @@ namespace slash {
 }
 
 namespace slashcommands {
-    extern std::map <std::string, dpp::slashcommand> list_global;
-    extern std::map <std::string, dpp::slashcommand> list_guild;
+    inline std::map <std::string, dpp::slashcommand> list_global;
+    inline std::map <std::string, dpp::slashcommand> list_guild;
 
     /**
      * @brief Initialises the slashcommands list.

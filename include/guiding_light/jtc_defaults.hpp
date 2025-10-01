@@ -12,6 +12,6 @@ struct jtc_defaults {
 
 bool operator <(jtc_defaults jd1, jtc_defaults jd2);
 
-extern std::map <channel_snowflake, jtc_defaults> jtc_default_values;
+inline std::map <channel_snowflake, jtc_defaults> jtc_default_values;
 
 #endif

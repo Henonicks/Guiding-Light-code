@@ -3,19 +3,12 @@
 #include "guiding_light/cli.hpp"
 #include "guiding_light/slash_funcs.hpp"
 
-const std::set <std::string> subcommand_list =
-	{"--return", "--dev", "--cli"};
-
-std::set <std::string> logs::list = {"guild_logs", "my_logs", "other_logs", "sql_logs"};
-
-std::map <std::string, dpp::slashcommand> slashcommands::list_global;
-std::map <std::string, dpp::slashcommand> slashcommands::list_guild;
-
 /**
  * @brief Checks if a bash command exists.
  */
 bool command_exists(std::string_view command) {
 	return !system(fmt::format("which {} >>/dev/null 2>>/dev/null", command).c_str());
+	// Try to execute the file, if it succeeds, it definitely exists.
 }
 
 /**
@@ -32,7 +25,8 @@ void slashcommands::init() {
 	dpp::slashcommand blocklist("blocklist", "Add/Remove a user from your channel's blocklist", bot->me.id);
 	dpp::slashcommand ticket("ticket", "Create/Delete a ticket.", bot->me.id);
 	dpp::slashcommand select("select", "SELECT everything from one of the tables in the database.", bot->me.id);
-	
+	dpp::slashcommand reload("reload", "Reload the configs and the database.", bot->me.id);
+
     set.add_option(
         dpp::command_option(dpp::co_sub_command, "name", "Change the VC name.").
             add_option(dpp::command_option(dpp::co_string, "name", "The name you want the VC to have.", true).set_max_length(100))
@@ -103,6 +97,7 @@ void slashcommands::init() {
     logs.add_option(dpp::command_option(dpp::co_sub_command, "dpp", "D++ logs, sent by bot->on_log()."));
     logs.add_option(dpp::command_option(dpp::co_sub_command, "mine", "Logs, written by me."));
     logs.add_option(dpp::command_option(dpp::co_sub_command, "guild", "Guild logs."));
+    logs.add_option(dpp::command_option(dpp::co_sub_command, "sqlite", "Sqlite3 logs."));
     logs.set_default_permissions(dpp::permissions::p_administrator);
 
     select.add_option(dpp::command_option(dpp::co_sub_command, "jtc-vcs", "The table containing JTC VCs."));
@@ -121,11 +116,13 @@ void slashcommands::init() {
     ticket.add_option(dpp::command_option(dpp::co_sub_command, "close", "Delete a support ticket."));
     ticket.set_dm_permission(true);
 
+	reload.set_default_permissions(dpp::permissions::p_administrator);
+
 	list_global = { {"help", help}, {"setup", setup}, {"set", set}, {"guild", guild}, {"get", get}, {"vote", vote}, {"blocklist", blocklist}, {"ticket", ticket} };
-	list_guild = { {"logs", logs}, {"select", select} };
+	list_guild = { {"logs", logs}, {"select", select}, {"reload", reload} };
 }
 
-std::string slash::get_mention(std::string_view command) {
+std::string slash::get_mention(const std::string_view command) {
 	std::string name = command.data();
 	if (name.starts_with('/')) {
 		name = name.substr(1);

@@ -3,7 +3,7 @@
 
 #include "guiding_light.hpp"
 
-extern std::map <guild_snowflake, channel_snowflake> temp_vc_notifications;
-extern std::map <guild_snowflake, channel_snowflake> topgg_notifications;
+inline std::map <guild_snowflake, channel_snowflake> temp_vc_notifications;
+inline std::map <guild_snowflake, channel_snowflake> topgg_notifications;
 
 #endif

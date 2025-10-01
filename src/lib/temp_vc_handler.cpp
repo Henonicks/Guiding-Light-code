@@ -1,7 +1,5 @@
 #include "guiding_light/temp_vc_handler.hpp"
 
-user_snowflake handling_user_id;
-
 void temp_vc_create_msg(const temp_vc_query& q, const dpp::channel& channel) {
 	const std::string description = fmt::format("A new temporary channel has been created {0}. Join the channel, **{1}** (<#{2}>)!",
 		!channel.parent_id.empty() ? fmt::format("in the <#{}> category", channel.parent_id) : "outside the categories",

@@ -3,7 +3,7 @@
 
 #include "guiding_light.hpp"
  
-extern std::map <user_snowflake, channel_snowflake> tickets;    // user-keyed tickets map
-extern std::map <channel_snowflake, user_snowflake> ck_tickets; // channel-keyed tickets map
+inline std::map <user_snowflake, channel_snowflake> tickets;    // user-keyed tickets map
+inline std::map <channel_snowflake, user_snowflake> ck_tickets; // channel-keyed tickets map
 
 #endif
