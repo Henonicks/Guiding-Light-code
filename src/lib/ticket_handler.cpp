@@ -27,6 +27,7 @@ void handle_dm_in(const dpp::message_create_t& event) {
 	bot->message_create(preserve_attachments(msg).set_channel_id(tickets[user_id]), [event](const dpp::confirmation_callback_t& callback) -> void {
 		if (callback.is_error()) {
 			error_feedback(callback, event, "Failed to send");
+			bot->message_add_reaction(event.msg, dpp::unicode_emoji::x);
 			return;
 		}
 		bot->message_add_reaction(event.msg, dpp::unicode_emoji::white_check_mark);

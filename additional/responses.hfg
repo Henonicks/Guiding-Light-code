@@ -209,5 +209,19 @@
     "If you vote but don\'t have a guild set to vote in favour of, the point is wasted. "
     "The first time you do that, you get a direct message from the bot if your DMs are open."]],
     $"FOOTER" | "You can always ask the creator of the bot a question in the "
-    "direct messages or the support server! A link to the latter is in the bio of the bot."
+                "direct messages or the support server! A link to the latter is in the bio of the bot."
+}\
+
+/LOCALISATION{
+    $"default" | {
+        $"RESPONSE_NOT_FOUND" | "The response for this interaction could not be found.",
+        $"YOU_ARE_NOT_IN_A_VC_YOU_CAN_EDIT" | "You are not in a VC you can edit. If you are, it's likely that the bot restarted while you were in the channel. In that case, **__rejoin it__**. Note that those commands edit temporary VCs only.",
+        $"THE_NAME_OF_THE_VC_IS_ALREADY" | "The name of the VC is already \"`{}`\".",
+        $"THE_NAME_OF_THE_CHANNEL_HAS_CHANGED_FROM" | "The name of the channel has changed from \"`{0}` to \"`{1}`\".",
+        $"GUILD_COULD_NOT_BE_FOUND" | "Guild could not be found. Please, try again.",
+        $"THE_BITRATE_IS_ALREADY" | "The bitrate is already `{}`."
+    },
+    $"uk" | {
+
+    }
 }\

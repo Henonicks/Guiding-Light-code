@@ -3,7 +3,7 @@
 #include "guiding_light/temp_vc_handler.hpp"
 #include "guiding_light/launch_options.hpp"
 #include "guiding_light/cli.hpp"
-#include "guiding_light/ping.hpp"
+#include "guiding_light/reponses.hpp"
 
 std::unordered_map <dpp::snowflake, dpp::guild> all_bot_guilds;
 

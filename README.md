@@ -40,19 +40,17 @@ If you wish to use a non-default compiler, you can specify it while running cmak
 
 ## Running the bot
 
-Create a config.json in `Guiding_Light_Config`, located above the `build` directory (I have a private GitHub repository containing only the config file called `Guiding_Light_Config`, probably not the best way to do this but that's irrelevant):
+Create a config.hfg in `Guiding_Light_Config`, located above the `build` directory (I have a private GitHub repository containing only the config file called `Guiding_Light_Config`, probably not the best way to do this but that's irrelevant):
 
-```json
-{
-    "BOT_TOKEN": "Bot token here",
-    "BOT_TOKEN_DEV" : "Test bot token here (use --dev when starting to test new changes without affecting anything used in production)",
-    "BOT_DM_LOGS_ID" : "(integer) The ID of the channel for DM logs",
-    "MY_ID" : "(integer) Your account's ID",
-    "TOPGG_WEBHOOK_CHANNEL_ID" : "(integer) The ID of the channel for top.gg vote webhook messages",
-    "MY_GUILD_ID" : "(integer) The ID of your guild. Not used anymore",
-    "MY_PRIVATE_GUILD_ID" : "(integer) The ID of your guild. Used to create commands only administrators (which I know can only be me) can use",
-    "TICKETS_GUILD_ID" : "(integer) The ID of your guild which contains tickets. Can be the same as MY_PRIVATE_GUILD_ID if you like"
-}
+```henifig
+/BOT_TOKEN\: "Bot token here",
+/BOT_TOKEN_DEV\ : "Test bot token here (use --dev when starting to test new changes without affecting anything used in production)",
+/BOT_DM_LOGS_ID\ : "(integer) The ID of the channel for DM logs",
+/MY_ID\ : "(integer) Your account's ID",
+/TOPGG_WEBHOOK_CHANNEL_ID\ : "(integer) The ID of the channel for top.gg vote webhook messages",
+/MY_GUILD_ID\ : "(integer) The ID of your guild. Not used anymore",
+/MY_PRIVATE_GUILD_ID\ : "(integer) The ID of your guild. Used to create commands only administrators (which I know can only be me) can use",
+/TICKETS_GUILD_ID\ : "(integer) The ID of your guild which contains tickets. Can be the same as MY_PRIVATE_GUILD_ID if you like"
 ```
 
 ## Setup

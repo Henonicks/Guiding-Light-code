@@ -1,13 +1,16 @@
 #include "guiding_light/slash_funcs.hpp"
 
+#include "guiding_light/reponses.hpp"
+
 dpp::coroutine <> slash::set::current(const dpp::slashcommand_t &event) {
+	std::string lang = event.command.locale;
 	const dpp::command_interaction cmd = event.command.get_command_interaction();
 	const dpp::user user = event.command.get_issuing_user();
 	const dpp::snowflake& user_id = user.id;
 	const dpp::snowflake& channel_id = vc_statuses[user_id];
 	const bool user_is_main = !channel_id.empty();
 	if (!user_is_main) {
-		event.reply(dpp::message("You are not in a VC you can edit. If you are, it's likely that the bot restarted while you were in the channel. In that case, **__rejoin it__**. Note that those commands edit temporary VCs only.").set_flags(dpp::m_ephemeral));
+		event.reply(dpp::message(premade_response(YOU_ARE_NOT_IN_A_VC_YOU_CAN_EDIT, lang)).set_flags(dpp::m_ephemeral));
 	}
 	else {
 		dpp::channel channel = *dpp::find_channel(channel_id);
@@ -15,16 +18,16 @@ dpp::coroutine <> slash::set::current(const dpp::slashcommand_t &event) {
 		if (cmd.options[0].name == "name") {
 			const auto argument = std::get <std::string>(cmd.options[0].options[0].value);
 			if (argument == channel.name) {
-				event.reply(dpp::message("The name of the VC is already \"`" + old_name + "`\"").set_flags(dpp::m_ephemeral));
+				event.reply(dpp::message(fmt::vformat(premade_response(THE_NAME_OF_THE_VC_IS_ALREADY, lang), vec_to_fmt({old_name}))).set_flags(dpp::m_ephemeral));
 			}
 			else {
 				channel.set_name(argument);
-				bot->channel_edit(channel, [event, old_name, argument](const dpp::confirmation_callback_t& callback) {
+				bot->channel_edit(channel, [event, old_name, argument, lang](const dpp::confirmation_callback_t& callback) mutable {
 					if (callback.is_error()) {
 						error_feedback(callback, event);
 						return;
 					}
-					event.reply(dpp::message("The name of the channel has changed from \"`" + old_name + "` to \"`" + argument + "`\".").set_flags(dpp::m_ephemeral));
+					event.reply(dpp::message(fmt::vformat(premade_response(THE_NAME_OF_THE_CHANNEL_HAS_CHANGED_FROM, lang), vec_to_fmt({old_name, argument}))).set_flags(dpp::m_ephemeral));
 				});
 			}
 		}
@@ -32,17 +35,17 @@ dpp::coroutine <> slash::set::current(const dpp::slashcommand_t &event) {
 			const auto argument = std::get <long>(cmd.options[0].options[0].value);
 			const dpp::guild* guild = dpp::find_guild(channel.guild_id);
 			if (guild == nullptr) {
-				event.reply("Guild could not be found. Please, try again.");
+				event.reply(dpp::message(premade_response(GUILD_COULD_NOT_BE_FOUND, lang)).set_flags(dpp::m_ephemeral));
 				co_return;
 			}
 			dpp::message to_reply = dpp::message().set_flags(dpp::m_ephemeral);
 			std::string content;
 			const int max_bitrate = ((guild->premium_tier == 0) ?
-							   96 : (guild->premium_tier == 1) ?
+						       96 : (guild->premium_tier == 1) ?
 									128 : (guild->premium_tier == 2) ?
 										  256 : 384);
 			if (channel.bitrate == argument) {
-				content = "The bitrate is already `" + std::to_string(argument) + "`.";
+				content = fmt::vformat(premade_response(THE_BITRATE_IS_ALREADY, lang), vec_to_fmt({std::to_string(argument)}));
 			}
 			else if (argument > max_bitrate || argument < 8) {
 				content = "The number can only be between `8` and `" + std::to_string(max_bitrate) +
@@ -274,8 +277,7 @@ dpp::coroutine <> slash::blocklist::add(const dpp::slashcommand_t& event) {
 		channel->set_permission_overwrite(requested_id, dpp::ot_member, 0, dpp::p_view_channel);
 		const dpp::confirmation_callback_t callback = co_await bot->co_channel_edit(*channel);
 		if (callback.is_error()) {
-			event.reply(dpp::message("Error. Couldn't move the user to the blocklist. Tip: the user may have a role that is above my roles.").set_flags(dpp::m_ephemeral));
-			error_callback(callback);
+			error_feedback(callback, event);
 			co_return;
 		}
 		banned[issuer_vc.channel_id].insert(requested_id);
@@ -306,8 +308,7 @@ dpp::coroutine <> slash::blocklist::remove(const dpp::slashcommand_t& event) {
 		channel->set_permission_overwrite(requested_id, dpp::ot_member, dpp::p_view_channel, 0);
 		const dpp::confirmation_callback_t callback = co_await bot->co_channel_edit(*channel);
 		if (callback.is_error()) {
-			event.reply(dpp::message("Error. Couldn't remove the user from the blocklist. Tip: the user may have a role that is above my roles.").set_flags(dpp::m_ephemeral));
-			error_callback(callback);
+			error_feedback(callback, event);
 			co_return;
 		}
 		banned[temp_vcs[vc_statuses[issuer.id]].channel_id].erase(requested_id);
@@ -342,7 +343,7 @@ void slash::topgg::guild_set(const dpp::slashcommand_t& event) {
 		try {
 			event.reply(dpp::message(event.command.channel_id, fmt::format("Your chosen guild is already {}!", event.command.get_guild().name)));
 		}
-		catch (...) {
+		catch (...) { // TODO: what the shit is this?
 			event.reply(dpp::message(event.command.channel_id, "Guild not found. Try again?").set_flags(dpp::m_ephemeral));
 		}
 	}
