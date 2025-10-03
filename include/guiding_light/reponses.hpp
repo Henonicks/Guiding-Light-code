@@ -51,16 +51,16 @@ enum responses_enum {
 	THIS_IS_THE_ABSOLUTE_MAXIMUM,
 	YOU_ALREADY_HAVE_A_TICKET,
 	COULDNT_CREATE_A_CHANNEL_FOR_THE_TICKET,
+	A_TICKET_HAS_BEEN_CREATED,
 	YOU_DONT_HAVE_A_TICKET,
 	YOUR_TICKET_HAS_BEEN_CLOSED,
 	NEXT_TIME_THE_PING_WILL_BE,
-	YOU_HAVE_JUST_VOTED_AND_MISSED_OUT,
+	OFF,
+	ON,
 	IM_PREPARING,
 	VOTE_HERE,
 	A_CHANNEL_IS_ALREADY_BEING_SET_UP,
 	A_TICKET_IS_ALREADY_BEING_SET_UP,
-	COULDNT_CONNECT_TO_THE_DATABASE,
-	RELOADED,
 	UNDEFINED_COMMAND,
 };
 
@@ -110,10 +110,12 @@ inline const char* responses_keys[] = {
 	"THIS_IS_THE_ABSOLUTE_MAXIMUM",
 	"YOU_ALREADY_HAVE_A_TICKET",
 	"COULDNT_CREATE_A_CHANNEL_FOR_THE_TICKET",
+	"A_TICKET_HAS_BEEN_CREATED",
 	"YOU_DONT_HAVE_A_TICKET",
 	"YOUR_TICKET_HAS_BEEN_CLOSED",
 	"NEXT_TIME_THE_PING_WILL_BE",
-	"YOU_HAVE_JUST_VOTED_AND_MISSED_OUT",
+	"OFF",
+	"ON",
 	"IM_PREPARING",
 	"VOTE_HERE",
 	"A_CHANNEL_IS_ALREADY_BEING_SET_UP",
@@ -124,7 +126,7 @@ inline const char* responses_keys[] = {
 };
 
 std::string random_response(const dpp::snowflake& user_id);
-std::string premade_response(responses_enum response_id, std::string& lang);
+std::string response(responses_enum response_id, std::string_view lang);
 fmt::dynamic_format_arg_store <fmt::format_context> vec_to_fmt(const std::vector <std::string>& vec);
 
 #endif

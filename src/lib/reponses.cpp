@@ -18,12 +18,13 @@ std::string random_response(const dpp::snowflake& user_id) {
     return response;
 }
 
-std::string premade_response(const responses_enum response_id, std::string& lang) {
+std::string response(const responses_enum response_id, const std::string_view lang) {
     const henifig::value_map& localisation = cfg::responses["LOCALISATION"];
-    if (!localisation.contains(lang)) {
-        lang = "default";
+    std::string used_lang;
+    if (!localisation.contains(lang.data())) {
+        used_lang = "default";
     }
-    const henifig::value_map& responses = localisation.at(lang);
+    const henifig::value_map& responses = localisation.at(used_lang);
     const std::string_view key = responses_keys[response_id];
     if (responses.contains(key.data())) {
         return responses.at(responses_keys[response_id]);

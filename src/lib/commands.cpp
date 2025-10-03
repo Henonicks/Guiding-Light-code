@@ -33,7 +33,7 @@ void slashcommands::init() {
     );
     set.add_option(
         dpp::command_option(dpp::co_sub_command, "limit", "Change the member count limit.").
-            add_option(dpp::command_option(dpp::co_integer, "limit", "The limit you want the VC to have.", true).set_min_value(0).set_max_value(99))
+            add_option(dpp::command_option(dpp::co_integer, "limit", "The limit you want the VC to have.", true).set_min_value(-99).set_max_value(99))
     );
     set.add_option(
         dpp::command_option(dpp::co_sub_command, "bitrate", "Change the bitrate of the VC.").

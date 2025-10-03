@@ -214,14 +214,242 @@
 
 /LOCALISATION{
     $"default" | {
-        $"RESPONSE_NOT_FOUND" | "The response for this interaction could not be found.",
-        $"YOU_ARE_NOT_IN_A_VC_YOU_CAN_EDIT" | "You are not in a VC you can edit. If you are, it's likely that the bot restarted while you were in the channel. In that case, **__rejoin it__**. Note that those commands edit temporary VCs only.",
-        $"THE_NAME_OF_THE_VC_IS_ALREADY" | "The name of the VC is already \"`{}`\".",
-        $"THE_NAME_OF_THE_CHANNEL_HAS_CHANGED_FROM" | "The name of the channel has changed from \"`{0}` to \"`{1}`\".",
-        $"GUILD_COULD_NOT_BE_FOUND" | "Guild could not be found. Please, try again.",
-        $"THE_BITRATE_IS_ALREADY" | "The bitrate is already `{}`."
+        $"RESPONSE_NOT_FOUND" |
+            "The response for this interaction could not be found.",
+        $"YOU_ARE_NOT_IN_A_VC_YOU_CAN_EDIT" |
+            "You are not in a VC you can edit. If you are, it's likely that the bot restarted while "
+            "you were in the channel. In that case, **__rejoin it__**. Note that those commands edit temporary VCs only.",
+        $"THE_NAME_OF_THE_VC_IS_ALREADY" |
+            "The name of the VC is already \"`{}`\".",
+        $"THE_NAME_OF_THE_CHANNEL_HAS_CHANGED_FROM" |
+            "The name of the channel has changed from \"`{0}` to \"`{1}`\".",
+        $"GUILD_COULD_NOT_BE_FOUND" |
+            "Guild could not be found. Please, try again.",
+        $"THE_BITRATE_IS_ALREADY" |
+            "The bitrate is already `{}`.",
+        $"THE_NUMBER_CAN_ONLY_BE_BETWEEN" |
+            "The number can only be between `8` and `{}` for this guild. "
+            "Note that the maximum bitrate number also depends on the boost level.",
+        $"SET_BITRATE_TO" |
+            "Set bitrate to `{}` successfully.",
+        $"FOR_VOICE_CHANNELS_ITS_IMPOSSIBLE_TO_MAKE_THE_LIMIT_GREATER" |
+            "For voice channels, it's impossible to make the limit greater than `99`. "
+            "You can make it infinite by putting `0` as argument.",
+        $"WELL_NOW_WERE_JUST_BEING_SILLY_ARENT_WE" |
+            "Well now we're just being silly, aren't we?",
+        $"THE_USER_LIMIT_IS_ALREADY" |
+            "The user limit is already `{}`.",
+        $"USER_LIMIT_IS_SET_TO" |
+            "User limit set to `{}` successfully.",
+        $"THIS_IS_NOT_A_JTC_VC_I_KNOW_OF" |
+            "This is not a JTC VC I know of.",
+        $"THE_NAME_IS_ALREADY" |
+            "The name is already + `{}` <a:skullspin:1121414918357389433>",
+        $"THE_DEFAULT_NAME_IS_SET_TO" |
+            "The default name is set to `{}`!",
+        $"THE_LIMIT_SHOULD_BE_BETWEEN" |
+            "The limit should be between `0` and `99` included, `0` for infinite",
+        $"THE_LIMIT_IS_ALREADY" |
+            "The limit is already `{}` <a:skullspin:1121414918357389433>",
+        $"THE_DEFAULT_LIMIT_IS_SET_TO" |
+            "The default limit is set to `{}`!",
+        $"THE_DEFAULT_BITRATE_IS_SET_TO" |
+            "The default bitrate is set to `{}`!",
+        $"THIS_GUILD_HAS_A_JTC_LIMIT_OF" |
+            "This guild has a JTC limit of {0}.{1}",
+        $"YOU_CAN_GET_MORE_BY_VOTING_THOUGH" |
+            " You can get more by voting though!",
+        $"TRIED_TO_CREATE_A_JTC_CHANNEL_BUT_FAILED" |
+            "Tried to create a join-to-create channel but failed. "
+            "If this happens again, please report the incident by opening a ticket.",
+        $"CREATED_A_JTC_CHANNEL" |
+            "Created a join-to-create channel.",
+        $"THE_CHANNEL_HAS_BEEN_SET_UP" |
+            "The channel has been set up!",
+        $"ITS_ALREADY_BEEN_SET_UP" |
+            "It's already been set up. No more than one per guild!",
+        $"YOURE_NOT_IN_A_TEMP_VC" |
+            "You're not in a temporary voice channel! Unless you are, in which case simply rejoin.",
+        $"THE_USER_IS_NOTORIN_THE_BLOCKLIST" |
+            "The user is {}in the blocklist of the channel.",
+        $"NOT" |
+            "not ",
+        $"THE_CHANNEL_YOURE_IN_DOES_NOT_BELONG_TO_YOU" |
+            "The channel you're in does not belong to you! Unless it does, in which case simply rejoin.",
+        $"REQUESTED_USER_NOT_FOUND" |
+            "Requested user not found. Please, try again.",
+        $"THE_USER_HAS_ADMIN_ACCESS_TO_THIS_CHANNEL" |
+            "The user has administrator access to this channel!",
+        $"THE_USER_IS_ALREADY_IN_THE_BLOCKLIST" |
+            "The user is already in the blocklist!",
+        $"THE_USER_WAS_ADDED_TO_THE_BLOCKLIST" |
+            "The user was added to the blocklist of the current channel.",
+        $"THE_USER_WAS_NOT_IN_THE_BLOCKLIST" |
+            "The user was not in the blocklist!",
+        $"THE_USER_WAS_REMOVED_FROM_THE_BLOCKLIST" |
+            "The user was removed from the blocklist of the current channel.",
+        $"GUILD_NOT_FOUND_IF_YOUVE_ALREADY_SET_IT" |
+            "Guild not found. If you've already set it, consider trying again. Otherwise, set it with {}.",
+        $"YOURE_VOTING_IN_FAVOUR_OF_THIS_GUILD" |
+            "You're voting in favour of this guild.",
+        $"HELLO_YOUR_CHOSEN_GUILD_IS" |
+            "Hello, {0}, your chosen guild is {1}.",
+        $"YOUR_CHOSEN_GUILD_IS_ALREADY" |
+            "Your chosen guild is already {}!",
+        $"YOURE_NOW_VOTING_IN_FAVOUR_OF_THIS_GUILD" |
+            "You're now voting in favour of this guild.",
+        $"SET_YOUR_GUILD_TO" |
+            "Set your guild to {}.",
+        $"THIS_GUILDS_VOTE_PROGRESS_IS" |
+            "This guild's vote progress is: __{0}__/**{1}**. The maximum amount of JTCs allowed here is {2}.{3}",
+        $"THIS_IS_THE_ABSOLUTE_MAXIMUM" |
+            " This is the absolute maximum.",
+        $"YOU_ALREADY_HAVE_A_TICKET" |
+            "You already have a ticket! DM the bot to contact the creator!",
+        $"COULDNT_CREATE_A_CHANNEL_FOR_THE_TICKET" |
+            "Couldn't create a channel for the ticket",
+        $"A_TICKET_HAS_BEEN_CREATED" |
+            "A ticket has been created.",
+        $"YOU_DONT_HAVE_A_TICKET" |
+            "You don't have a ticket, so no tickets were closed.",
+        $"YOUR_TICKET_HAS_BEEN_CLOSED" |
+            "Your ticket has been closed! You can create a new one at any point.",
+        $"NEXT_TIME_THE_PING_WILL_BE" |
+            "Next time the ping will be: **{}**.",
+        $"OFF" |
+            "off",
+        $"ON" |
+            "on",
+        $"IM_PREPARING" |
+            "I'm preparing! Please wait about 5-10 seconds and try again.",
+        $"VOTE_HERE" |
+            "Vote [here](https://top.gg/bot/{}/vote) and earn JTC points "
+            "for a selected guild! See `/help` for more information.",
+        $"A_CHANNEL_IS_ALREADY_BEING_SET_UP" |
+            "A channel is already being set up! Try again when it's done.",
+        $"A_TICKET_IS_ALREADY_BEING_SET_UP" |
+            "A ticket is already being created! Try again when it's done.",
+        $"UNDEFINED_COMMAND" |
+            "Undefined command, can't handle."
     },
     $"uk" | {
-
+        $"RESPONSE_NOT_FOUND" |
+            # "The response for this interaction could not be found.",
+            "Відповідь для цієї взаємодії не знайдено."
+        $"YOU_ARE_NOT_IN_A_VC_YOU_CAN_EDIT" |
+            "You are not in a VC you can edit. If you are, it's likely that the bot restarted while "
+            "you were in the channel. In that case, **__rejoin it__**. Note that those commands edit temporary VCs only.",
+        $"THE_NAME_OF_THE_VC_IS_ALREADY" |
+            "The name of the VC is already \"`{}`\".",
+        $"THE_NAME_OF_THE_CHANNEL_HAS_CHANGED_FROM" |
+            "The name of the channel has changed from \"`{0}` to \"`{1}`\".",
+        $"GUILD_COULD_NOT_BE_FOUND" |
+            "Guild could not be found. Please, try again.",
+        $"THE_BITRATE_IS_ALREADY" |
+            "The bitrate is already `{}`.",
+        $"THE_NUMBER_CAN_ONLY_BE_BETWEEN" |
+            "The number can only be between `8` and `{}` for this guild. "
+            "Note that the maximum bitrate number also depends on the boost level.",
+        $"SET_BITRATE_TO" |
+            "Set bitrate to `{}` successfully.",
+        $"FOR_VOICE_CHANNELS_ITS_IMPOSSIBLE_TO_MAKE_THE_LIMIT_GREATER" |
+            "For voice channels, it's impossible to make the limit greater than `99`. "
+            "You can make it infinite by putting `0` as argument.",
+        $"WELL_NOW_WERE_JUST_BEING_SILLY_ARENT_WE" |
+            "Well now we're just being silly, aren't we?",
+        $"THE_USER_LIMIT_IS_ALREADY" |
+            "The user limit is already `{}`.",
+        $"USER_LIMIT_IS_SET_TO" |
+            "User limit set to `{}` successfully.",
+        $"THIS_IS_NOT_A_JTC_VC_I_KNOW_OF" |
+            "This is not a JTC VC I know of.",
+        $"THE_NAME_IS_ALREADY" |
+            "The name is already + `{}` <a:skullspin:1121414918357389433>",
+        $"THE_DEFAULT_NAME_IS_SET_TO" |
+            "The default name is set to `{}`!",
+        $"THE_LIMIT_SHOULD_BE_BETWEEN" |
+            "The limit should be between `0` and `99` included, `0` for infinite",
+        $"THE_LIMIT_IS_ALREADY" |
+            "The limit is already `{}` <a:skullspin:1121414918357389433>",
+        $"THE_DEFAULT_LIMIT_IS_SET_TO" |
+            "The default limit is set to `{}`!",
+        $"THE_DEFAULT_BITRATE_IS_SET_TO" |
+            "The default bitrate is set to `{}`!",
+        $"THIS_GUILD_HAS_A_JTC_LIMIT_OF" |
+            "This guild has a JTC limit of {0}.{1}",
+        $"YOU_CAN_GET_MORE_BY_VOTING_THOUGH" |
+            " You can get more by voting though!",
+        $"TRIED_TO_CREATE_A_JTC_CHANNEL_BUT_FAILED" |
+            "Tried to create a join-to-create channel but failed. "
+            "If this happens again, please report the incident by opening a ticket.",
+        $"CREATED_A_JTC_CHANNEL" |
+            "Created a join-to-create channel.",
+        $"THE_CHANNEL_HAS_BEEN_SET_UP" |
+            "The channel has been set up!",
+        $"ITS_ALREADY_BEEN_SET_UP" |
+            "It's already been set up. No more than one per guild!",
+        $"YOURE_NOT_IN_A_TEMP_VC" |
+            "You're not in a temporary voice channel! Unless you are, in which case simply rejoin.",
+        $"THE_USER_IS_NOTORIN_THE_BLOCKLIST" |
+            "The user is {}in the blocklist of the channel.",
+        $"NOT" |
+            "not ",
+        $"THE_CHANNEL_YOURE_IN_DOES_NOT_BELONG_TO_YOU" |
+            "The channel you're in does not belong to you! Unless it does, in which case simply rejoin.",
+        $"REQUESTED_USER_NOT_FOUND" |
+            "Requested user not found. Please, try again.",
+        $"THE_USER_HAS_ADMIN_ACCESS_TO_THIS_CHANNEL" |
+            "The user has administrator access to this channel!",
+        $"THE_USER_IS_ALREADY_IN_THE_BLOCKLIST" |
+            "The user is already in the blocklist!",
+        $"THE_USER_WAS_ADDED_TO_THE_BLOCKLIST" |
+            "The user was added to the blocklist of the current channel.",
+        $"THE_USER_WAS_NOT_IN_THE_BLOCKLIST" |
+            "The user was not in the blocklist!",
+        $"THE_USER_WAS_REMOVED_FROM_THE_BLOCKLIST" |
+            "The user was removed from the blocklist of the current channel.",
+        $"GUILD_NOT_FOUND_IF_YOUVE_ALREADY_SET_IT" |
+            "Guild not found. If you've already set it, consider trying again. Otherwise, set it with {}.",
+        $"YOURE_VOTING_IN_FAVOUR_OF_THIS_GUILD" |
+            "You're voting in favour of this guild.",
+        $"HELLO_YOUR_CHOSEN_GUILD_IS" |
+            "Hello, {0}, your chosen guild is {1}.",
+        $"YOUR_CHOSEN_GUILD_IS_ALREADY" |
+            "Your chosen guild is already {}!",
+        $"YOURE_NOW_VOTING_IN_FAVOUR_OF_THIS_GUILD" |
+            "You're now voting in favour of this guild.",
+        $"SET_YOUR_GUILD_TO" |
+            "Set your guild to {}.",
+        $"THIS_GUILDS_VOTE_PROGRESS_IS" |
+            "This guild's vote progress is: __{0}__/**{1}**. The maximum amount of JTCs allowed here is {2}.{3}",
+        $"THIS_IS_THE_ABSOLUTE_MAXIMUM" |
+            " This is the absolute maximum.",
+        $"YOU_ALREADY_HAVE_A_TICKET" |
+            "You already have a ticket! DM the bot to contact the creator!",
+        $"COULDNT_CREATE_A_CHANNEL_FOR_THE_TICKET" |
+            "Couldn't create a channel for the ticket",
+        $"A_TICKET_HAS_BEEN_CREATED" |
+            "A ticket has been created.",
+        $"YOU_DONT_HAVE_A_TICKET" |
+            "You don't have a ticket, so no tickets were closed.",
+        $"YOUR_TICKET_HAS_BEEN_CLOSED" |
+            "Your ticket has been closed! You can create a new one at any point.",
+        $"NEXT_TIME_THE_PING_WILL_BE" |
+            "Next time the ping will be: **{}**.",
+        $"OFF" |
+            "off",
+        $"ON" |
+            "on",
+        $"IM_PREPARING" |
+            "I'm preparing! Please wait about 5-10 seconds and try again.",
+        $"VOTE_HERE" |
+            "Vote [here](https://top.gg/bot/{}/vote) and earn JTC points "
+            "for a selected guild! See `/help` for more information.",
+        $"A_CHANNEL_IS_ALREADY_BEING_SET_UP" |
+            "A channel is already being set up! Try again when it's done.",
+        $"A_TICKET_IS_ALREADY_BEING_SET_UP" |
+            "A ticket is already being created! Try again when it's done.",
+        $"UNDEFINED_COMMAND" |
+            "Undefined command, can't handle."
     }
 }\

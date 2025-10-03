@@ -32,4 +32,7 @@ bool is_running();
  */
 std::string bot_name();
 
+#define get_lang() \
+	const std::string_view lang = event.command.locale
+
 #endif

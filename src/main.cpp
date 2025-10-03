@@ -62,6 +62,11 @@ int main(const int argc, char** argv) {
 		if (IS_CLI) {
 			return;
 		}
+		get_lang();
+		if (!slash::enabled) {
+			event.reply(dpp::message(response(IM_PREPARING, lang)).set_flags(dpp::m_ephemeral));
+			return;
+		}
 		// We don't want to handle a button press twice, do we?
 		if (event.custom_id == "temp_ping_toggle") {
 			const dpp::snowflake& user_id = event.command.usr.id;
@@ -72,7 +77,8 @@ int main(const int argc, char** argv) {
 				db::sql << "INSERT INTO no_temp_ping VALUES (?);" << user_id.str();
 			}
 			no_temp_ping[user_id] = !no_temp_ping[user_id];
-			event.reply(dpp::message(event.command.channel_id, fmt::format("Next time the ping will be: **{}**.", no_temp_ping[user_id] == true ? "off" : "on")).set_flags(dpp::m_ephemeral));
+			event.reply(dpp::message(event.command.channel_id, fmt::vformat(response(NEXT_TIME_THE_PING_WILL_BE, lang),
+				vec_to_fmt({no_temp_ping[user_id] == true ? response(OFF, lang) : response(ON, lang)}))).set_flags(dpp::m_ephemeral));
 		}
 	});
 
@@ -211,8 +217,9 @@ int main(const int argc, char** argv) {
 		if (IS_CLI) {
 			co_return;
 		}
+		get_lang();
 		if (!slash::enabled) {
-			event.reply(dpp::message("I'm preparing! Please wait about 5-10 seconds and try again.").set_flags(dpp::m_ephemeral));
+			event.reply(dpp::message(response(IM_PREPARING, lang)).set_flags(dpp::m_ephemeral));
 			co_return;
 		}
 		const dpp::snowflake& guild_id = event.command.guild_id;
@@ -249,7 +256,7 @@ int main(const int argc, char** argv) {
 			event.reply(message);
 		}
 		else if (cmd_name == "vote") {
-			event.reply(dpp::message(fmt::format("Vote [here](https://top.gg/bot/{}/vote) and earn JTC points for a chosen guild! See `/help` for more information.", bot->me.id)).set_flags(dpp::m_ephemeral));
+			event.reply(dpp::message(fmt::vformat(response(VOTE_HERE, lang), vec_to_fmt({bot->me.id.str()}))).set_flags(dpp::m_ephemeral));
 			co_return;
 		}
 		else if (cmd_name == "guild") {
@@ -274,7 +281,7 @@ int main(const int argc, char** argv) {
 		else if (cmd_name == "setup") {
 			bool& creation_status = slash::in_progress[cmd_name][guild_id];
 			if (creation_status) {
-				event.reply(dpp::message("A channel is already being set up! Try again when it's done.").set_flags(dpp::m_ephemeral));
+				event.reply(dpp::message(response(A_CHANNEL_IS_ALREADY_BEING_SET_UP, lang)).set_flags(dpp::m_ephemeral));
 				co_return;
 			}
 			creation_status = true;
@@ -295,7 +302,7 @@ int main(const int argc, char** argv) {
 		else if (cmd_name == "ticket") {
 			auto& creation_status = slash::in_progress[cmd_name][user_id];
 			if (creation_status) {
-				event.reply(dpp::message("A ticket is already being created! Try again when it's done.").set_flags(dpp::m_ephemeral));
+				event.reply(dpp::message(response(A_TICKET_IS_ALREADY_BEING_SET_UP, lang)).set_flags(dpp::m_ephemeral));
 				co_return;
 			}
 			if (cmd.options[0].name == "create") {
@@ -320,7 +327,7 @@ int main(const int argc, char** argv) {
 			log("Finished reloading.");
 		}
 		else {
-			event.reply(dpp::message("Undefined command, can't handle.").set_flags(dpp::m_ephemeral));
+			event.reply(dpp::message(response(UNDEFINED_COMMAND, lang)).set_flags(dpp::m_ephemeral));
 		}
 	});
 
