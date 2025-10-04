@@ -337,40 +337,59 @@
             # "The response for this interaction could not be found.",
             "Відповідь для цієї взаємодії не знайдено."
         $"YOU_ARE_NOT_IN_A_VC_YOU_CAN_EDIT" |
-            "You are not in a VC you can edit. If you are, it's likely that the bot restarted while "
-            "you were in the channel. In that case, **__rejoin it__**. Note that those commands edit temporary VCs only.",
+            # "You are not in a VC you can edit. If you are, it's likely that the bot restarted while "
+            # "you were in the channel. In that case, **__rejoin it__**. Note that those commands edit temporary VCs only.",
+            "Ви не в ГК, який Ви можете редагувати. Якщо це не так, то імовірно, що бота було перезапущено, поки "
+            "Ви були в цьому ГК. У цьому випадку, просто **__перезайдіть у нього__**. Зверніть увагу, що ці команди редагують лише тимчасові ГК.",
         $"THE_NAME_OF_THE_VC_IS_ALREADY" |
-            "The name of the VC is already \"`{}`\".",
+            # "The name of the VC is already \"`{}`\".",
+            "Цей канал уже має назву \"`{}`\".",
         $"THE_NAME_OF_THE_CHANNEL_HAS_CHANGED_FROM" |
-            "The name of the channel has changed from \"`{0}` to \"`{1}`\".",
+            # "The name of the channel has changed from \"`{0}` to \"`{1}`\".",
+            "Назву цього каналу було змінено з \"`{0}`\" на \"`{1}`\".",
         $"GUILD_COULD_NOT_BE_FOUND" |
-            "Guild could not be found. Please, try again.",
+            # "Guild could not be found. Please, try again.",
+            "Не вдалося знайти сервер. Будь ласка, спробуйте ще раз",
         $"THE_BITRATE_IS_ALREADY" |
-            "The bitrate is already `{}`.",
+            # "The bitrate is already `{}`.",
+            "Бітрейт уже `{}`.",
         $"THE_NUMBER_CAN_ONLY_BE_BETWEEN" |
-            "The number can only be between `8` and `{}` for this guild. "
-            "Note that the maximum bitrate number also depends on the boost level.",
+            # "The number can only be between `8` and `{}` for this guild. "
+            # "Note that the maximum bitrate number also depends on the boost level.",
+            "Це число може бути лише між `8` та `{}` для цього серверу. "
+            "Зверніть увагу, що максимальний бітрейт іще залежить від рівня бусту.",
         $"SET_BITRATE_TO" |
-            "Set bitrate to `{}` successfully.",
+            # "Set bitrate to `{}` successfully.",
+            "Успішно встановлено бітрейт на `{}`.",
         $"FOR_VOICE_CHANNELS_ITS_IMPOSSIBLE_TO_MAKE_THE_LIMIT_GREATER" |
-            "For voice channels, it's impossible to make the limit greater than `99`. "
-            "You can make it infinite by putting `0` as argument.",
+            # "For voice channels, it's impossible to make the limit greater than `99`. "
+            # "You can make it infinite by putting `0` as argument.",
+            "Для голосових каналів, ліміт користувачів неможливо встановити на число, більше за `99`. "
+            "Ви можете зробити його безкінечним, встановивши `0` як аргумент.",
         $"WELL_NOW_WERE_JUST_BEING_SILLY_ARENT_WE" |
-            "Well now we're just being silly, aren't we?",
+            # "Well now we're just being silly, aren't we?",
+            "Ну, тут ми просто бешкетуємо, ні?",
         $"THE_USER_LIMIT_IS_ALREADY" |
-            "The user limit is already `{}`.",
+            # "The user limit is already `{}`.",
+            "Ліміт користувачів уже `{}`.",
         $"USER_LIMIT_IS_SET_TO" |
-            "User limit set to `{}` successfully.",
+            # "User limit set to `{}` successfully.",
+            "Успішно встановлено ліміт користувачів на `{}`.",
         $"THIS_IS_NOT_A_JTC_VC_I_KNOW_OF" |
-            "This is not a JTC VC I know of.",
+            # "This is not a JTC VC I know of.",
+            "Цей канал не є головним, про який я знаю.",
         $"THE_NAME_IS_ALREADY" |
-            "The name is already + `{}` <a:skullspin:1121414918357389433>",
+            # "The name is already `{}` <a:skullspin:1121414918357389433>",
+            "Назва вже є `{}` <a:skullspin:1121414918357389433>",
         $"THE_DEFAULT_NAME_IS_SET_TO" |
-            "The default name is set to `{}`!",
+            # "The default name is set to `{}`!",
+            "Встановлено назву за замовчуванням на `{}`!",
         $"THE_LIMIT_SHOULD_BE_BETWEEN" |
-            "The limit should be between `0` and `99` included, `0` for infinite",
+            # "The limit should be between `0` and `99` included, `0` for infinite",
+            "Ліміт повинен бути між `0` і `99` включно, `0` для безкінечного.",
         $"THE_LIMIT_IS_ALREADY" |
-            "The limit is already `{}` <a:skullspin:1121414918357389433>",
+            # "The limit is already `{}` <a:skullspin:1121414918357389433>",
+            "Ліміт уже `{}` <a:skullspin:1121414918357389433>",
         $"THE_DEFAULT_LIMIT_IS_SET_TO" |
             "The default limit is set to `{}`!",
         $"THE_DEFAULT_BITRATE_IS_SET_TO" |
