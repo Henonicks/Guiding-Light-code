@@ -5,6 +5,10 @@
 #include <fmt/args.h>
 #include <no_warns/dpp/dpp.h>
 
+#include "henifig/types.hpp"
+
+#include "guiding_light/cfg.hpp"
+
 enum responses_enum {
 	RESPONSE_NOT_FOUND,
 	YOU_ARE_NOT_IN_A_VC_YOU_CAN_EDIT,
@@ -61,7 +65,18 @@ enum responses_enum {
 	VOTE_HERE,
 	A_CHANNEL_IS_ALREADY_BEING_SET_UP,
 	A_TICKET_IS_ALREADY_BEING_SET_UP,
+	COULDNT_CONNECT_TO_THE_DATABASE,
+	RELOADED,
 	UNDEFINED_COMMAND,
+
+	AUTHOR,
+	DESCRIPTIONS,
+	FOOTER,
+
+	COMMANDS,
+	DESCRIPTION,
+	OPTIONS,
+	NAME,
 };
 
 inline const char* responses_keys[] = {
@@ -123,10 +138,26 @@ inline const char* responses_keys[] = {
 	"COULDNT_CONNECT_TO_THE_DATABASE",
 	"RELOADED",
 	"UNDEFINED_COMMAND",
+
+	"AUTHOR",
+	"DESCRIPTIONS",
+	"FOOTER",
+
+	"COMMANDS",
+	"DESCRIPTION",
+	"OPTIONS",
+	"NAME",
 };
 
 std::string random_response(const dpp::snowflake& user_id);
-std::string response(responses_enum response_id, std::string_view lang);
+henifig::value_t response(responses_enum response_id, std::string_view lang, const henifig::value_map& localisation = cfg::responses["LOCALISATION"]);
+dpp::message response_msg(responses_enum response_id, std::string_view lang, const henifig::value_map& localisation = cfg::responses["LOCALISATION"]);
+dpp::message response_emsg(responses_enum response_id, std::string_view lang, const henifig::value_map& localisation = cfg::responses["LOCALISATION"]);
+std::string response_str(responses_enum response_id, std::string_view lang, const henifig::value_map& localisation = cfg::responses["LOCALISATION"]);
+std::string response_fmt(responses_enum response_id, std::string_view lang, const std::vector <std::string>& values = {}, const henifig::value_map& localisation = cfg::responses["LOCALISATION"]);
+dpp::message response_fmtmsg(responses_enum response_id, std::string_view lang, const std::vector <std::string>& values = {}, const henifig::value_map& localisation = cfg::responses["LOCALISATION"]);
+dpp::message response_fmtemsg(responses_enum response_id, std::string_view lang, const std::vector <std::string>& values = {}, const henifig::value_map& localisation = cfg::responses["LOCALISATION"]);
+henifig::value_map cmd_response(std::string_view name, std::string_view lang, const henifig::value_map& commands = cfg::responses["COMMANDS"]);
 fmt::dynamic_format_arg_store <fmt::format_context> vec_to_fmt(const std::vector <std::string>& vec);
 
 #endif

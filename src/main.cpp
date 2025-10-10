@@ -3,7 +3,7 @@
 #include "guiding_light/temp_vc_handler.hpp"
 #include "guiding_light/launch_options.hpp"
 #include "guiding_light/cli.hpp"
-#include "guiding_light/reponses.hpp"
+#include "guiding_light/responses.hpp"
 
 std::unordered_map <dpp::snowflake, dpp::guild> all_bot_guilds;
 
@@ -64,11 +64,12 @@ int main(const int argc, char** argv) {
 		}
 		get_lang();
 		if (!slash::enabled) {
-			event.reply(dpp::message(response(IM_PREPARING, lang)).set_flags(dpp::m_ephemeral));
+			event.reply(response_emsg(IM_PREPARING, lang));
 			return;
 		}
+		const std::string_view button_id = event.custom_id;
 		// We don't want to handle a button press twice, do we?
-		if (event.custom_id == "temp_ping_toggle") {
+		if (button_id == "temp_ping_toggle") {
 			const dpp::snowflake& user_id = event.command.usr.id;
 			if (no_temp_ping[user_id]) {
 				db::sql << "DELETE FROM no_temp_ping WHERE user_id=?;" << user_id.str();
@@ -77,8 +78,15 @@ int main(const int argc, char** argv) {
 				db::sql << "INSERT INTO no_temp_ping VALUES (?);" << user_id.str();
 			}
 			no_temp_ping[user_id] = !no_temp_ping[user_id];
-			event.reply(dpp::message(event.command.channel_id, fmt::vformat(response(NEXT_TIME_THE_PING_WILL_BE, lang),
-				vec_to_fmt({no_temp_ping[user_id] == true ? response(OFF, lang) : response(ON, lang)}))).set_flags(dpp::m_ephemeral));
+			event.reply(response_fmtemsg(NEXT_TIME_THE_PING_WILL_BE, lang,
+				{no_temp_ping[user_id] == true ? response(OFF, lang) : response(ON, lang)})
+				.set_channel_id(event.command.channel_id));
+		}
+		else if (button_id.starts_with("help")) {
+			event.reply(dpp::ir_update_message, cfg::help_message(lang, button_id[4] - '0'));
+		}
+		else {
+			event.reply(response_emsg(UNDEFINED_COMMAND, lang));
 		}
 	});
 
@@ -219,7 +227,7 @@ int main(const int argc, char** argv) {
 		}
 		get_lang();
 		if (!slash::enabled) {
-			event.reply(dpp::message(response(IM_PREPARING, lang)).set_flags(dpp::m_ephemeral));
+			event.reply(response_emsg(IM_PREPARING, lang));
 			co_return;
 		}
 		const dpp::snowflake& guild_id = event.command.guild_id;
@@ -227,11 +235,7 @@ int main(const int argc, char** argv) {
 		const std::string cmd_name = event.command.get_command_name();
 		const dpp::command_interaction cmd = event.command.get_command_interaction();
 		if (cmd_name == "help") {
-			dpp::message help_msg = dpp::message().set_channel_id(event.command.channel_id);
-			for (const dpp::embed& x : slash::help_embeds) {
-				help_msg.add_embed(x);
-			}
-			event.reply(help_msg.set_flags(dpp::m_ephemeral));
+			event.reply(cfg::help_message(lang));
 		}
 		else if (cmd_name == "logs") {
 			if (event.command.usr.id != MY_ID) {
@@ -256,7 +260,7 @@ int main(const int argc, char** argv) {
 			event.reply(message);
 		}
 		else if (cmd_name == "vote") {
-			event.reply(dpp::message(fmt::vformat(response(VOTE_HERE, lang), vec_to_fmt({bot->me.id.str()}))).set_flags(dpp::m_ephemeral));
+			event.reply(response_fmtemsg(VOTE_HERE, lang, {bot->me.id.str(), slash::get_mention("help")}));
 			co_return;
 		}
 		else if (cmd_name == "guild") {
@@ -281,7 +285,7 @@ int main(const int argc, char** argv) {
 		else if (cmd_name == "setup") {
 			bool& creation_status = slash::in_progress[cmd_name][guild_id];
 			if (creation_status) {
-				event.reply(dpp::message(response(A_CHANNEL_IS_ALREADY_BEING_SET_UP, lang)).set_flags(dpp::m_ephemeral));
+				event.reply(response_emsg(A_CHANNEL_IS_ALREADY_BEING_SET_UP, lang));
 				co_return;
 			}
 			creation_status = true;
@@ -302,7 +306,7 @@ int main(const int argc, char** argv) {
 		else if (cmd_name == "ticket") {
 			auto& creation_status = slash::in_progress[cmd_name][user_id];
 			if (creation_status) {
-				event.reply(dpp::message(response(A_TICKET_IS_ALREADY_BEING_SET_UP, lang)).set_flags(dpp::m_ephemeral));
+				event.reply(response_emsg(A_TICKET_IS_ALREADY_BEING_SET_UP, lang));
 				co_return;
 			}
 			if (cmd.options[0].name == "create") {
@@ -327,7 +331,7 @@ int main(const int argc, char** argv) {
 			log("Finished reloading.");
 		}
 		else {
-			event.reply(dpp::message(response(UNDEFINED_COMMAND, lang)).set_flags(dpp::m_ephemeral));
+			event.reply(response_emsg(UNDEFINED_COMMAND, lang));
 		}
 	});
 

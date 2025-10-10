@@ -11,6 +11,15 @@ void temp_vc_create_msg(const temp_vc_query& q, const dpp::channel& channel) {
 }
 
 void temp_vc_create_owner_msg(const temp_vc_query& q, const dpp::snowflake& channel_id) {
+	const dpp::user& user = *q.usr;
+	const dpp::channel& channel = *dpp::find_channel(channel_id);
+	log(fmt::format("`{0}` ({1}) Created a temp VC. Guild ID: {2}, channel ID: {3}, channel name: `{4}`, notification channel ID: {5}",
+		user.format_username(), user.id, channel.guild_id, channel_id,
+		channel.name, temp_vc_notifications[channel.guild_id]));
+	if (no_temp_ping[user.id]) {
+		log(fmt::format("{} has temporary pings off.", user.id));
+		return;
+	}
 	const dpp::embed temp_ping_embed = dpp::embed()
 		.set_color(dpp::colors::sti_blue)
 		.set_title(fmt::format("Welcome to <#{}>!", channel_id))
@@ -36,8 +45,8 @@ void temp_vc_create_owner_msg(const temp_vc_query& q, const dpp::snowflake& chan
 }
 
 void temp_vc_delete_msg(const dpp::user& user, const dpp::channel* channel) {
-	log(fmt::format("{0} left a temp VC. Guild ID: {1}, channel ID: {2}, channel name: `{3}`, notification channel ID: {4}",
-		user.format_username(), channel->guild_id, channel->id,
+	log(fmt::format("`{0}` ({1}) left a temp VC. Guild ID: {1}, channel ID: {2}, channel name: `{3}`, notification channel ID: {4}",
+		user.format_username(), user.id, channel->guild_id, channel->id,
 		channel->name, temp_vc_notifications[channel->guild_id]));
 	const dpp::snowflake& channel_id = temp_vc_notifications[channel->guild_id];
 	if (!channel_id.empty()) {
@@ -59,7 +68,7 @@ void temp_vc_create(const temp_vc_query& q) {
 	if (q.usr == nullptr) {
 		log(fmt::format("User not found. Channel: {}", q.channel_id));
 		if (!q.channel_id.empty()) {
-			bot->message_create(dpp::message(q.channel_id, fmt::format("<@{}> I could not find your user information. Leave and try again in a few seconds.", q.usr->id)).set_allowed_mentions(true), error_callback);
+			bot->message_create(dpp::message(q.channel_id, "Couldn't get user info. Can't create a temp VC.").set_allowed_mentions(true), error_callback);
 		}
 		return;
 	}
@@ -127,20 +136,29 @@ void temp_vc_create(const temp_vc_query& q) {
 	new_channel.set_parent_id(current.parent_id);
 	new_channel.set_user_limit(limit);
 	const dpp::timer_callback_t timer_function = [new_channel, current, q](const bool& called_separately) -> void {
+		log("Attempting to create a temporary VC.");
 		if (temp_vcs_queue.empty()) {
+			log("The temporary VC queue is empty.");
 			if (called_separately) {
+				log("Called separately, returning.");
 				return;
 			}
+			log("Called in the timer, throwing.");
 			throw success_exception{};
 			// We'll throw this exception as a sign that we've fully completed what we had to successfully.
 		}
 		if (temp_vcs_queue.front().usr->id != q.usr->id) {
+			log(fmt::format("The currently handled user ({0}) is not the last in the queue ({1}).",
+				q.usr->id, temp_vcs_queue.front().usr->id));
 			return;
 		}
 		if (handling_user_id == q.usr->id) {
+			log(fmt::format("The current user ({}) is already being created a temporary VC for.", q.usr->id));
 			return;
 		}
 		if (temp_vc_amount[q.guild_id] >= 50) {
+			log(fmt::format("The guild {0} already has {1} temporary VCs, over the limit.",
+				q.guild_id, temp_vc_amount[q.guild_id]));
 			temp_vcs_queue.pop();
 			bot->message_create(dpp::message(q.channel_id, fmt::format("<@{0}> There are too many temporary VCs in this guild ({1}/50).", q.usr->id, temp_vc_amount[q.guild_id])).set_allowed_mentions(true), error_callback);
 			bot->guild_member_move(0, q.guild_id, q.usr->id, error_callback);
@@ -152,12 +170,12 @@ void temp_vc_create(const temp_vc_query& q) {
 			handling_user_id = 0;
 			++temp_vc_amount[q.guild_id];
 			const auto channel = std::get <dpp::channel>(callback.value);
-			if (!no_temp_ping[q.usr->id]) {
-				temp_vc_create_owner_msg(q, channel.id);
-			}
+			temp_vc_create_owner_msg(q, channel.id);
 			temp_vcs[channel.id] = {channel.id, channel.guild_id, q.usr->id, q.channel_id};
 			bot->guild_member_move(channel.id, channel.guild_id, q.usr->id, [channel, q](const dpp::confirmation_callback_t& callback) -> void {
 				if (callback.is_error()) {
+					log(fmt::format("Couldn't move {} into the new VC, deleting it.", q.usr->id));
+					error_callback(callback);
 					bot->channel_delete(channel.id, error_callback);
 					return;
 				}
@@ -174,13 +192,16 @@ void temp_vc_create(const temp_vc_query& q) {
 		throw success_exception{};
 		// We'll throw this exception as a sign that we've fully completed what we had to successfully.
 	};
+	log(fmt::format("Attempting to create a temporary VC for {}, separately.", q.usr->id));
 	timer_function(true);
-	bot->start_timer([timer_function](const dpp::timer& h) -> void {
+	bot->start_timer([timer_function, q](const dpp::timer& h) -> void {
 		try {
+			log(fmt::format("Waiting for {}'s turn to have a temporary VC created for them.", q.usr->id));
 			timer_function(false);
 		}
 		catch (const std::exception& e) { // Now make sure to catch the success exception or else it's not going to be so successful.
 			if (e.what() == std::string("success")) {
+				log(fmt::format("Finished the temporary VC creation process for {}. Stopping the timer.", q.usr->id));
 				bot->stop_timer(h);
 			}
 			else {

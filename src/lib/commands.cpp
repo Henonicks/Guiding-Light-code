@@ -1,6 +1,9 @@
 #include "guiding_light/commands.hpp"
 
+#include <dpp/unicode_emoji.h>
+
 #include "guiding_light/cli.hpp"
+#include "guiding_light/responses.hpp"
 #include "guiding_light/slash_funcs.hpp"
 
 /**
@@ -11,13 +14,80 @@ bool command_exists(std::string_view command) {
 	// Try to execute the file, if it succeeds, it definitely exists.
 }
 
-/**
- * @brief Initialises the slashcommands so they can be created in the future.
- */
+dpp::command_option localise_command_option(const henifig::value_map& current_options, const dpp::command_option& original_option, const std::string_view lang) {
+	dpp::command_option res = original_option;
+	auto it = &res;
+	if (!it->options.empty()) {
+		res.options[0] = localise_command_option(current_options.at("OPTIONS"), it->options[0], lang);
+	}
+	if (islower(current_options.rbegin()->first[0])) {
+		it->add_localization(lang.data(), current_options.at(it->name)["NAME"], current_options.at(it->name)["DESCRIPTION"]);
+	}
+	else {
+		it->add_localization(lang.data(), current_options.at("NAME"), current_options.at("DESCRIPTION"));
+	}
+	for (auto it = res.options.begin(); it != res.options.end(); ++it) {
+		if (!it->options.empty()) {
+			res.options[0] = localise_command_option(current_options.at(it->options[0].name)["OPTIONS"], it->options[0], lang);
+		}
+	}
+	return res;
+}
+
+dpp::command_option localise_command_options(const dpp::command_option& original_option, const std::string_view cmd, const std::string_view option, henifig::value_map commands = cfg::slashcommands["COMMANDS"]) {
+	dpp::command_option res = original_option;
+	for (const auto& lang : commands | std::views::keys) {
+		if (lang != "default") {
+			res = localise_command_option(commands.at(lang.data())[cmd.data()]["OPTIONS"][option], res, lang);
+		}
+	}
+	return res;
+}
+
+dpp::slashcommand localise_slashcommand(const dpp::slashcommand& original_slashcommand, const henifig::value_map& commands = cfg::slashcommands["COMMANDS"]) {
+	dpp::slashcommand res = original_slashcommand;
+	for (const auto& lang : commands | std::views::keys) {
+		if (lang != "default") {
+			res.add_localization(lang, commands.at(lang)[res.name]["NAME"], commands.at(lang)[res.name]["DESCRIPTION"]);
+		}
+	}
+	return res;
+}
+
+dpp::slashcommand make_default(const std::string_view name, const henifig::value_map& commands = cfg::slashcommands["COMMANDS"]) {
+	return dpp::slashcommand(commands.at("default")[name]["NAME"].get <std::string>(), commands.at("default")[name]["DESCRIPTION"].get <std::string>(), bot->me.id);
+}
+
+const henifig::value_map* get_opt_by_path(const std::string_view path, const henifig::value_map& command) {
+	const henifig::value_map* res = &command;
+	for (size_t i = 0; i < path.size(); i++) {
+		const size_t pos = path.find('/', i);
+		const size_t n = pos == std::string::npos ? path.size() : pos - i;
+		res = &command.at("OPTIONS")[std::string(path.substr(i, n))].get <henifig::map_t>().get();
+		if (pos == std::string::npos) {
+			break;
+		}
+		i = pos;
+	}
+	return res;
+}
+
+dpp::command_option make_default(const dpp::command_option_type cot, const dpp::slashcommand& parent, const std::string_view path, const henifig::value_map& commands = cfg::slashcommands["COMMANDS"]) {
+	const henifig::value_map& options = *get_opt_by_path(path, commands.at("default")[parent.name]);
+	return {cot, options.at("NAME"), options.at("DESCRIPTION")};
+}
+
+dpp::command_option make_default(const dpp::command_option_type cot, const dpp::slashcommand& parent, const std::string_view path, const bool required, const henifig::value_map& commands = cfg::slashcommands["COMMANDS"]) {
+	const henifig::value_map& options = *get_opt_by_path(path, commands.at("default")[parent.name]);
+	return {cot, options.at("NAME"), options.at("DESCRIPTION"), required};
+}
+
 void slashcommands::init() {
+	const henifig::value_map DEFAULT = cfg::slashcommands["COMMANDS"]["default"];
+
 	dpp::slashcommand help("help", "See what I can do!", bot->me.id);
 	dpp::slashcommand setup("setup", "Set up a part of JTC feature.", bot->me.id);
-	dpp::slashcommand set("set", "Edit an attribute of the temp VC you are in (or of a JTC).", bot->me.id);
+	dpp::slashcommand set(localise_slashcommand(make_default("set")));
 	dpp::slashcommand guild("guild", "Get/set the guild you're going to vote in favor of.", bot->me.id);
 	dpp::slashcommand get("get", "Get the voting progress of a guild.", bot->me.id);
 	dpp::slashcommand vote("vote", "Show the top.gg vote link.", bot->me.id);
@@ -28,16 +98,22 @@ void slashcommands::init() {
 	dpp::slashcommand reload("reload", "Reload the configs and the database.", bot->me.id);
 
     set.add_option(
-        dpp::command_option(dpp::co_sub_command, "name", "Change the VC name.").
-            add_option(dpp::command_option(dpp::co_string, "name", "The name you want the VC to have.", true).set_max_length(100))
+		localise_command_options(
+			make_default(dpp::co_sub_command, set, "name").add_option(
+			make_default(dpp::co_string, set, "name/name", true).set_max_length(100))
+		, "set", "name")
     );
     set.add_option(
-        dpp::command_option(dpp::co_sub_command, "limit", "Change the member count limit.").
-            add_option(dpp::command_option(dpp::co_integer, "limit", "The limit you want the VC to have.", true).set_min_value(-99).set_max_value(99))
+    	localise_command_options(
+	        make_default(dpp::co_sub_command, set, "limit").add_option(
+	        make_default(dpp::co_integer, set, "limit/limit", true).set_min_value(-99).set_max_value(99))
+	    , "set", "limit")
     );
     set.add_option(
-        dpp::command_option(dpp::co_sub_command, "bitrate", "Change the bitrate of the VC.").
-            add_option(dpp::command_option(dpp::co_integer, "bitrate", "The bitrate you want the VC to have.", true).set_max_value(384))
+    	localise_command_options(
+			make_default(dpp::co_sub_command, set, "bitrate").add_option(
+            make_default(dpp::co_integer, set, "bitrate/bitrate", true).set_max_value(384))
+	    , "set", "bitrate")
     );
 
     //---------------------------------------------------
@@ -126,7 +202,7 @@ std::string slash::get_mention(const std::string_view command) {
 	std::string name = command.data();
 	if (name.starts_with('/')) {
 		name = name.substr(1);
-		// If the commands starts with a slash, remove it.
+		// If the command starts with a slash, remove it.
 		// We're going to insert a slash on our own.
 	}
 	const std::string slashcommand_name = cli::tokenise(name)[0];
@@ -137,4 +213,12 @@ std::string slash::get_mention(const std::string_view command) {
 		exists ? guild_created[slashcommand_name].id.str() :
 		"ERROR COMMAND DOESN'T EXIST");
 	return mention;
+}
+
+std::vector <std::string> slash::get_mention(const std::vector <std::string> command) {
+	std::vector <std::string> res;
+	for (const std::string_view x : command) {
+		res.push_back(get_mention(x));
+	}
+	return res;
 }

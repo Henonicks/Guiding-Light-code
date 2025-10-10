@@ -212,17 +212,22 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 			}
 		}
 		if (created.empty() && not_created.empty()) {
-			bot->global_bulk_command_create(map_values_to_vector(slashcommands::list_global));
+			bot->global_bulk_command_create(map_values_to_vector(slashcommands::list_global), [](const dpp::confirmation_callback_t& callback) {
+				error_callback(callback);
+				cfg::write_down_slashcommands();
+			});
 		}
 		else {
 			if (!created.empty()) {
-				bot->global_bulk_command_create(created);
+				bot->global_bulk_command_create(created, [](const dpp::confirmation_callback_t& callback) {
+					error_callback(callback);
+					cfg::write_down_slashcommands();
+				});
 			}
 			for (const std::string& x : not_created) {
 				std::cout << fmt::format("{}: global slashcommand has NOT been defined.\n", x);
 			}
 		}
-		cfg::write_down_slashcommands();
 	}},
 	{"guildcreate", [](const std::vector <std::string>& cmd) {
 		if (!is_running()) {

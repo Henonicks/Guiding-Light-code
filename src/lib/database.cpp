@@ -8,8 +8,22 @@ sqlite::database_binder db::wrapper::operator_with_error::operator <<(sqlite::st
 }
 
 sqlite::database_binder db::wrapper::operator <<(sqlite::str_ref _query) {
-	const size_t pos = _query.find("--");
-	const std::string_view query = _query.substr(0, pos - 1);
+	size_t pos{_query.size()};
+	bool hanging_quote{}, hanging_apostrophe{};
+	for (size_t i = 0; i < _query.size(); i++) {
+		if (_query[i] == '-' && (i < _query.size() - 1 && _query[i + 1] == '-') &&
+		!hanging_quote && !hanging_apostrophe) {
+			pos = i;
+			break;
+		}
+		if (_query[i] == '"' && !hanging_apostrophe) {
+			hanging_quote = !hanging_quote;
+		}
+		else if (_query[i] == '\'' && !hanging_quote) {
+			hanging_apostrophe = !hanging_apostrophe;
+		}
+	}
+	const std::string_view query = _query.substr(0, pos);
 	try {
 		// try to return the result of the original operator
 		return database::operator <<(query);

@@ -25,11 +25,20 @@ namespace slash {
      * @return The command mention in the format of </cmd_name subcmds:cmd_id>
      */
     std::string get_mention(std::string_view command);
+
+    std::vector <std::string> get_mention(std::vector <std::string> command);
 }
 
 namespace slashcommands {
     inline std::map <std::string, dpp::slashcommand> list_global;
     inline std::map <std::string, dpp::slashcommand> list_guild;
+
+    /**
+     * @brief Builds a slashcommand based on the name of it.
+     * @param name The name of the slashcommand to build.
+     * @return A dpp::slashcommand ready to be created.
+     */
+    dpp::slashcommand build_cmd(std::string_view name);
 
     /**
      * @brief Initialises the slashcommands list.

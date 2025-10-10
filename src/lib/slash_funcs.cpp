@@ -1,6 +1,6 @@
 #include "guiding_light/slash_funcs.hpp"
 
-#include "guiding_light/reponses.hpp"
+#include "guiding_light/responses.hpp"
 
 dpp::coroutine <> slash::set::current(const dpp::slashcommand_t &event) {
 	get_lang();
@@ -10,7 +10,7 @@ dpp::coroutine <> slash::set::current(const dpp::slashcommand_t &event) {
 	const dpp::snowflake& channel_id = vc_statuses[user_id];
 	const bool user_is_main = !channel_id.empty();
 	if (!user_is_main) {
-		event.reply(dpp::message(response(YOU_ARE_NOT_IN_A_VC_YOU_CAN_EDIT, lang)).set_flags(dpp::m_ephemeral));
+		event.reply(response_emsg(YOU_ARE_NOT_IN_A_VC_YOU_CAN_EDIT, lang));
 	}
 	else {
 		dpp::channel channel = *dpp::find_channel(channel_id);
@@ -18,7 +18,7 @@ dpp::coroutine <> slash::set::current(const dpp::slashcommand_t &event) {
 		if (cmd.options[0].name == "name") {
 			const auto argument = std::get <std::string>(cmd.options[0].options[0].value);
 			if (argument == channel.name) {
-				event.reply(dpp::message(fmt::vformat(response(THE_NAME_OF_THE_VC_IS_ALREADY, lang), vec_to_fmt({old_name}))).set_flags(dpp::m_ephemeral));
+				event.reply(response_fmtemsg(THE_NAME_OF_THE_VC_IS_ALREADY, lang, {old_name}));
 			}
 			else {
 				channel.set_name(argument);
@@ -27,7 +27,7 @@ dpp::coroutine <> slash::set::current(const dpp::slashcommand_t &event) {
 						error_feedback(callback, event);
 						return;
 					}
-					event.reply(dpp::message(fmt::vformat(response(THE_NAME_OF_THE_CHANNEL_HAS_CHANGED_FROM, lang), vec_to_fmt({old_name, argument}))).set_flags(dpp::m_ephemeral));
+					event.reply(response_fmtemsg(THE_NAME_OF_THE_CHANNEL_HAS_CHANGED_FROM, lang, {old_name, argument}));
 				});
 			}
 		}
@@ -35,7 +35,7 @@ dpp::coroutine <> slash::set::current(const dpp::slashcommand_t &event) {
 			const auto argument = std::get <long>(cmd.options[0].options[0].value);
 			const dpp::guild* guild = dpp::find_guild(channel.guild_id);
 			if (guild == nullptr) {
-				event.reply(dpp::message(response(GUILD_COULD_NOT_BE_FOUND, lang)).set_flags(dpp::m_ephemeral));
+				event.reply(response_emsg(GUILD_COULD_NOT_BE_FOUND, lang));
 				co_return;
 			}
 			dpp::message to_reply = dpp::message().set_flags(dpp::m_ephemeral);
@@ -45,13 +45,13 @@ dpp::coroutine <> slash::set::current(const dpp::slashcommand_t &event) {
 									128 : (guild->premium_tier == 2) ?
 										  256 : 384);
 			if (channel.bitrate == argument) {
-				content = fmt::vformat(response(THE_BITRATE_IS_ALREADY, lang), vec_to_fmt({std::to_string(argument)}));
+				content = response_fmt(THE_BITRATE_IS_ALREADY, lang, {std::to_string(argument)});
 			}
 			else if (argument > max_bitrate || argument < 8) {
-				content = fmt::vformat(response(THE_NUMBER_CAN_ONLY_BE_BETWEEN, lang), vec_to_fmt({std::to_string(max_bitrate)}));
+				content = response_fmt(THE_NUMBER_CAN_ONLY_BE_BETWEEN, lang, {std::to_string(max_bitrate)});
 			}
 			else {
-				content = fmt::vformat(response(SET_BITRATE_TO, lang), vec_to_fmt({std::to_string(argument)}));
+				content = response_fmt(SET_BITRATE_TO, lang, {std::to_string(argument)});
 				channel.set_bitrate(argument);
 				const dpp::confirmation_callback_t& callback = co_await bot->co_channel_edit(channel);
 				if (callback.is_error()) {
@@ -65,16 +65,16 @@ dpp::coroutine <> slash::set::current(const dpp::slashcommand_t &event) {
 		else if (cmd.options[0].name == "limit") {
 			const auto argument = std::get <long>(cmd.options[0].options[0].value);
 			if (argument > 99) {
-				event.reply(dpp::message(response(FOR_VOICE_CHANNELS_ITS_IMPOSSIBLE_TO_MAKE_THE_LIMIT_GREATER, lang)).set_flags(dpp::m_ephemeral));
+				event.reply(response_emsg(FOR_VOICE_CHANNELS_ITS_IMPOSSIBLE_TO_MAKE_THE_LIMIT_GREATER, lang));
 			}
 			else if (argument < 0) {
-				event.reply(dpp::message(response(WELL_NOW_WERE_JUST_BEING_SILLY_ARENT_WE, lang)).set_flags(dpp::m_ephemeral));
+				event.reply(response_emsg(WELL_NOW_WERE_JUST_BEING_SILLY_ARENT_WE, lang));
 				bot->guild_member_move(0, temp_vcs[vc_statuses[user_id]].guild_id, user_id, error_callback);
 				// easter egg
 			}
 			else {
 				if (channel.user_limit == argument) {
-					event.reply(dpp::message(fmt::vformat(response(THE_USER_LIMIT_IS_ALREADY, lang), vec_to_fmt({std::to_string(argument)}))).set_flags(dpp::m_ephemeral));
+					event.reply(response_fmtemsg(THE_USER_LIMIT_IS_ALREADY, lang, {std::to_string(argument)}));
 				}
 				else {
 					channel.set_user_limit(argument);
@@ -83,7 +83,7 @@ dpp::coroutine <> slash::set::current(const dpp::slashcommand_t &event) {
 							error_feedback(callback, event);
 							return;
 						}
-						event.reply(dpp::message(fmt::vformat(response(USER_LIMIT_IS_SET_TO, lang), vec_to_fmt({std::to_string(argument)}))).set_flags(dpp::m_ephemeral));
+						event.reply(response_fmtemsg(USER_LIMIT_IS_SET_TO, lang, {std::to_string(argument)}));
 					});
 				}
 			}
@@ -99,14 +99,14 @@ dpp::coroutine <> slash::set::default_values(const dpp::slashcommand_t& event) {
 	const auto channel_id = std::get <dpp::snowflake>(cmd.options[0].options[0].options[1].value);
 	const jtc_defaults defs = jtc_default_values[channel_id];
 	if (defs.channel_id.empty()) {
-		co_await event.co_reply(dpp::message(response(THIS_IS_NOT_A_JTC_VC_I_KNOW_OF, lang)).set_flags(dpp::m_ephemeral));
+		co_await event.co_reply(response_emsg(THIS_IS_NOT_A_JTC_VC_I_KNOW_OF, lang));
 		co_return;
 	}
 	jtc_defaults new_defs;
 	if (cmd.options[0].options[0].name == "name") {
 		auto name = std::get <std::string>(cmd.options[0].options[0].options[0].value);
 		if (defs.name == name) {
-			co_await event.co_reply(dpp::message(fmt::vformat(response(THE_NAME_IS_ALREADY, lang), vec_to_fmt({name}))).set_flags(dpp::m_ephemeral));
+			co_await event.co_reply(response_fmtemsg(THE_NAME_IS_ALREADY, lang, {name}));
 			co_return;
 		}
 		new_defs.channel_id = defs.channel_id;
@@ -117,16 +117,16 @@ dpp::coroutine <> slash::set::default_values(const dpp::slashcommand_t& event) {
 		jtc_default_values[new_defs.channel_id] = new_defs;
 		db::sql << "DELETE FROM jtc_default_values WHERE channel_id=?;" << channel_id.str();
 		db::sql << "INSERT INTO jtc_default_values VALUES (?, ?, ?, ?);" << channel_id.str() << name << defs.limit << defs.bitrate;
-		event.reply(dpp::message(fmt::vformat(response(THE_DEFAULT_NAME_IS_SET_TO, lang), vec_to_fmt({name}))).set_flags(dpp::m_ephemeral));
+		event.reply(response_fmtemsg(THE_DEFAULT_NAME_IS_SET_TO, lang, {name}));
 	}
 	else if (cmd.options[0].options[0].name == "limit") {
 		const auto limit = std::get <long>(cmd.options[0].options[0].options[0].value);
 		if (limit < 0 || limit > 99) {
-			event.reply(dpp::message(response(THE_LIMIT_SHOULD_BE_BETWEEN, lang)).set_flags(dpp::m_ephemeral));
+			event.reply(response_emsg(THE_LIMIT_SHOULD_BE_BETWEEN, lang));
 		}
 		else {
 			if (defs.limit == limit) {
-				co_await event.co_reply(dpp::message(fmt::vformat(response(THE_LIMIT_IS_ALREADY, lang), vec_to_fmt({std::to_string(limit)}))).set_flags(dpp::m_ephemeral));
+				co_await event.co_reply(response_fmtemsg(THE_LIMIT_IS_ALREADY, lang, {std::to_string(limit)}));
 				co_return;
 			}
 			jtc_default_values.erase(channel_id);
@@ -137,7 +137,7 @@ dpp::coroutine <> slash::set::default_values(const dpp::slashcommand_t& event) {
 			new_defs.bitrate = defs.bitrate;
 			jtc_default_values[channel_id] = new_defs;
 			db::sql << "INSERT INTO jtc_default_values VALUES (?, ?, ?, ?);" << channel_id.str() << defs.name << limit << defs.bitrate;
-			event.reply(dpp::message(fmt::vformat(response(THE_DEFAULT_LIMIT_IS_SET_TO, lang), vec_to_fmt({std::to_string(limit)}))).set_flags(dpp::m_ephemeral));
+			event.reply(response_fmtemsg(THE_DEFAULT_LIMIT_IS_SET_TO, lang, {std::to_string(limit)}));
 		}
 	}
 	else if (cmd.options[0].options[0].name == "bitrate") {
@@ -149,15 +149,15 @@ dpp::coroutine <> slash::set::default_values(const dpp::slashcommand_t& event) {
 			128 : (guild.premium_tier == 2) ?
 			256 : 384);
 		if (defs.bitrate == bitrate) {
-			content = fmt::vformat(response(THE_BITRATE_IS_ALREADY, lang), vec_to_fmt({std::to_string(bitrate)}));
+			content = response_fmt(THE_BITRATE_IS_ALREADY, lang, {std::to_string(bitrate)});
 		}
 		else if (bitrate > max_bitrate || bitrate < 8) {
-			content = fmt::vformat(response(THE_NUMBER_CAN_ONLY_BE_BETWEEN, lang), vec_to_fmt({std::to_string(max_bitrate)}));
+			content = response_fmt(THE_NUMBER_CAN_ONLY_BE_BETWEEN, lang, {std::to_string(max_bitrate)});
 			// Since the maximum bitrate varies between each guild (based on the amount of boosts),
 			// this check is needed.
 		}
 		else {
-			content = fmt::vformat(response(THE_DEFAULT_BITRATE_IS_SET_TO, lang), vec_to_fmt({std::to_string(bitrate)}));
+			content = response_fmt(THE_DEFAULT_BITRATE_IS_SET_TO, lang, {std::to_string(bitrate)});
 			new_defs = defs;
 			new_defs.bitrate = (int16_t)bitrate;
 			jtc_default_values[channel_id] = new_defs;
@@ -177,8 +177,8 @@ dpp::coroutine <> slash::setup(const dpp::slashcommand_t& event) {
 	if (cmd.options[0].name == "jtc") {
 		const int8_t limit = ::topgg::jtc::count_allowed_jtcs(guild_id);
 		if (jtc_vc_amount[guild_id] >= limit) {
-			co_await event.co_reply(dpp::message(fmt::vformat(response(THIS_GUILD_HAS_A_JTC_LIMIT_OF, lang),
-				vec_to_fmt({std::to_string(limit), (limit < 10 ? response(YOU_CAN_GET_MORE_BY_VOTING_THOUGH, lang) : "")}))).set_flags(dpp::m_ephemeral));
+			co_await event.co_reply(response_fmtemsg(THIS_GUILD_HAS_A_JTC_LIMIT_OF, lang,
+				{std::to_string(limit), (limit < 10 ? response_str(YOU_CAN_GET_MORE_BY_VOTING_THOUGH, lang) : "")}));
 			co_return;
 		}
 		const auto max = (int8_t)std::get <long>(cmd.options[0].options[0].value);
@@ -191,8 +191,8 @@ dpp::coroutine <> slash::setup(const dpp::slashcommand_t& event) {
 		channel.set_user_limit(1); // For the normal users, only one will be able to create a JTC at the same time.
 		const dpp::confirmation_callback_t& callback = co_await bot->co_channel_create(channel);
 		if (callback.is_error()) {
-			bot->log(dpp::loglevel::ll_error, callback.http_info.body);
-			co_await event.co_reply(dpp::message(response(TRIED_TO_CREATE_A_JTC_CHANNEL_BUT_FAILED, lang)).set_flags(dpp::m_ephemeral));
+			error_callback(callback);
+			co_await event.co_reply(response_emsg(TRIED_TO_CREATE_A_JTC_CHANNEL_BUT_FAILED, lang));
 			co_return;
 		}
 		++jtc_vc_amount[guild_id];
@@ -202,7 +202,7 @@ dpp::coroutine <> slash::setup(const dpp::slashcommand_t& event) {
 		jtc_default_values[new_channel.id] = defs;
 		db::sql << "INSERT INTO jtc_vcs VALUES (?, ?);" << new_channel.id.str() << new_channel.guild_id.str();
 		db::sql << "INSERT INTO jtc_default_values VALUES (?, ?, ?, ?);" << new_channel.id.str() << "VC for {username}" << max << 64;
-		co_await event.co_reply(dpp::message(response(CREATED_A_JTC_CHANNEL, lang)).set_flags(dpp::m_ephemeral));
+		co_await event.co_reply(response_emsg(CREATED_A_JTC_CHANNEL, lang));
 	}
 	else {
 		bool is_already_set;
@@ -227,17 +227,12 @@ dpp::coroutine <> slash::setup(const dpp::slashcommand_t& event) {
 			const dpp::confirmation_callback_t& callback = co_await bot->co_channel_create(channel);
 			const auto new_channel = callback.get <dpp::channel>();
 			const std::string to_add = std::to_string(new_channel.id) + ' ' + std::to_string(new_channel.guild_id);
-			try {
-				db::sql << "INSERT INTO " + (std::string)(is_jtc ? "temp_vc_notifications" : "topgg_notifications") + " VALUES (?, ?);" << new_channel.id.str() << new_channel.guild_id.str();
-			}
-			catch (sqlite::sqlite_exception& e) {
-				std::cout << e.what() << ' ' << e.get_code() << ' ' << e.get_sql() << '\n';
-			}
+			db::sql << "INSERT INTO " + (std::string)(is_jtc ? "temp_vc_notifications" : "topgg_notifications") + " VALUES (?, ?);" << new_channel.id.str() << new_channel.guild_id.str();
 			(is_jtc ? temp_vc_notifications : topgg_notifications)[new_channel.guild_id] = new_channel.id;
-			co_await event.co_reply(dpp::message(response(THE_CHANNEL_HAS_BEEN_SET_UP, lang)).set_flags(dpp::m_ephemeral));
+			co_await event.co_reply(response_emsg(THE_CHANNEL_HAS_BEEN_SET_UP, lang));
 		}
 		else {
-			co_await event.co_reply(dpp::message(response(ITS_ALREADY_BEEN_SET_UP, lang)).set_flags(dpp::m_ephemeral));
+			co_await event.co_reply(response_emsg(ITS_ALREADY_BEEN_SET_UP, lang));
 		}
 	}
 }
@@ -246,11 +241,11 @@ void slash::blocklist::status(const dpp::slashcommand_t& event) {
 	get_lang();
 	const dpp::snowflake channel_id = temp_vcs[vc_statuses[event.command.usr.id]].channel_id;
 	if (channel_id.empty()) {
-		event.reply(dpp::message(response(YOURE_NOT_IN_A_TEMP_VC, lang)).set_flags(dpp::m_ephemeral));
+		event.reply(response_emsg(YOURE_NOT_IN_A_TEMP_VC, lang));
 		return;
 	}
 	const dpp::snowflake user_id = std::get <dpp::snowflake>(event.get_parameter("user"));
-	event.reply(dpp::message(fmt::vformat(response(THE_USER_IS_NOTORIN_THE_BLOCKLIST, lang), vec_to_fmt({banned[channel_id].contains(user_id) ? "" : response(NOT, lang)}))).set_flags(dpp::m_ephemeral));
+	event.reply(response_fmtemsg(THE_USER_IS_NOTORIN_THE_BLOCKLIST, lang, {banned[channel_id].contains(user_id) ? "" : response_str(NOT, lang)}));
 }
 
 dpp::coroutine <> slash::blocklist::add(const dpp::slashcommand_t& event) {
@@ -258,23 +253,23 @@ dpp::coroutine <> slash::blocklist::add(const dpp::slashcommand_t& event) {
 	const dpp::user& issuer = event.command.usr;
 	const temp_vc issuer_vc = temp_vcs[vc_statuses[issuer.id]];
 	if (issuer_vc.creator_id != issuer.id) {
-		event.reply(dpp::message(response(THE_CHANNEL_YOURE_IN_DOES_NOT_BELONG_TO_YOU, lang)).set_flags(dpp::m_ephemeral));
+		event.reply(response_emsg(THE_CHANNEL_YOURE_IN_DOES_NOT_BELONG_TO_YOU, lang));
 		co_return;
 	}
 	const dpp::snowflake requested_id = std::get <dpp::snowflake>(event.get_parameter("user"));
 	const dpp::user* requested = dpp::find_user(requested_id);
 	if (requested == nullptr) {
-		event.reply(dpp::message(response(REQUESTED_USER_NOT_FOUND, lang)).set_flags(dpp::m_ephemeral));
+		event.reply(response_emsg(REQUESTED_USER_NOT_FOUND, lang));
 		co_return;
 	}
 	dpp::channel* channel = dpp::find_channel(issuer_vc.channel_id);
 	const dpp::permission requested_permission = channel->get_user_permissions(requested);
 	if (requested_permission.has(dpp::p_administrator)) {
-		event.reply(dpp::message(response(THE_USER_HAS_ADMIN_ACCESS_TO_THIS_CHANNEL, lang)).set_flags(dpp::m_ephemeral));
+		event.reply(response_emsg(THE_USER_HAS_ADMIN_ACCESS_TO_THIS_CHANNEL, lang));
 		co_return;
 	}
 	if (banned[issuer_vc.channel_id].contains(requested_id)) {
-		event.reply(dpp::message(response(THE_USER_IS_ALREADY_IN_THE_BLOCKLIST, lang)).set_flags(dpp::m_ephemeral));
+		event.reply(response_emsg(THE_USER_IS_ALREADY_IN_THE_BLOCKLIST, lang));
 	}
 	else {
 		channel->set_permission_overwrite(requested_id, dpp::ot_member, 0, dpp::p_view_channel);
@@ -287,7 +282,7 @@ dpp::coroutine <> slash::blocklist::add(const dpp::slashcommand_t& event) {
 		if (vc_statuses[issuer.id] == vc_statuses[requested_id]) {
 			bot->guild_member_move(0, issuer_vc.guild_id, requested_id);
 		}
-		event.reply(dpp::message(response(THE_USER_WAS_ADDED_TO_THE_BLOCKLIST, lang)).set_flags(dpp::m_ephemeral));
+		event.reply(response_emsg(THE_USER_WAS_ADDED_TO_THE_BLOCKLIST, lang));
 	}
 }
 
@@ -295,28 +290,28 @@ dpp::coroutine <> slash::blocklist::remove(const dpp::slashcommand_t& event) {
 	get_lang();
 	const dpp::user& issuer = event.command.usr;
 	if (temp_vcs[vc_statuses[issuer.id]].creator_id != issuer.id) {
-		event.reply(dpp::message(response(THE_CHANNEL_YOURE_IN_DOES_NOT_BELONG_TO_YOU, lang)).set_flags(dpp::m_ephemeral));
+		event.reply(response_emsg(THE_CHANNEL_YOURE_IN_DOES_NOT_BELONG_TO_YOU, lang));
 		co_return;
 	}
 	const dpp::snowflake requested_id = std::get <dpp::snowflake>(event.get_parameter("user"));
 	const dpp::user* requested = dpp::find_user(requested_id);
 	if (requested == nullptr) {
-		event.reply(dpp::message(response(REQUESTED_USER_NOT_FOUND, lang)).set_flags(dpp::m_ephemeral));
+		event.reply(response_emsg(REQUESTED_USER_NOT_FOUND, lang));
 		co_return;
 	}
 	if (!banned[temp_vcs[vc_statuses[issuer.id]].channel_id].contains(requested_id)) {
-		event.reply(dpp::message(response(THE_USER_WAS_NOT_IN_THE_BLOCKLIST, lang)).set_flags(dpp::m_ephemeral));
+		event.reply(response_emsg(THE_USER_WAS_NOT_IN_THE_BLOCKLIST, lang));
 	}
 	else {
 		dpp::channel* channel = dpp::find_channel(vc_statuses[issuer.id]);
 		channel->set_permission_overwrite(requested_id, dpp::ot_member, dpp::p_view_channel, 0);
-		const dpp::confirmation_callback_t callback = co_await bot->co_channel_edit(*channel);
+		const dpp::confirmation_callback_t& callback = co_await bot->co_channel_edit(*channel);
 		if (callback.is_error()) {
 			error_feedback(callback, event);
 			co_return;
 		}
 		banned[temp_vcs[vc_statuses[issuer.id]].channel_id].erase(requested_id);
-		event.reply(dpp::message(response(THE_USER_WAS_REMOVED_FROM_THE_BLOCKLIST, lang)).set_flags(dpp::m_ephemeral));
+		event.reply(response_emsg(THE_USER_WAS_REMOVED_FROM_THE_BLOCKLIST, lang));
 	}
 }
 
@@ -326,19 +321,20 @@ void slash::topgg::guild_get(const dpp::slashcommand_t& event) {
 	const dpp::snowflake guild_id = ::topgg::guild_choices[user.id];
 	const dpp::guild* guild = dpp::find_guild(guild_id);
 	if (guild == nullptr) {
-		event.reply(dpp::message(event.command.channel_id, fmt::vformat(response(GUILD_NOT_FOUND_IF_YOUVE_ALREADY_SET_IT, lang), vec_to_fmt({get_mention("guild set")}))).set_flags(dpp::m_ephemeral));
+		event.reply(response_fmtemsg(GUILD_NOT_FOUND_IF_YOUVE_ALREADY_SET_IT, lang, {get_mention("guild set")})
+			.set_channel_id(event.command.channel_id));
 	}
 	else {
 		dpp::embed embed = dpp::embed()
 			.set_color(dpp::colors::sti_blue)
 			.set_title(response(YOURE_VOTING_IN_FAVOUR_OF_THIS_GUILD, lang))
-			.set_author(fmt::vformat(response(HELLO_YOUR_CHOSEN_GUILD_IS, lang), vec_to_fmt({user.username, guild->name})), "", guild->get_icon_url())
+			.set_author(response_fmt(HELLO_YOUR_CHOSEN_GUILD_IS, lang, {user.username, guild->name}), "", guild->get_icon_url())
 			.set_thumbnail(guild->get_icon_url()
 		);
 		if (!guild->get_banner_url().empty()) {
 			embed.set_image(guild->get_banner_url());
 		}
-		const dpp::message message = dpp::message(event.command.channel_id, embed).set_flags(dpp::m_ephemeral);
+		const dpp::message message = dpp::message(embed).set_flags(dpp::m_ephemeral);
 		event.reply(message);
 	}
 }
@@ -347,7 +343,7 @@ void slash::topgg::guild_set(const dpp::slashcommand_t& event) {
 	get_lang();
 	if (::topgg::guild_choices[event.command.usr.id] == event.command.guild_id) {
 		try {
-			event.reply(dpp::message(event.command.channel_id, fmt::vformat(response(YOUR_CHOSEN_GUILD_IS_ALREADY, lang), vec_to_fmt({event.command.get_guild().name}))).set_flags(dpp::m_ephemeral));
+			event.reply(response_fmtemsg(YOUR_CHOSEN_GUILD_IS_ALREADY, lang, {event.command.get_guild().name}));
 		}
 		catch (...) { // TODO: what the shit is this?
 			event.reply(dpp::message(event.command.channel_id, "Guild not found. Try again?").set_flags(dpp::m_ephemeral));
@@ -360,14 +356,14 @@ void slash::topgg::guild_set(const dpp::slashcommand_t& event) {
 		dpp::embed embed = dpp::embed()
 			.set_color(dpp::colors::sti_blue)
 			.set_title(response(YOURE_NOW_VOTING_IN_FAVOUR_OF_THIS_GUILD, lang))
-			.set_author(fmt::vformat(response(SET_YOUR_GUILD_TO, lang), vec_to_fmt({event.command.get_guild().name})), "", event.command.get_guild().get_icon_url())
+			.set_author(response_fmt(SET_YOUR_GUILD_TO, lang, {event.command.get_guild().name}), "", event.command.get_guild().get_icon_url())
 			.set_thumbnail(event.command.get_guild().get_icon_url()
 		);
 		const std::string& banner = event.command.get_guild().get_icon_url();
 		if (!banner.empty()) {
 			embed.set_image(event.command.get_guild().get_banner_url());
 		}
-		const dpp::message message = dpp::message(event.command.channel_id, embed).set_flags(dpp::m_ephemeral);
+		const dpp::message message = dpp::message(embed).set_flags(dpp::m_ephemeral);
 		event.reply(message);
 	}
 }
@@ -375,16 +371,16 @@ void slash::topgg::guild_set(const dpp::slashcommand_t& event) {
 void slash::topgg::get_progress(const dpp::slashcommand_t& event) {
 	get_lang();
 	const int8_t limit = ::topgg::jtc::count_allowed_jtcs(event.command.guild_id);
-	event.reply(dpp::message(event.command.channel_id, fmt::vformat(response(THIS_GUILDS_VOTE_PROGRESS_IS, lang),
-		vec_to_fmt({std::to_string(::topgg::guild_votes_amount[event.command.guild_id]), std::to_string(::topgg::votes_leveling[limit]), std::to_string(limit),
-			limit == 10 ? response(THIS_IS_THE_ABSOLUTE_MAXIMUM, lang) : ""}))).set_flags(dpp::m_ephemeral));
+	event.reply(response_fmtemsg(THIS_GUILDS_VOTE_PROGRESS_IS, lang,
+		{std::to_string(::topgg::guild_votes_amount[event.command.guild_id]), std::to_string(::topgg::votes_leveling[limit]), std::to_string(limit),
+			limit == 10 ? response_str(THIS_IS_THE_ABSOLUTE_MAXIMUM, lang) : ""}));
 }
 
 dpp::coroutine <> slash::ticket::create(const dpp::slashcommand_t& event) {
 	get_lang();
 	const dpp::snowflake& user_id = event.command.usr.id;
 	if (!tickets[user_id].empty()) {
-		co_await event.co_reply(dpp::message(response(YOU_ALREADY_HAVE_A_TICKET, lang)).set_flags(dpp::m_ephemeral));
+		co_await event.co_reply(response_emsg(YOU_ALREADY_HAVE_A_TICKET, lang));
 		co_return;
 	}
 	dpp::channel channel = dpp::channel()
@@ -399,19 +395,19 @@ dpp::coroutine <> slash::ticket::create(const dpp::slashcommand_t& event) {
 	tickets[user_id] = channel.id;
 	ck_tickets[channel.id] = user_id;
 	db::sql << "INSERT INTO tickets VALUES (?, ?);" << user_id.str() << channel.id.str();
-	co_await event.co_reply(dpp::message(response(A_TICKET_HAS_BEEN_CREATED, lang)).set_flags(dpp::m_ephemeral));
+	co_await event.co_reply(response_emsg(A_TICKET_HAS_BEEN_CREATED, lang));
 }
 
 void slash::ticket::close(const dpp::slashcommand_t& event) {
 	get_lang();
 	const dpp::snowflake& user_id = event.command.usr.id;
 	if (tickets[user_id].empty()) {
-		event.reply(dpp::message(response(YOU_DONT_HAVE_A_TICKET, lang)).set_flags(dpp::m_ephemeral));
+		event.reply(response_emsg(YOU_DONT_HAVE_A_TICKET, lang));
 		return;
 	}
 	db::sql << "DELETE FROM tickets WHERE user_id=?;" << user_id.str();
 	bot->channel_delete(tickets[user_id], error_callback);
 	ck_tickets.erase(tickets[user_id]);
 	tickets.erase(user_id);
-	event.reply(dpp::message(response(YOUR_TICKET_HAS_BEEN_CLOSED, lang)).set_flags(dpp::m_ephemeral));
+	event.reply(response_emsg(YOUR_TICKET_HAS_BEEN_CLOSED, lang));
 }
