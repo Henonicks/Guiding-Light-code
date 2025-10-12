@@ -53,7 +53,7 @@ void error_callback(const dpp::confirmation_callback_t& callback);
  * the actual error ("Error" by default).
  */
 bool error_feedback(const dpp::confirmation_callback_t& callback, const dpp::interaction_create_t& event,
-                    std::string_view error_intro = "Error");
+					std::string_view error_intro = "Error");
 
 /**
  *
@@ -63,6 +63,6 @@ bool error_feedback(const dpp::confirmation_callback_t& callback, const dpp::int
  * the actual error ("Error" by default).
  */
 bool error_feedback(const dpp::confirmation_callback_t& callback, const dpp::message_create_t& event,
-                    std::string_view error_intro = "Error");
+					std::string_view error_intro = "Error");
 
 #endif

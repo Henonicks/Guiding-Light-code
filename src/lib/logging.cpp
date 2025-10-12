@@ -6,8 +6,7 @@ void bot_log(const dpp::log_t& _log) {
 	if (_log.message == "Shards started.") {
 		if (!db::connection_successful()) {
 			std::cerr << fmt::format("{0} connection to DB failed! imma js crash ts g 💔🥀\nHINT: have you imported your database as database/{1}.db or initialised the database with init_db?", color::rize("ERROR:", "Red"), MODE_NAME) << std::endl;
-			bot->shutdown();
-			return;
+			exit(1);
 		}
 		log("Waiting till we receive all the cache...");
 		bot->start_timer([](const dpp::timer& h) -> void {

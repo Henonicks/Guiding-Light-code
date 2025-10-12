@@ -6,10 +6,10 @@
 #include "color.hpp"
 
 namespace cli {
-    inline const auto HISTORY_PATH = "cli/history.txt";
+	inline const auto HISTORY_PATH = "cli/history.txt";
 
-    extern const std::map <std::string, std::function <void(std::vector <std::string>)>> commands;
-    inline const std::map <std::string, std::string> manual = {
+	extern const std::map <std::string, std::function <void(std::vector <std::string>)>> commands;
+	inline const std::map <std::string, std::string> manual = {
 		{"help", "Shows this message.\n"
 			"Usage: \"help [cmd1] [cmd2]... [cmdN]\" or \"help ...\""},
 		{"quit", "Quit the CLI. If the Discord bot is running, it won't stop simply because of this command.\n"
@@ -34,43 +34,43 @@ namespace cli {
 			"Usage: list <type>"},
 	};
 
-    inline std::map <std::string, std::vector <std::string>> completions;
+	inline std::map <std::string, std::vector <std::string>> completions;
 
-    /**
-     * @brief Reads a line until a valid candidate for a command is provided.
-     * @param line the string to read the input into.
-     */
-    void read_until_provided(std::string& line);
+	/**
+	 * @brief Reads a line until a valid candidate for a command is provided.
+	 * @param line the string to read the input into.
+	 */
+	void read_until_provided(std::string& line);
 
-    /**
-     * @brief Asks the user to confirm the previous action.
-     * @param line The line stating what is being confirmed.
-     * @return True if the user confirms the action.
-     */
-    bool confirmation(std::string_view line);
+	/**
+	 * @brief Asks the user to confirm the previous action.
+	 * @param line The line stating what is being confirmed.
+	 * @return True if the user confirms the action.
+	 */
+	bool confirmation(std::string_view line);
 
-    /**
-     * @brief Converts the command input into a vector.
-     * @param line The command input.
-     * @return A vector with the command and each subcommand.
-     */
-    std::vector <std::string> tokenise(std::string_view line);
+	/**
+	 * @brief Converts the command input into a vector.
+	 * @param line The command input.
+	 * @return A vector with the command and each subcommand.
+	 */
+	std::vector <std::string> tokenise(std::string_view line);
 
-    /**
-     * @brief Handles a CLI command.
-     * @param cmd The command to be handled.
-     */
-    void exec_command(const std::vector <std::string>& cmd);
+	/**
+	 * @brief Handles a CLI command.
+	 * @param cmd The command to be handled.
+	 */
+	void exec_command(const std::vector <std::string>& cmd);
 
-    /**
-     * @brief Initialises the CLI before it can be entered.
-     */
-    void init();
+	/**
+	 * @brief Initialises the CLI before it can be entered.
+	 */
+	void init();
 
-    /**
-     * @brief Start the CLI loop.
-     */
-    void enter();
+	/**
+	 * @brief Start the CLI loop.
+	 */
+	void enter();
 }
 
 #endif
