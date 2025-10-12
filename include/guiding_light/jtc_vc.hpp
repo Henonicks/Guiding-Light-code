@@ -3,7 +3,7 @@
 
 #include "guiding_light.hpp"
 
-extern std::map <channel_snowflake, guild_snowflake> jtc_vcs;
-extern std::map <guild_snowflake, int8_t> jtc_vc_amount;
+inline std::map <channel_snowflake, guild_snowflake> jtc_vcs;
+inline std::map <guild_snowflake, int8_t> jtc_vc_amount;
 
 #endif

@@ -5,6 +5,8 @@
 #include "guiding_light/database.hpp"
 #include "guiding_light/cfg.hpp"
 
+inline uint64_t last_error_message = -10;
+
 /**
  * @brief Logs a message along with other logs from Discord.
  * @param _log The log to be printed.
@@ -16,6 +18,12 @@ void bot_log(const dpp::log_t& _log);
  * @param message The log to be printed.
  */
 void log(std::string_view message);
+
+/**
+ * @brief Does the same as @ref log but also sends a message to a specific channel.
+ * @param message The log to be printed.
+ */
+void error_log(std::string_view message);
 
 /**
  * @brief Logs a message briefly describing the guild the bot
@@ -45,7 +53,7 @@ void error_callback(const dpp::confirmation_callback_t& callback);
  * the actual error ("Error" by default).
  */
 bool error_feedback(const dpp::confirmation_callback_t& callback, const dpp::interaction_create_t& event,
-                    std::string_view error_intro = "Error");
+					std::string_view error_intro = "Error");
 
 /**
  *
@@ -55,6 +63,6 @@ bool error_feedback(const dpp::confirmation_callback_t& callback, const dpp::int
  * the actual error ("Error" by default).
  */
 bool error_feedback(const dpp::confirmation_callback_t& callback, const dpp::message_create_t& event,
-                    std::string_view error_intro = "Error");
+					std::string_view error_intro = "Error");
 
 #endif

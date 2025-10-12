@@ -13,7 +13,6 @@ aux_source_directory("src" coresrc)
 aux_source_directory("src/lib" codParts)
 add_executable(${BOT_NAME} ${coresrc} ${codParts})
 
-
 target_compile_definitions(${BOT_NAME} PUBLIC FMT_HEADER_ONLY)
 
 string(ASCII 27 Esc)
@@ -56,7 +55,7 @@ target_compile_options(${BOT_NAME} PRIVATE -Wall -Wextra -Wpedantic -g)
 target_link_libraries(${BOT_NAME}
     dl
     ${CMAKE_THREAD_LIBS_INIT}
-    ${OPENSSL_CRYPTO_LIBRARY} 
+    ${OPENSSL_CRYPTO_LIBRARY}
     ${OPENSSL_SSL_LIBRARY}
     sqlite_modern_cpp
     linenoise

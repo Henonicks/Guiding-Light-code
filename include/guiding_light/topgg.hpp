@@ -4,11 +4,12 @@
 #include "notification_channel.hpp"
 
 namespace topgg {
-	extern int last_collection_time;
-	extern std::map <user_snowflake, guild_snowflake> guild_choices;
-	extern std::map <guild_snowflake, int> guild_votes_amount;
-	extern std::vector <int> votes_leveling;
-	extern std::map <user_snowflake, bool> no_noguild_reminder;
+	inline int last_collection_time = 0;
+	inline std::map <user_snowflake, guild_snowflake> guild_choices;
+	inline std::map <guild_snowflake, int> guild_votes_amount;
+	inline constexpr std::array <int, 10> votes_leveling =
+		{0, 225, 450, 800, 1300, 2000, 2750, 3350, 4350, 5000};
+	inline std::map <user_snowflake, bool> no_noguild_reminder;
 
 	/**
 	 * @brief Handles a top.gg vote for the bot.

@@ -1,0 +1,163 @@
+#ifndef PING_H
+#define PING_H
+
+#include <random>
+#include <fmt/args.h>
+#include <no_warns/dpp/dpp.h>
+
+#include "henifig/types.hpp"
+
+#include "guiding_light/cfg.hpp"
+
+enum responses_enum {
+	RESPONSE_NOT_FOUND,
+	YOU_ARE_NOT_IN_A_VC_YOU_CAN_EDIT,
+	THE_NAME_OF_THE_VC_IS_ALREADY,
+	THE_NAME_OF_THE_CHANNEL_HAS_CHANGED_FROM,
+	GUILD_COULD_NOT_BE_FOUND,
+	THE_BITRATE_IS_ALREADY,
+	THE_NUMBER_CAN_ONLY_BE_BETWEEN,
+	SET_BITRATE_TO,
+	FOR_VOICE_CHANNELS_ITS_IMPOSSIBLE_TO_MAKE_THE_LIMIT_GREATER,
+	WELL_NOW_WERE_JUST_BEING_SILLY_ARENT_WE,
+	THE_USER_LIMIT_IS_ALREADY,
+	USER_LIMIT_IS_SET_TO,
+	THIS_IS_NOT_A_JTC_VC_I_KNOW_OF,
+	THE_NAME_IS_ALREADY,
+	THE_DEFAULT_NAME_IS_SET_TO,
+	THE_LIMIT_SHOULD_BE_BETWEEN,
+	THE_LIMIT_IS_ALREADY,
+	THE_DEFAULT_LIMIT_IS_SET_TO,
+	THE_DEFAULT_BITRATE_IS_SET_TO,
+	THIS_GUILD_HAS_A_JTC_LIMIT_OF,
+	YOU_CAN_GET_MORE_BY_VOTING_THOUGH,
+	TRIED_TO_CREATE_A_JTC_CHANNEL_BUT_FAILED,
+	CREATED_A_JTC_CHANNEL,
+	THE_CHANNEL_HAS_BEEN_SET_UP,
+	ITS_ALREADY_BEEN_SET_UP,
+	YOURE_NOT_IN_A_TEMP_VC,
+	THE_USER_IS_NOTORIN_THE_BLOCKLIST,
+	NOT,
+	THE_CHANNEL_YOURE_IN_DOES_NOT_BELONG_TO_YOU,
+	REQUESTED_USER_NOT_FOUND,
+	THE_USER_HAS_ADMIN_ACCESS_TO_THIS_CHANNEL,
+	THE_USER_IS_ALREADY_IN_THE_BLOCKLIST,
+	THE_USER_WAS_ADDED_TO_THE_BLOCKLIST,
+	THE_USER_WAS_NOT_IN_THE_BLOCKLIST,
+	THE_USER_WAS_REMOVED_FROM_THE_BLOCKLIST,
+	GUILD_NOT_FOUND_IF_YOUVE_ALREADY_SET_IT,
+	YOURE_VOTING_IN_FAVOUR_OF_THIS_GUILD,
+	HELLO_YOUR_CHOSEN_GUILD_IS,
+	YOUR_CHOSEN_GUILD_IS_ALREADY,
+	YOURE_NOW_VOTING_IN_FAVOUR_OF_THIS_GUILD,
+	SET_YOUR_GUILD_TO,
+	THIS_GUILDS_VOTE_PROGRESS_IS,
+	THIS_IS_THE_ABSOLUTE_MAXIMUM,
+	YOU_ALREADY_HAVE_A_TICKET,
+	COULDNT_CREATE_A_CHANNEL_FOR_THE_TICKET,
+	A_TICKET_HAS_BEEN_CREATED,
+	YOU_DONT_HAVE_A_TICKET,
+	YOUR_TICKET_HAS_BEEN_CLOSED,
+	NEXT_TIME_THE_PING_WILL_BE,
+	OFF,
+	ON,
+	IM_PREPARING,
+	VOTE_HERE,
+	A_CHANNEL_IS_ALREADY_BEING_SET_UP,
+	A_TICKET_IS_ALREADY_BEING_SET_UP,
+	COULDNT_CONNECT_TO_THE_DATABASE,
+	RELOADED,
+	UNDEFINED_COMMAND,
+
+	AUTHOR,
+	DESCRIPTIONS,
+	FOOTER,
+
+	COMMANDS,
+	DESCRIPTION,
+	OPTIONS,
+	NAME,
+};
+
+inline const char* responses_keys[] = {
+	"RESPONSE_NOT_FOUND",
+	"YOU_ARE_NOT_IN_A_VC_YOU_CAN_EDIT",
+	"THE_NAME_OF_THE_VC_IS_ALREADY",
+	"THE_NAME_OF_THE_CHANNEL_HAS_CHANGED_FROM",
+	"GUILD_COULD_NOT_BE_FOUND",
+	"THE_BITRATE_IS_ALREADY",
+	"THE_NUMBER_CAN_ONLY_BE_BETWEEN",
+	"SET_BITRATE_TO",
+	"FOR_VOICE_CHANNELS_ITS_IMPOSSIBLE_TO_MAKE_THE_LIMIT_GREATER",
+	"WELL_NOW_WERE_JUST_BEING_SILLY_ARENT_WE",
+	"THE_USER_LIMIT_IS_ALREADY",
+	"USER_LIMIT_IS_SET_TO",
+	"THIS_IS_NOT_A_JTC_VC_I_KNOW_OF",
+	"THE_NAME_IS_ALREADY",
+	"THE_DEFAULT_NAME_IS_SET_TO",
+	"THE_LIMIT_SHOULD_BE_BETWEEN",
+	"THE_LIMIT_IS_ALREADY",
+	"THE_DEFAULT_LIMIT_IS_SET_TO",
+	"THE_DEFAULT_BITRATE_IS_SET_TO",
+	"THIS_GUILD_HAS_A_JTC_LIMIT_OF",
+	"YOU_CAN_GET_MORE_BY_VOTING_THOUGH",
+	"TRIED_TO_CREATE_A_JTC_CHANNEL_BUT_FAILED",
+	"CREATED_A_JTC_CHANNEL",
+	"THE_CHANNEL_HAS_BEEN_SET_UP",
+	"ITS_ALREADY_BEEN_SET_UP",
+	"YOURE_NOT_IN_A_TEMP_VC",
+	"THE_USER_IS_NOTORIN_THE_BLOCKLIST",
+	"NOT",
+	"THE_CHANNEL_YOURE_IN_DOES_NOT_BELONG_TO_YOU",
+	"REQUESTED_USER_NOT_FOUND",
+	"THE_USER_HAS_ADMIN_ACCESS_TO_THIS_CHANNEL",
+	"THE_USER_IS_ALREADY_IN_THE_BLOCKLIST",
+	"THE_USER_WAS_ADDED_TO_THE_BLOCKLIST",
+	"THE_USER_WAS_NOT_IN_THE_BLOCKLIST",
+	"THE_USER_WAS_REMOVED_FROM_THE_BLOCKLIST",
+	"GUILD_NOT_FOUND_IF_YOUVE_ALREADY_SET_IT",
+	"YOURE_VOTING_IN_FAVOUR_OF_THIS_GUILD",
+	"HELLO_YOUR_CHOSEN_GUILD_IS",
+	"YOUR_CHOSEN_GUILD_IS_ALREADY",
+	"YOURE_NOW_VOTING_IN_FAVOUR_OF_THIS_GUILD",
+	"SET_YOUR_GUILD_TO",
+	"THIS_GUILDS_VOTE_PROGRESS_IS",
+	"THIS_IS_THE_ABSOLUTE_MAXIMUM",
+	"YOU_ALREADY_HAVE_A_TICKET",
+	"COULDNT_CREATE_A_CHANNEL_FOR_THE_TICKET",
+	"A_TICKET_HAS_BEEN_CREATED",
+	"YOU_DONT_HAVE_A_TICKET",
+	"YOUR_TICKET_HAS_BEEN_CLOSED",
+	"NEXT_TIME_THE_PING_WILL_BE",
+	"OFF",
+	"ON",
+	"IM_PREPARING",
+	"VOTE_HERE",
+	"A_CHANNEL_IS_ALREADY_BEING_SET_UP",
+	"A_TICKET_IS_ALREADY_BEING_SET_UP",
+	"COULDNT_CONNECT_TO_THE_DATABASE",
+	"RELOADED",
+	"UNDEFINED_COMMAND",
+
+	"AUTHOR",
+	"DESCRIPTIONS",
+	"FOOTER",
+
+	"COMMANDS",
+	"DESCRIPTION",
+	"OPTIONS",
+	"NAME",
+};
+
+std::string random_response(const dpp::snowflake& user_id);
+henifig::value_t response(responses_enum response_id, std::string_view lang, const henifig::value_map& localisation = cfg::responses["LOCALISATION"]);
+dpp::message response_msg(responses_enum response_id, std::string_view lang, const henifig::value_map& localisation = cfg::responses["LOCALISATION"]);
+dpp::message response_emsg(responses_enum response_id, std::string_view lang, const henifig::value_map& localisation = cfg::responses["LOCALISATION"]);
+std::string response_str(responses_enum response_id, std::string_view lang, const henifig::value_map& localisation = cfg::responses["LOCALISATION"]);
+std::string response_fmt(responses_enum response_id, std::string_view lang, const std::vector <std::string>& values = {}, const henifig::value_map& localisation = cfg::responses["LOCALISATION"]);
+dpp::message response_fmtmsg(responses_enum response_id, std::string_view lang, const std::vector <std::string>& values = {}, const henifig::value_map& localisation = cfg::responses["LOCALISATION"]);
+dpp::message response_fmtemsg(responses_enum response_id, std::string_view lang, const std::vector <std::string>& values = {}, const henifig::value_map& localisation = cfg::responses["LOCALISATION"]);
+henifig::value_map cmd_response(std::string_view name, std::string_view lang, const henifig::value_map& commands = cfg::responses["COMMANDS"]);
+fmt::dynamic_format_arg_store <fmt::format_context> vec_to_fmt(const std::vector <std::string>& vec);
+
+#endif

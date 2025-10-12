@@ -1,6 +1,8 @@
 #include "guiding_light/cfg.hpp"
 
-henifig::config_t cfg::config, cfg::responses;
+#include <dpp/unicode_emoji.h>
+
+#include "guiding_light/responses.hpp"
 
 void cfg::check_sqlite3() {
 	if (!command_exists("sqlite3")) {
@@ -13,6 +15,7 @@ void cfg::check_sqlite3() {
 void cfg::read_config() {
 	config.open("../Guiding_Light_Config/config.hfg");
 	responses.open("../additional/responses.hfg");
+	slashcommands.open("../additional/slashcommands.hfg");
 
 	BOT_DM_LOGS = config["BOT_DM_LOGS_ID"];
 	MY_ID = config["MY_ID"];
@@ -20,6 +23,7 @@ void cfg::read_config() {
 	MY_PRIVATE_GUILD_ID = config["MY_PRIVATE_GUILD_ID"];
 	TOPGG_WEBHOOK_CHANNEL_ID = config["TOPGG_WEBHOOK_CHANNEL_ID"];
 	TICKETS_GUILD_ID = config["TICKETS_GUILD_ID"];
+	LOGS_CHANNEL_ID = config["LOGS_CHANNEL_ID"];
 
 	BOT_TOKEN = config["BOT_TOKEN"].get <std::string>();
 	BOT_TOKEN_DEV = config["BOT_TOKEN_DEV"].get <std::string>();
@@ -59,6 +63,7 @@ void cfg::pray() { // I'll pray that when this function starts executing we have
 		}
 		else {
 			db::sql << "DELETE FROM jtc_vcs WHERE channel_id=?;" << channel_id;
+			error_log(fmt::format("Couldn't find the JTC VC {0} in the guild {1}. Deleting.", channel_id, guild_id));
 		}
 	};
 	db::sql << "SELECT * FROM temp_vc_notifications;" + db::line_comment("pray::temp_vc_notifications") >> [](const db::BIGINT& channel_id, const db::BIGINT& guild_id) {
@@ -68,6 +73,7 @@ void cfg::pray() { // I'll pray that when this function starts executing we have
 		}
 		else {
 			db::sql << "DELETE FROM temp_vc_notifications WHERE guild_id=?;" << guild_id;
+			error_log(fmt::format("Couldn't find the temp notification VC {0} in the guild {1}. Deleting.", channel_id, guild_id));
 		}
 	};
 
@@ -78,6 +84,7 @@ void cfg::pray() { // I'll pray that when this function starts executing we have
 		}
 		else {
 			db::sql << "DELETE FROM jtc_default_values WHERE channel_id=?;" << channel_id;
+			error_log(fmt::format("Couldn't find the default values for the JTC VC {0}, with the name `{1}`, limit {2}, bitrate {3}. Deleting.", channel_id, name, limit, bitrate));
 		}
 	};
 
@@ -88,6 +95,7 @@ void cfg::pray() { // I'll pray that when this function starts executing we have
 		}
 		else {
 			db::sql << "DELETE FROM no_temp_ping WHERE user_id=?;" << user_id;
+			error_log(fmt::format("While searching for temp ping blockers: couldn't find the user {}. Deleting.", user_id));
 		}
 	};
 	
@@ -98,6 +106,7 @@ void cfg::pray() { // I'll pray that when this function starts executing we have
 		}
 		else {
 			db::sql << "DELETE FROM topgg_guild_choices WHERE user_id=?;" << user_id;
+			error_log(fmt::format("Couldn't find the user {0} to get the top.gg choice {1} from. Deleting.", user_id, guild_id));
 		}
 	};
 	
@@ -108,6 +117,7 @@ void cfg::pray() { // I'll pray that when this function starts executing we have
 		}
 		else {
 			db::sql << "DELETE FROM topgg_guild_votes_amount WHERE guild_id=?;" << guild_id;
+			error_log(fmt::format("Couldn't find the guild {0} to get {1} votes from. Deleting.", guild_id, votes));
 		}
 	};
 	
@@ -118,6 +128,7 @@ void cfg::pray() { // I'll pray that when this function starts executing we have
 		}
 		else {
 			db::sql << "DELETE FROM no_noguild_reminder WHERE user_id=?;" << user_id;
+			error_log(fmt::format("While searching for no guild reminder blockers: couldn't find the user {}. Deleting.", user_id));
 		}
 	};
 	
@@ -128,6 +139,7 @@ void cfg::pray() { // I'll pray that when this function starts executing we have
 		}
 		else {
 			db::sql << "DELETE FROM topgg_notifications WHERE guild_id=?;" << guild_id;
+			error_log(fmt::format("Couldn't find the top.gg notifications channel {0} in the guild {1}. Deleting.", channel_id, guild_id));
 		}
 	};
 	
@@ -140,6 +152,7 @@ void cfg::pray() { // I'll pray that when this function starts executing we have
 		}
 		else {
 			db::sql << "DELETE FROM tickets WHERE user_id=?;" << user_id;
+			error_log(fmt::format("Couldn't find the user {0} with the ticket channel {1}. Deleting.", user_id, channel_id));
 		}
 	};
 	
@@ -156,6 +169,7 @@ void cfg::pray() { // I'll pray that when this function starts executing we have
 		}
 		else {
 			db::sql << "DELETE FROM temp_vcs WHERE channel_id=?;" << channel_id;
+			error_log(fmt::format("Couldn't find the temp VC {0} in the guild {1} whose creator is {2} with the parent being {3}. Deleting.", channel_id, guild_id, creator_id, parent_id));
 		}
 	};
 
@@ -174,27 +188,51 @@ void cfg::write_down_slashcommands() {
 				slash::guild_created[x.second.name] = x.second;
 			}
 		});
-
-		const henifig::value_map& help_components = responses["HELP_EMBEDS"];
-		const henifig::value_array& descriptions = help_components.at("DESCRIPTIONS");
-		slash::help_embeds.resize(descriptions.size());
-		for (size_t i = 0; i < descriptions.size(); i++) {
-			fmt::dynamic_format_arg_store <fmt::format_context> desc_args;
-			const henifig::value_array& desc = descriptions[i];
-			const std::string& desc_str = desc[0];
-			for (size_t j = 1; j < desc.size(); j++) {
-				desc_args.push_back(slash::get_mention(desc[j].get <std::string>()));
-			}
-			slash::help_embeds[i] = dpp::embed()
-				.set_color(dpp::colors::sti_blue)
-				.set_description(
-					desc.size() > 1 ? fmt::vformat(desc_str, desc_args) : desc_str
-				);
-		}
-		slash::help_embeds[0].set_author(help_components.at("AUTHOR").get <std::string>(), bot->me.get_url(), bot->me.get_avatar_url());
-		slash::help_embeds.rbegin()->set_footer(dpp::embed_footer()
-			.set_text(help_components.at("FOOTER").get <std::string>())
-			.set_icon(bot->me.get_avatar_url())
-		);
 	});
+}
+
+dpp::message cfg::help_message(const std::string_view lang, const uint8_t page) {
+	const henifig::value_map& help_components = responses["LOCALISATION"]["HELP_EMBEDS"];
+	const henifig::value_t& rp = response(DESCRIPTIONS, lang, help_components);
+	if (!rp.is <henifig::array_t>()) {
+		return dpp::message(rp.get <std::string>()).set_flags(dpp::m_ephemeral);
+	}
+	const std::vector <std::string> descriptions = get_arr <std::string>(rp);
+	const henifig::value_array& help_cmd_mentions = responses["HELP_COMMAND_MENTIONS"];
+	dpp::message res;
+	res.add_embed(
+		dpp::embed()
+		.set_color(dpp::colors::sti_blue)
+		.set_description(format_if_filled(descriptions[page], {slash::get_mention(get_arr <std::string>(help_cmd_mentions[page]))}))
+	);
+	res.embeds[0].set_author(response(AUTHOR, lang, help_components), bot->me.get_url(), bot->me.get_avatar_url());
+	res.embeds[0].set_footer(dpp::embed_footer()
+		.set_text(response(FOOTER, lang, help_components))
+		.set_icon(bot->me.get_avatar_url())
+	);
+	dpp::component buttons;
+	buttons.add_component(dpp::component()
+		.set_type(dpp::cot_button)
+		.set_id(fmt::format("help{}", page - 1))
+		.set_label(dpp::unicode_emoji::arrow_left)
+	);
+	if (page == 0) {
+		buttons.components[0].set_disabled(true);
+	}
+	buttons.add_component(dpp::component()
+		.set_type(dpp::cot_button)
+		.set_id(fmt::format("help{}", page + 1))
+		.set_label(dpp::unicode_emoji::arrow_right)
+	);
+	if (page == descriptions.size() - 1) {
+		buttons.components[1].set_disabled(true);
+	}
+	return res.add_component(buttons).set_flags(dpp::m_ephemeral);
+}
+
+std::string format_if_filled(const std::string_view base, const std::vector <std::string>& values) {
+	if (values.empty()) {
+		return base.data();
+	}
+	return fmt::vformat(base, vec_to_fmt(values));
 }

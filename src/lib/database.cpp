@@ -1,13 +1,6 @@
 #include "guiding_light/database.hpp"
 #include "guiding_light/cfg.hpp"
 
-std::string_view db::LOCATION = "../database";
-std::string_view db::SELECT_LOCATION = "../database/select";
-const std::set <std::string> db::table_names =
-{"jtc_vcs", "temp_vc_notifications", "jtc_default_values", "no_temp_ping", "topgg_guild_choices", "topgg_guild_votes_amount", "no_noguild_reminder", "topgg_notifications", "tickets", "temp_vcs"};
-db::wrapper db::sql{""};
-std::map <std::string, bool> db::errors_pending;
-
 db::wrapper::operator_with_error::operator_with_error(wrapper& _wrapper) : _wrapper(_wrapper) {}
 
 sqlite::database_binder db::wrapper::operator_with_error::operator <<(sqlite::str_ref query) const {
@@ -15,8 +8,22 @@ sqlite::database_binder db::wrapper::operator_with_error::operator <<(sqlite::st
 }
 
 sqlite::database_binder db::wrapper::operator <<(sqlite::str_ref _query) {
-	const size_t pos = _query.find("--");
-	const std::string_view query = _query.substr(0, pos - 1);
+	size_t pos{_query.size()};
+	bool hanging_quote{}, hanging_apostrophe{};
+	for (size_t i = 0; i < _query.size(); i++) {
+		if (_query[i] == '-' && (i < _query.size() - 1 && _query[i + 1] == '-') &&
+		!hanging_quote && !hanging_apostrophe) {
+			pos = i;
+			break;
+		}
+		if (_query[i] == '"' && !hanging_apostrophe) {
+			hanging_quote = !hanging_quote;
+		}
+		else if (_query[i] == '\'' && !hanging_quote) {
+			hanging_apostrophe = !hanging_apostrophe;
+		}
+	}
+	const std::string_view query = _query.substr(0, pos);
 	try {
 		// try to return the result of the original operator
 		return database::operator <<(query);

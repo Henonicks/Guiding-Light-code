@@ -1,0 +1,470 @@
+/COMMANDS{
+  $"default" | {
+    $"help" | {
+      $"NAME" | "help",
+      $"DESCRIPTION" | "See what I can do!"
+    },
+    $"setup" | {
+      $"NAME" | "setup",
+      $"DESCRIPTION" | "Set up a special channel.",
+      $"OPTIONS" | {
+        $"jtc" | {
+          $"NAME" | "jtc",
+          $"DESCRIPTION" | "Setup a JTC voice channel.",
+          $"OPTIONS" | {
+            $"maxmembers" | {
+              $"NAME" | "maxmembers",
+              $"DESCRIPTION" | "The max number of members in temporary VCs created from this one."
+            }
+          }
+        },
+        $"notifications" | {
+          $"NAME" | "notifications",
+          $"DESCRIPTION" | "Setup a notification channel.",
+          $"OPTIONS" | {
+            $"jtc" | {
+              $"NAME" | "jtc",
+              $"DESCRIPTION" | "Set up a notification channel for JTCs."
+            },
+            $"topgg" | {
+              $"NAME" | "topgg",
+              $"DESCRIPTION" | "Setup a notification channel for top.gg votes."
+            }
+          }
+        }
+      }
+    },
+    $"set" | {
+      $"NAME" | "set",
+      $"DESCRIPTION" | "Edit an attribute of the temp VC you are in (or of a JTC).",
+      $"OPTIONS" | {
+        $"default" | {
+          $"NAME" | "default",
+          $"DESCRIPTION" | "Change a default attribute of the temp VCs.",
+          $"OPTIONS" | {
+            $"name" | {
+              $"NAME" | "name",
+              $"DESCRIPTION" | "Change the default name of the temp VCs.",
+              $"OPTIONS" | {
+                $"name" | {
+                  $"NAME" | "name",
+                  $"DESCRIPTION" | "The name you want the VCs to have."
+                },
+                $"channel" | {
+                  $"NAME" | "channel",
+                  $"DESCRIPTION" | "The default value of this JTC will be changed."
+                }
+              }
+            },
+            $"limit" | {
+              $"NAME" | "limit",
+              $"DESCRIPTION" | "Change the default limit of the temp VCs.",
+              $"OPTIONS" | {
+                $"limit" | {
+                  $"NAME" | "limit",
+                  $"DESCRIPTION" | "The limit you want the VCs to have."
+                },
+                $"channel" | {
+                  $"NAME" | "channel",
+                  $"DESCRIPTION" | "The default value of this JTC will be changed."
+                }
+              }
+            },
+            $"bitrate" | {
+              $"NAME" | "bitrate",
+              $"DESCRIPTION" | "Change the default bitrate of the temp VCs.",
+              $"OPTIONS" | {
+                $"bitrate" | {
+                  $"NAME" | "bitrate",
+                  $"DESCRIPTION" | "The bitrate you want the VCs to have."
+                },
+                $"channel" | {
+                  $"NAME" | "channel",
+                  $"DESCRIPTION" | "The default value of this JTC will be changed."
+                }
+              }
+            }
+          }
+        },
+        $"name" | {
+          $"NAME" | "name",
+          $"DESCRIPTION" | "Change the VC name.",
+          $"OPTIONS" | {
+            $"name" | {
+              $"NAME" | "name",
+              $"DESCRIPTION" | "The name you want the VC to have."
+            }
+          }
+        },
+        $"limit" | {
+          $"NAME" | "limit",
+          $"DESCRIPTION" | "Change the member count limit",
+          $"OPTIONS" | {
+            $"limit" | {
+              $"NAME" | "limit",
+              $"DESCRIPTION" | "The limit you want the VC to have."
+            }
+          }
+        },
+        $"bitrate" | {
+          $"NAME" | "bitrate",
+          $"DESCRIPTION" | "Change the bitrate of the VC.",
+          $"OPTIONS" | {
+            $"bitrate" | {
+              $"NAME" | "bitrate",
+              $"DESCRIPTION" | "The bitrate you want the VC to have"
+            }
+          }
+        }
+      }
+    },
+    $"guild" | {
+      $"NAME" | "guild",
+      $"DESCRIPTION" | "Get/set the guild you're going to vote in favor of.",
+      $"OPTIONS" | {
+        $"get" | {
+          $"NAME" | "get",
+          $"DESCRIPTION" | "Get the guild you're going to vote in favor of. Votes go nowhere by default."
+        },
+        $"set" | {
+          $"NAME" | "set",
+          $"DESCRIPTION" | "Set the guild you're going to vote in favor of."
+        }
+      }
+    },
+    $"get" | {
+      $"NAME" | "get",
+      $"DESCRIPTION" | "Get the voting progress of a guild.",
+      $"OPTIONS" | {
+        $"progress" | {
+          $"NAME" | "progress",
+          $"DESCRIPTION" | "Get the voting progress of a guild."
+        }
+      }
+    },
+    $"vote" | {
+      $"NAME" | "vote",
+      $"DESCRIPTION" | "Show the top.gg vote link."
+    },
+    $"logs" | {
+      $"NAME" | "logs",
+      $"DESCRIPTION" | "Drop the logs of choice.",
+      $"OPTIONS" | {
+        $"dpp" | {
+          $"NAME" | "dpp",
+          $"DESCRIPTION" | "D++ logs, sent by bot->on_log()."
+        },
+        $"mine" | {
+          $"NAME" | "mine",
+          $"DESCRIPTION" | "Logs, written by me."
+        },
+        $"guild" | {
+          $"NAME" | "guild",
+          $"DESCRIPTION" | "Guild logs."
+        },
+        $"sqlite" | {
+          $"NAME" | "sqlite",
+          $"DESCRIPTION" | "Sqlite3 logs."
+        }
+      }
+    },
+    $"blocklist" | {
+      $"NAME" | "blocklist",
+      $"DESCRIPTION" | "Add/Remove a user from your channel's blocklist.",
+      $"OPTIONS" | {
+        $"add" | {
+          $"NAME" | "add",
+          $"DESCRIPTION" | "Add a user to the blocklist.",
+          $"OPTIONS" | {
+            $"user" | {
+              $"NAME" | "user",
+              $"DESCRIPTION" | "The user to be added to the blocklist."
+            }
+          }
+        },
+        $"remove" | {
+          $"NAME" | "remove",
+          $"DESCRIPTION" | "Remove a user from the blocklist.",
+          $"OPTIONS" | {
+            $"user" | {
+              $"NAME" | "user",
+              $"DESCRIPTION" | "The user to be removed from the blocklist."
+            }
+          }
+        },
+        $"status" | {
+          $"NAME" | "status",
+          $"DESCRIPTION" | "See the status of a user according to the blocklist.",
+          $"OPTIONS" | {
+            $"user" | {
+              $"NAME" | "user",
+              $"DESCRIPTION" | "The user to check the status of."
+            }
+          }
+        }
+      }
+    },
+    $"ticket" | {
+      $"NAME" | "ticket",
+      $"DESCRIPTION" | "Create/Close a support ticket.",
+      $"OPTIONS" | {
+        $"create" | {
+          $"NAME" | "create",
+          $"DESCRIPTION" | "Create a support ticket."
+        },
+        $"close" | {
+          $"NAME" | "close",
+          $"DESCRIPTION" | "Delete a support ticket."
+        }
+      }
+    },
+    $"select" | {
+      $"NAME" | "select",
+      $"DESCRIPTION" | "SELECT everything from one of the tables in the database.",
+      $"OPTIONS" | {
+        $"jtc_vcs" | {
+          $"NAME" | "jtc_vcs",
+          $"DESCRIPTION" | "The table containing JTC VCs."
+        },
+        $"temp_vc_notifications" | {
+          $"NAME" | "temp_vc_notifications",
+          $"DESCRIPTION" | "The table containing temporary VC notification channels."
+        },
+        $"jtc_default_values" | {
+          $"NAME" | "jtc_default_values",
+          $"DESCRIPTION" | "The table containing the default values of the JTCs."
+        },
+        $"no_temp_ping" | {
+          $"NAME" | "no_temp_ping",
+          $"DESCRIPTION" | "The table containing the IDs of the users who don't want to be auto-pinged in temporary VCs."
+        },
+        $"topgg_guild_choices" | {
+          $"NAME" | "topgg_guild_choices",
+          $"DESCRIPTION" | "The table containing the IDs of the guilds that the users have chosen for top.gg."
+        },
+        $"topgg_guild_votes_amount" | {
+          $"NAME" | "topgg_guild_votes_amount",
+          $"DESCRIPTION" | "The table containing the amount of votes in favour of the guilds."
+        },
+        $"no_noguild_reminder" | {
+          $"NAME" | "no_noguild_reminder",
+          $"DESCRIPTION" | "The table containing the user IDs who have been notified that they're not voting for any guilds."
+        },
+        $"topgg_notifications" | {
+          $"NAME" | "topgg_notifications",
+          $"DESCRIPTION" | "The table containing the channels IDs of where it's notified when a user votes for that guild."
+        },
+        $"tickets" | {
+          $"NAME" | "tickets",
+          $"DESCRIPTION" | "The table containing the IDs of tickets."
+        },
+        $"temp_vcs" | {
+          $"NAME" | "temp_vcs",
+          $"DESCRIPTION" | "The table containing the IDs of temporary VCs."
+        }
+      }
+    },
+    $"reload" | {
+      $"NAME" | "reload",
+      $"DESCRIPTION" | "Reload the configs and the database."
+    }
+  },
+  $"uk" | {
+    $"help" | {
+      $"NAME" | "довідка",
+      $"DESCRIPTION" | "Ось, що я вмію!"
+    },
+    $"setup" | {
+      $"NAME" | "налаштувати",
+      $"DESCRIPTION" | "Налаштувати особливий канал.",
+      $"OPTIONS" | {
+        $"jtc" | {
+          $"NAME" | "пдс",
+          $"DESCRIPTION" | "Налаштувати ПДС-канал.",
+          $"OPTIONS" | {
+            $"maxmembers" | {
+              $"NAME" | "максимум-користувачів",
+              $"DESCRIPTION" | "Максимальна кількість користувачів у тимчасових каналах, створених із цього."
+            }
+          }
+        },
+        $"notifications" | {
+          $"NAME" | "сповіщення",
+          $"DESCRIPTION" | "Налаштувати канал сповіщень.",
+          $"OPTIONS" | {
+            $"jtc" | {
+              $"NAME" | "пдс",
+              $"DESCRIPTION" | "Налаштувати канал сповіщень для ПДС-каналу."
+            },
+            $"topgg" | {
+              $"NAME" | "topgg",
+              $"DESCRIPTION" | "Налаштувати канал сповіщень для голосів на top.gg."
+            }
+          }
+        }
+      }
+    },
+    $"set" | {
+      $"NAME" | "встановити",
+      $"DESCRIPTION" | "Змінити атрибут ГК, в якому Ви знаходитеся (або головного).",
+      $"OPTIONS" | {
+        $"default" | {
+          $"NAME" | "за-замовчуванням",
+          $"DESCRIPTION" | "Змінити атрибут головного каналу за замовчуванням.",
+          $"OPTIONS" | {
+            $"name" | {
+              $"NAME" | "назву",
+              $"DESCRIPTION" | "Змінити назву ГК за замовчуванням.",
+              $"OPTIONS" | {
+                $"name" | {
+                  $"NAME" | "назва",
+                  $"DESCRIPTION" | "Назва, яку Ви хочете дати голосовим каналам."
+                },
+                $"channel" | {
+                  $"NAME" | "канал",
+                  $"DESCRIPTION" | "Значення цього головного каналу буде змінено."
+                }
+              }
+            },
+            $"limit" | {
+              $"NAME" | "ліміт",
+              $"DESCRIPTION" | "Змінити ліміт ГК за замовчуванням.",
+              $"OPTIONS" | {
+                $"limit" | {
+                  $"NAME" | "ліміт",
+                  $"DESCRIPTION" | "Ліміт, який Ви хочете дати голосовим каналам."
+                },
+                $"channel" | {
+                  $"NAME" | "канал",
+                  $"DESCRIPTION" | "Значення цього головного каналу буде змінено."
+                }
+              }
+            },
+            $"bitrate" | {
+              $"NAME" | "бітрейт",
+              $"DESCRIPTION" | "Змінити бітрейт ГК за замовчуванням.",
+              $"OPTIONS" | {
+                $"bitrate" | {
+                  $"NAME" | "бітрейт",
+                  $"DESCRIPTION" | "Бітрейт, який Ви хочете дати голосовим каналам."
+                },
+                $"channel" | {
+                  $"NAME" | "канал",
+                  $"DESCRIPTION" | "Значення цього головного каналу буде змінено."
+                }
+              }
+            }
+          }
+        },
+        $"name" | {
+          $"NAME" | "назву",
+          $"DESCRIPTION" | "Змінити назву ГК.",
+          $"OPTIONS" | {
+            $"name" | {
+              $"NAME" | "назва",
+              $"DESCRIPTION" | "Назва, яку Ви хочете дати голосовому каналу."
+            }
+          }
+        },
+        $"limit" | {
+          $"NAME" | "ліміт",
+          $"DESCRIPTION" | "Змінити ліміт користувачів у ГК.",
+          $"OPTIONS" | {
+            $"limit" | {
+              $"NAME" | "ліміт",
+              $"DESCRIPTION" | "Ліміт, який Ви хочете дати голосовому каналу."
+            }
+          }
+        },
+        $"bitrate" | {
+          $"NAME" | "бітрейт",
+          $"DESCRIPTION" | "Змінити бітрейт ГК.",
+          $"OPTIONS" | {
+            $"bitrate" | {
+              $"NAME" | "бітрейт",
+              $"DESCRIPTION" | "Бітрейт, який Ви хочете дати голосовому каналу."
+            }
+          }
+        }
+      }
+    },
+    $"guild" | {
+      $"NAME" | "сервер",
+      $"DESCRIPTION" | "Отримати/встановити сервер, на користь якому Ви голосуватимете.",
+      $"OPTIONS" | {
+        $"get" | {
+          $"NAME" | "отримати",
+          $"DESCRIPTION" | "Отримати сервер, на користь якому Ви голосуватимете. За замовчуванням, голоси втрачаються."
+        },
+        $"set" | {
+          $"NAME" | "встановити",
+          $"DESCRIPTION" | "Встановити сервер, на користь якому Ви голосуватимете."
+        }
+      }
+    },
+    $"get" | {
+      $"NAME" | "отримати",
+      $"DESCRIPTION" | "Отримати прогрес голосування сервера.",
+      $"OPTIONS" | {
+        $"progress" | {
+          $"NAME" | "прогрес",
+          $"DESCRIPTION" | "Отримати прогрес голосування сервера."
+        }
+      }
+    },
+    $"vote" | {
+      $"NAME" | "проголосувати",
+      $"DESCRIPTION" | "Показати покликання, за яким можна проголосувати за бота."
+    },
+    $"blocklist" | {
+      $"NAME" | "чорний-список",
+      $"DESCRIPTION" | "Додати/видалити користувача з чорного списку Вашого каналу.",
+      $"OPTIONS" | {
+        $"add" | {
+          $"NAME" | "додати",
+          $"DESCRIPTION" | "Додати користувача до чорного списку.",
+          $"OPTIONS" | {
+            $"user" | {
+              $"NAME" | "користувач",
+              $"DESCRIPTION" | "Користувач, якого потрібно додати до чорного списку."
+            }
+          }
+        },
+        $"remove" | {
+          $"NAME" | "видалити",
+          $"DESCRIPTION" | "Видалити користувача з чорного списку.",
+          $"OPTIONS" | {
+            $"user" | {
+              $"NAME" | "користувач",
+              $"DESCRIPTION" | "Користувач, якого потрібно видалити з чорного списку."
+            }
+          }
+        },
+        $"status" | {
+          $"NAME" | "статус",
+          $"DESCRIPTION" | "Отримати статус користувача в чорному списку.",
+          $"OPTIONS" | {
+            $"user" | {
+              $"NAME" | "користувач",
+              $"DESCRIPTION" | "Користувач, чий статус потрібно перевірити."
+            }
+          }
+        }
+      }
+    },
+    $"ticket" | {
+      $"NAME" | "тікет",
+      $"DESCRIPTION" | "Створити/закрити тікет підтримки.",
+      $"OPTIONS" | {
+        $"create" | {
+          $"NAME" | "створити",
+          $"DESCRIPTION" | "Створити тікет підтримки."
+        },
+        $"close" | {
+          $"NAME" | "закрити",
+          $"DESCRIPTION" | "Видалити тікет підтримки."
+        }
+      }
+    }
+  }
+}\

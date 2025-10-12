@@ -1,213 +1,645 @@
 /PING_RESPONSES[
-    "Can't you see I'm idle? I'm sleeping. "
-    "Please, go away. Alternatively, you could tell me a bedtime story.",
+  "Can't you see I'm idle? I'm sleeping. "
+  "Please, go away. Alternatively, you could tell me a bedtime story.",
 
-    "If you want to distract me like this, "
-    "you might as well want to check the VCs for me. Go on, do my j*b.",
+  "If you want to distract me like this, "
+  "you might as well want to check the VCs for me. Go on, do my j*b.",
 
-    "It wasn't a clanker who wrote this message. And if you see me, chances are you know him.",
+  "It wasn't a clanker who wrote this message. And if you see me, chances are you know him.",
 
-    "Hello fellow humans and the like, I have come here to do something probably slightly important.",
+  "Hello fellow humans and the like, I have come here to do something probably slightly important.",
 
-    "Free Schlep.",
+  "Free Schlep.",
 
-    "\"Ah, my favourite place to talk to very normal people, Discord\" - Henonicks.",
+  "\"Ah, my favourite place to talk to very normal people, Discord\" - Henonicks.",
 
-    "Henonicks says...\n"
-    "Development sure is fun! Definitely was worth the trade where I gave up my sleep.",
+  "Henonicks says...\n"
+  "Development sure is fun! Definitely was worth the trade where I gave up my sleep.",
 
-    "Note that I'm as tired as Henonicks deems me. Or the server I'm running on. "
-    "Did you know it doesn't have any fans?",
+  "Note that I'm as tired as Henonicks deems me. Or the server I'm running on. "
+  "Did you know it doesn't have any fans?",
 
-    "Powered by C++ and Cash Royale (among other games') soundtrack. It's better than expected.",
+  "Powered by C++ and Cash Royale (among other games') soundtrack. It's better than expected.",
 
-    "Just put the vote in the bag vro 💔🥀",
+  "Just put the vote in the bag vro 💔🥀",
 
-    "What's up? Anything you wanted?",
+  "What's up? Anything you wanted?",
 
-    "Are you doing alright? Seriously, are you? Sometimes you need to ask yourself this, "
-    "it might just save your life. So go ahead, this is a safe space (hopefully).",
+  "Are you doing alright? Seriously, are you? Sometimes you need to ask yourself this, "
+  "it might just save your life. So go ahead, this is a safe space (hopefully).",
 
-    "Can Henonicks call me his child? I mean, children usually require women to be made "
-    "(probably shouldn't explain why) and I think it's quite obvious he's not talked to any.",
+  "Can Henonicks call me his child? I mean, children usually require women to be made "
+  "(probably shouldn't explain why) and I think it's quite obvious he's not talked to any.",
 
-    "I really doubt anyone understands parenting. Luckily, I'm not actually a child. ",
+  "I really doubt anyone understands parenting. Luckily, I'm not actually a child. ",
 
-    "Should I be scared of the job market? Henonicks is shivering in his timbers right now. "
-    "Oh, nevermind, he's working on a project he will DEFINITELY finish one day. Surely.",
+  "Should I be scared of the job market? Henonicks is shivering in his timbers right now. "
+  "Oh, nevermind, he's working on a project he will DEFINITELY finish one day. Surely.",
 
-    "Which English accent do you prefer? After all, there are so many, this could be a hard choice. "
-    "(not to be confused with \"hardly be a choice\")",
+  "Which English accent do you prefer? After all, there are so many, this could be a hard choice. "
+  "(not to be confused with \"hardly be a choice\")",
 
-    "D++ is great! Although because it's a *C++* library, "
-    "it's quite hard to find free hosting for me, if possible. Henonicks failed.",
+  "D++ is great! Although because it's a *C++* library, "
+  "it's quite hard to find free hosting for me, if possible. Henonicks failed.",
 
-    "If you need to talk to me just DM me.",
+  "If you need to talk to me just DM me.",
 
-    "Yes, these lines are pre-made. This doesn't mean there's no soul behind them, "
-    "it's just that they have nothing to do with the current context of the conversation.",
+  "Yes, these lines are pre-made. This doesn't mean there's no soul behind them, "
+  "it's just that they have nothing to do with the current context of the conversation.",
 
-    "There are no bombs strapped to my chest today.",
+  "There are no bombs strapped to my chest today.",
 
-    "I'm bored. Do you have any suggestions on what to do?",
+  "I'm bored. Do you have any suggestions on what to do?",
 
-    "I'm tired, boss.",
+  "I'm tired, boss.",
 
-    "I'm beginning to believe!",
+  "I'm beginning to believe!",
 
-    "Do you play videogames? Which one would you recommend me?",
+  "Do you play videogames? Which one would you recommend me?",
 
-    "\"{username}\"? Sounds like something I'd name my children in Sims. Jeez.",
+  "\"{username}\"? Sounds like something I'd name my children in Sims. Jeez.",
 
-    "This server seems to be big enough for the two of us! Perfect.",
+  "This server seems to be big enough for the two of us! Perfect.",
 
-    "Breaking the habit and melting the chains.",
+  "Breaking the habit and melting the chains.",
 
-    "From Henonicks: was watching YouTube earlier when I was writing this, "
-    "got an ad that was a song. Can't even be mad, that's some good stuff. I subscribed.",
+  "From Henonicks: was watching YouTube earlier when I was writing this, "
+  "got an ad that was a song. Can't even be mad, that's some good stuff. I subscribed.",
 
-    "Whoever made that one YouTube ad, "
-    "I hope you're having a good day today, 'cause this is your last.",
+  "Whoever made that one YouTube ad, "
+  "I hope you're having a good day today, 'cause this is your last.",
 
-    "PROTIP: The difference between \"your\" and \"you're\" is knowing your and you're crap.",
+  "PROTIP: The difference between \"your\" and \"you're\" is knowing your and you're crap.",
 
-    "Clippy just wanted to help.\n-# no one tell Tuxifan I'm mining bitcoin on his brand-new server",
+  "Clippy just wanted to help.\n-# no one tell Tuxifan I'm mining bitcoin on his brand-new server",
 
-    "I doubt we can get much higher anymore.",
+  "I doubt we can get much higher anymore.",
 
-    "Hot take: Collective Karens look so much like your ordinary Karen, depicted in a skit.",
+  "Hot take: Collective Karens look so much like your ordinary Karen, depicted in a skit.",
 
-    "I cut uncle's finger",
+  "I cut uncle's finger",
 
-    "CMake devs have got to love deprecating everything I love"
+  "CMake devs have got to love deprecating everything I love"
 ]\
 
-/HELP_EMBEDS{
-    $"AUTHOR" | "Here is what I can do!\n",
-    $"DESCRIPTIONS" | [
-    ["## {0}\n"
-    "I guess you\'ve just issued this command!\n"
-    "# JTC-related\n"
+/HELP_COMMAND_MENTIONS[
+  [
+  "help",
+  "setup jtc",
+  "setup notification jtc",
+  "setup notification topgg",
+  "blocklist add",
+  "blocklist remove",
+  "blocklist status"
+  ], [
+  "vote",
+  "guild set",
+  "guild get"
+  ], [
+  "ticket create",
+  "ticket close"
+  ],
+  []
+]\
 
-    "A Join-To-Create Voice Channel, or, as referred to, a JTC VC (or simply a JTC), "
-    "is a voice channel which you can join so that a temporary voice is created. "
-    "When you do so, you\'re moved to a newly created temporary channel which you can edit "
-    "with the `/set` command. A moderator can also edit the default settings of the "
-    "temporary channels, created with a certain JTC by running the `/set` command with "
-    "a sub-command of `default`. "
-    "When everyone leaves a temporary channel, it gets automatically deleted, hence the "
-    "\"temporary\" in the name. Then there are notification channels. Every time "
-    "a temporary channel is created/deleted, a message about this is sent in such channel. "
-    "Notification channels are text-only; if the guild they\'re set up in has "
-    "community enabled, the channel will be an announcement channel, otherwise "
-    "it\'s a normal text channel with sending messages disabled for the `@everyone` role.\n"
+/LOCALISATION{
+  $"HELP_EMBEDS" | {
+    $"default" | {
+      $"AUTHOR" | "Here is what I can do!\n",
+      $"DESCRIPTIONS" |
+      [
+      "## {0}\n"
+      "I guess you\'ve just issued this command!\n"
+      "# JTC-related\n"
 
-    "## /setup\n"
+      "A Join-To-Create Voice Channel, or, as referred to, a JTC VC (or simply a JTC), "
+      "is a voice channel which you can join so that a temporary voice is created. "
+      "When you do so, you\'re moved to a newly created temporary channel which you can edit "
+      "with the `/set` command. A moderator can also edit the default settings of the "
+      "temporary channels, created with a certain JTC by running the `/set` command with "
+      "a sub-command of `default`. "
+      "When everyone leaves a temporary channel, it gets automatically deleted, hence the "
+      "\"temporary\" in the name. Then there are notification channels. Every time "
+      "a temporary channel is created/deleted, a message about this is sent in such channel. "
+      "Notification channels are text-only; if the guild they\'re set up in has "
+      "community enabled, the channel will be an announcement channel, otherwise "
+      "it\'s a normal text channel with sending messages disabled for the `@everyone` role.\n"
 
-    "Create a JTC VC ({1}) or a notification channel (for temporary VCs/top.gg votes "
-    "in the guild's favour) ({2}/{3}). If the limit wasn't hit.\n"
+      "## /setup\n"
 
-    "## /set\n"
+      "Create a JTC VC ({1}) or a notification channel (for temporary VCs/top.gg votes "
+      "in the guild's favour) ({2}/{3}). If the limit wasn't hit.\n"
 
-    "This command has two types of subcommands: set current and set default.\n"
+      "## /set\n"
 
-    "__**set current**__ sets a current value (currently supports the channel "
-    "name/limit/bitrate) to a user-defined one. Some limitations apply. "
-    "You cannot change the values of a channel that doesn\'t belong to you "
-    "(was requested by someone else)\n"
+      "This command has two types of subcommands: set current and set default.\n"
 
-    "__**set default**__ sets a default value (currently supports the channel "
-    "name/limit/bitrate) to a user-defined one. Some limitations apply. "
-    "You cannot use this if you don\'t have the permissions to edit a channel.\n"
+      "__**set current**__ sets a current value (currently supports the channel "
+      "name/limit/bitrate) to a user-defined one. Some limitations apply. "
+      "You cannot change the values of a channel that doesn\'t belong to you "
+      "(was requested by someone else)\n"
 
-    "## /blocklist\n"
+      "__**set default**__ sets a default value (currently supports the channel "
+      "name/limit/bitrate) to a user-defined one. Some limitations apply. "
+      "You cannot use this if you don\'t have the permissions to edit a channel.\n"
 
-    "### Note: this command is in beta. If something goes wrong, please report it by creating a ticket.\n"
+      "## /blocklist\n"
 
-    "A blocklist is a list of users who aren\'t allowed to join your voice channel.\n"
+      "### Note: this command is in beta. If something goes wrong, please report it by creating a ticket.\n"
 
-    "__**{4}**__ adds a user to the blocklist of the channel if a user is provided as the parameter.\n"
+      "A blocklist is a list of users who aren\'t allowed to join your voice channel.\n"
 
-    "__**{5}**__ removes a user from the blocklist of the channel if a user is provided "
-    "as the parameter.\n"
+      "__**{4}**__ adds a user to the blocklist of the channel if a user is provided as the parameter.\n"
 
-    "__**{6}**__ tells you whether the requested user is in the blocklist or not.",
-    "help",
-    "setup jtc",
-    "setup notification jtc",
-    "setup notification topgg",
-    "blocklist add",
-    "blocklist remove",
-    "blocklist status"],
+      "__**{5}**__ removes a user from the blocklist of the channel if a user is provided "
+      "as the parameter.\n"
 
-
-    ["# top.gg-related\n"
-
-    "Voting for the bot is done on the top.gg website. Your vote counts as two "
-    "if you vote on a weekend, and therefore you get more points. "
-    "You can only get points from voting if you\'ve selected a guild with {1}. "
-    "Voting for the bot while a guild `X` is selected will be referred to as "
-    "\"Voting in favour of the guild `X`\". "
-    "Voting in favour of a guild will get it points which add up from all of its members. "
-    "Points are not subtracted when a member leaves, not even if they've voted. "
-    "When a guild reaches a certain level, a new JTC is unlocked. "
-    "There can be up to 10 JTCs while on the 1st level there\'s only 1.\n"
-
-    "## {0}\n"
-
-    "Issuing this command will show the link to the page where you can vote for me. "
-    "Voting in favour of a certain guild a certain amount of times lets there be more JTCs "
-    "and therefore more different default settings at once.\n"
-
-    "## /guild\n"
-
-    "This command\'s purpose is to set/get the guild you want to vote in favour of, "
-    "`set` if you know which guild you want to vote in favour of and `get` "
-    "if you forgot which one you were voting in favour of before.\n"
-
-    "__**{1}**__ sets the guild you\'re issuing the command in. This means that "
-    "if you issue this sub-command in the guild `X`, "
-    "your next vote will be made in favour of this guild unless you change the guild to `Y`. "
-    "Then the vote will be made in favour of `Y`.\n"
-
-    "__**{2}**__ gets the guild you\'re currently voting in favour of. "
-    "If you\'ve issued the `set` sub-command in the guild `X`, that\'ll be the guild returned.",
-    "vote",
-    "guild set",
-    "guild get"],
+      "__**{6}**__ tells you whether the requested user is in the blocklist or not.",
 
 
-    ["# Ticket-related\n"
+      "# top.gg-related\n"
 
-    "Whenever you find something that works incorrectly (at least, in your opinion), "
-    "you can contact the creator of the bot by DMing it. "
-    "But first, you need to open a ticket.\n"
+      "Voting for the bot is done on the top.gg website. Your vote counts as two "
+      "if you vote on a weekend, and therefore you get more points. "
+      "You can only get points from voting if you\'ve selected a guild with {1}. "
+      "Voting for the bot while a guild `X` is selected will be referred to as "
+      "\"Voting in favour of the guild `X`\". "
+      "Voting in favour of a guild will get it points which add up from all of its members. "
+      "Points are not subtracted when a member leaves, not even if they've voted. "
+      "When a guild reaches a certain level, a new JTC is unlocked. "
+      "There can be up to 10 JTCs while on the 1st level there\'s only 1.\n"
 
-    "## /ticket\n"
+      "## {0}\n"
 
-    "### Note: this command is in beta. If something goes wrong... well, this is the "
-    "tickets command, so you\'re on your own. Unless you're in the Discord server.\n"
+      "Issuing this command will show the link to the page where you can vote for me. "
+      "Voting in favour of a certain guild a certain amount of times lets there be more JTCs "
+      "and therefore more different default settings at once.\n"
 
-    "__**{0}**__ allows the creator of the bot to talk to you through the bot's DMs.\n"
-    "__**{1}**__ closes a ticket, ending any conversation between the creator of the bot and you.",
-    "ticket create",
-    "ticket close"],
+      "## /guild\n"
+
+      "This command\'s purpose is to set/get the guild you want to vote in favour of, "
+      "`set` if you know which guild you want to vote in favour of and `get` "
+      "if you forgot which one you were voting in favour of before.\n"
+
+      "__**{1}**__ sets the guild you\'re issuing the command in. This means that "
+      "if you issue this sub-command in the guild `X`, "
+      "your next vote will be made in favour of this guild unless you change the guild to `Y`. "
+      "Then the vote will be made in favour of `Y`.\n"
+
+      "__**{2}**__ gets the guild you\'re currently voting in favour of. "
+      "If you\'ve issued the `set` sub-command in the guild `X`, that\'ll be the guild returned.",
 
 
-    ["__***TIP:***__ when setting the default name for a JTC, you can put \"{username}\" "
-    "(without the quotes) so it can be replaced with the username of the person requesting "
-    "a channel. For example, if the default name is \"VC for {username}\" and a person "
-    "with the username \"henonicks\" requests a channel, the name of the temporary VC "
-    "will be set to \"VC for henonicks\".\n"
+      "# Ticket-related\n"
 
-    "\n"
+      "Whenever you find something that works incorrectly (at least, in your opinion), "
+      "you can contact the creator of the bot by DMing it. "
+      "But first, you need to open a ticket.\n"
 
-    "__***NOTE:***__ When the bot reboots, it won\'t know that you (as well as anyone else) "
-    "are/is in a channel. A temporary VC needs to be \"touched\" to be auto-deleted. "
-    "So to delete your previously owned channel you need to re-join it and then leave it. "
-    "Although if you decide to keep it, you can!\n"
-    "If you vote but don\'t have a guild set to vote in favour of, the point is wasted. "
-    "The first time you do that, you get a direct message from the bot if your DMs are open."]],
-    $"FOOTER" | "You can always ask the creator of the bot a question in the "
-    "direct messages or the support server! A link to the latter is in the bio of the bot."
+      "## /ticket\n"
+
+      "### Note: this command is in beta. If something goes wrong... well, this is the "
+      "tickets command, so you\'re on your own. Unless you're in the Discord server.\n"
+
+      "__**{0}**__ allows the creator of the bot to talk to you through the bot's DMs.\n"
+      "__**{1}**__ closes a ticket, ending any conversation between the creator of the bot and you.",
+
+
+      "__***TIP:***__ when setting the default name for a JTC, you can put \"{username}\" "
+      "(without the quotes) so it can be replaced with the username of the person requesting "
+      "a channel. For example, if the default name is \"VC for {username}\" and a person "
+      "with the username \"henonicks\" requests a channel, the name of the temporary VC "
+      "will be set to \"VC for henonicks\".\n"
+
+      "\n"
+
+      "__***NOTE:***__ When the bot reboots, it won\'t know that you (as well as anyone else) "
+      "are/is in a channel. A temporary VC needs to be \"touched\" to be auto-deleted. "
+      "So to delete your previously owned channel you need to re-join it and then leave it. "
+      "Although if you decide to keep it, you can!\n"
+      "If you vote but don\'t have a guild set to vote in favour of, the point is wasted. "
+      "The first time you do that, you get a direct message from the bot if your DMs are open."
+      ],
+      $"FOOTER" | "You can always ask the creator of the bot a question in the "
+            "direct messages or the support server! A link to the latter is in the bio of the bot."
+    },
+    $"uk" | {
+      $"AUTHOR" | "Ось, що я вмію!\n",
+      $"DESCRIPTIONS" |
+      [
+      "## {0}\n"
+      "Ви щойно ввели цю команду!\n"
+      "# Пов'язані з ПДС-каналами\n"
+
+      "Головний канал (далі названий \"ПДС\", Приєднання-Для-Створення) - це голосовий канал, до якого Ви можете приєднатися, щоби було створено "
+      "тимчасовий голосовий канал. Коли це стається, цей бот Вас переносить у той новий канал, "
+      "який Ви можете редагувати, використовуючи команду `/встановити`. Модератор також може "
+      "редагувати налаштування тимчасових каналів за замовчуванням, використовуючи під-команду "
+      "`за-замовчуванням` команди `/встановити`. "
+      "Коли всі залишають тимчасовий канал, він автоматично видаляється, з якої причини "
+      "він і називається \"тимчасовим\". Далі, є канали сповіщень. Кожного разу як "
+      "створюється/видаляється тимчасовий канал, в каналі сповіщень відправляється "
+      "повідомлення про це. Канали сповіщень є текстовими. Якщо сервер, у якому вони "
+      "налаштовуються, має ввімкнену спільноту, цей канал буде каналом сповіщень. "
+      "Інакше, він буде звичайним текстовим каналом із відправленням повідомлень вимкненим "
+      "для ролі `@everyone`.\n"
+
+      "## /налаштувати\n"
+
+      "Створити ПДС-канал ({1}) або канал сповіщень (для тимчасових каналів/голосів "
+      "на користь серверу) ({2}/{3}). Якщо ліміт не було досягнено.\n"
+
+      "## /встановити\n"
+
+      "Ця команда має два типи під-команд: встановити поточне та встановити за-замовчуванням.\n"
+
+      "__**встановити поточне**__ встановлює значення (наразі підтримує назву/ліміт/бітрейт "
+      "каналу) на значення, визначене користувачем. Є певні обмеження. "
+      "Ви не можете змінити значення каналу, що вам не належить (був запитаний кимось "
+      "іншим).\n"
+
+      "__**встановити за-замовчуванням**__ встановлює значення (наразі підтримує "
+      "назву/ліміт/бітрейт каналу) за замовчуванням на значення, визначене користувачем. "
+      "Є певні обмеження. Ви не можете використовувати цю команду, якщо у Вас немає "
+      "дозволу редагувати будь-який канал.\n"
+
+      "## /чорний-список\n"
+
+      "### Попередження: ця команда в беті. Якщо щось іде не так, будь ласка, зробіть на це "
+      "скаргу, створивши тікет.\n"
+
+      "Чорний список - це список користувачів, яким заборонено приєднуватися до Вашого каналу.\n"
+
+      "__**{4}**__ додає користувача до чорного списку каналу, якщо його було вказано як параметр.\n"
+
+      "__**{5}**__ видаляє користувача з чорного списку каналу, якщо його було вказано як параметр\n"
+
+      "__**{6}**__ повідомляє Вас, чи був запитаний користувач у чорному списку.",
+
+
+      "# Пов'язані з top.gg\n"
+
+      "Голосування за бота проводиться на сайті `top.gg`. Ваш голос рахується двічі, "
+      "якщо Ви голосуєте у вихідний, отож Вам дається більше очок. "
+      "Ви можете отримати очки з голосів лише якщо Ви вибрали сервер, використовючи {1}. "
+      "Про голосування за бота, поки вибраний сервер `X`, далі буде говоритися як "
+      "\"Голосування на користь серверу `X`\". "
+      "Голосування на користь серверу дасть йому очки, що додаються від кожного його члена. "
+      "Очки не віднімаються коли член залишає сервер, навіть якщо він голосував. "
+      "Коли сервер доходить до певного рівня, розблоковується новий ПДС-канал. "
+      "У певному сервері може бути до 10 ПДС-каналів, поки на першому рівні є лиш 1.\n"
+
+      "## {0}\n"
+
+      "Використання цієї команди покаже покликання на сторінку, де Ви можете за мене проголосувати. "
+      "Голосування на користь певному серверу, певну кількість разів, дозволить у ньому бути "
+      "більшій кількості ПДС-каналів, тож і більшій кількості налаштувань за замовчуванням за раз.\n"
+
+      "## /сервер\n"
+
+      "Призначенням цієї команди є встановлення/отримання сервера, на користь якому Ви хочете "
+      "голосувати, `встановити` якщо Ви знаєте, на користь якому серверу Ви хочете голосувати, "
+      "та `отримати`, якщо Ви забули, на користь якому Ви голосували до цього.\n"
+
+      "__**{1}**__ встановлює сервер, у якому Ви використовуєте цю під-команду. Це означає, що "
+      "якщо Ви введете її в сервері `X`, Ваш наступний голос буде зроблений на користь цьому "
+      "серверу, якщо Ви не зміните цей сервер на певний `Y`. Тоді наступний голос буде "
+      "зроблений на користь серверу `Y`.\n"
+
+      "__**{2}**__ отримує сервер, на користь якому Ви наразі голосуєте. "
+      "Якщо Ви ввели під-команду `встановити` у сервері `X`, то буде повернений сервер.",
+
+
+      "# Пов'язані з тікетами\n"
+
+      "Коли Ви знаходите щось, що працює неправильно (принаймні, на Вашу думку), Ви можете "
+      "вступити в контакт із розробником бота, написавши боту ПП. "
+      "Але спочатку, Ви повинні відкрити тікет.\n"
+
+      "## /тікет\n"
+
+      "### Попередження: ця команда в беті. Якщо щось іде не так... Що ж, це - команда для "
+      "тікетів, отже Ви тут самі. Хіба, що Ви в Діскорд сервері підтримки.\n"
+
+      "__**{0}**__ дозволяє розробнику бота з Вами говорити через ПП бота.\n"
+      "__**{1}**__ закриває тікет, закінчуючи будь-яку розмову між розробником бота та Вами.",
+
+      "__***ПОРАДА:***__ коли Ви встановлюєте назву каналу за замовчуванням, Ви можете написати "
+      "\"{username}\" (без лапок), щоби він був замінений на ім'я користувача, що запитує канал. "
+      "Наприклад, якщо назвою за замовчуванням є \"ГК для {username}\" і людина з ім'ям "
+      "\"henonicks\" запитує канал, назва тимчасового каналу буде \"ГК для henonicks\".\n"
+
+      "\n"
+
+      "__***ЗВЕРНІТЬ УВАГУ:***__ Коли бот перезапускається, він не знатиме, що Ви (і, власне, "
+      "ніхто інший) є в голосовому каналі. Щоби тимчасовий канал було видалено, його потрібно "
+      "\"торкнутися\". Отже, щоби видалити тимчасовий канал, Ви повинні пере-під'єднатися до "
+      "нього і залишити його. Щоправда, якщо Ви вирішуєте його залишити, Ви можете це зробити!\n"
+      "Якщо Ви голосуєте, але у вас не вибраний сервер, на користь якому Ви робите голос, "
+      "очки втрачаються. Вперше, як Ви це робите, Ви отримуєте про це ПП від бота, якщо ваші "
+      "особисті відчинені."
+      ],
+      $"FOOTER" | "Ви завжди можете щось спитати розробника в ПП або сервері підтримки! "
+            "Покликання на нього є в біографії бота."
+    }
+  },
+  $"default" | {
+    $"RESPONSE_NOT_FOUND" |
+      "The response for this interaction could not be found.",
+    $"YOU_ARE_NOT_IN_A_VC_YOU_CAN_EDIT" |
+      "You are not in a VC you can edit. If you are, it's likely that the bot restarted while "
+      "you were in the channel. In that case, **__rejoin it__**. Note that those commands edit temporary VCs only.",
+    $"THE_NAME_OF_THE_VC_IS_ALREADY" |
+      "The name of the VC is already \"`{}`\".",
+    $"THE_NAME_OF_THE_CHANNEL_HAS_CHANGED_FROM" |
+      "The name of the channel has changed from \"`{0}` to \"`{1}`\".",
+    $"GUILD_COULD_NOT_BE_FOUND" |
+      "Guild could not be found. Please, try again.",
+    $"THE_BITRATE_IS_ALREADY" |
+      "The bitrate is already `{}`.",
+    $"THE_NUMBER_CAN_ONLY_BE_BETWEEN" |
+      "The number can only be between `8` and `{}` for this guild. "
+      "Note that the maximum bitrate number also depends on the boost level.",
+    $"SET_BITRATE_TO" |
+      "Set bitrate to `{}` successfully.",
+    $"FOR_VOICE_CHANNELS_ITS_IMPOSSIBLE_TO_MAKE_THE_LIMIT_GREATER" |
+      "For voice channels, it's impossible to make the limit greater than `99`. "
+      "You can make it infinite by putting `0` as argument.",
+    $"WELL_NOW_WERE_JUST_BEING_SILLY_ARENT_WE" |
+      "Well now we're just being silly, aren't we?",
+    $"THE_USER_LIMIT_IS_ALREADY" |
+      "The user limit is already `{}`.",
+    $"USER_LIMIT_IS_SET_TO" |
+      "User limit set to `{}` successfully.",
+    $"THIS_IS_NOT_A_JTC_VC_I_KNOW_OF" |
+      "This is not a JTC VC I know of.",
+    $"THE_NAME_IS_ALREADY" |
+      "The name is already + `{}` <a:skullspin:1121414918357389433>",
+    $"THE_DEFAULT_NAME_IS_SET_TO" |
+      "The default name is set to `{}`!",
+    $"THE_LIMIT_SHOULD_BE_BETWEEN" |
+      "The limit should be between `0` and `99` included, `0` for infinite",
+    $"THE_LIMIT_IS_ALREADY" |
+      "The limit is already `{}` <a:skullspin:1121414918357389433>",
+    $"THE_DEFAULT_LIMIT_IS_SET_TO" |
+      "The default limit is set to `{}`!",
+    $"THE_DEFAULT_BITRATE_IS_SET_TO" |
+      "The default bitrate is set to `{}`!",
+    $"THIS_GUILD_HAS_A_JTC_LIMIT_OF" |
+      "This guild has a JTC limit of {0}.{1}",
+    $"YOU_CAN_GET_MORE_BY_VOTING_THOUGH" |
+      " You can get more by voting though!",
+    $"TRIED_TO_CREATE_A_JTC_CHANNEL_BUT_FAILED" |
+      "Tried to create a join-to-create channel but failed. "
+      "If this happens again, please report the incident by opening a ticket.",
+    $"CREATED_A_JTC_CHANNEL" |
+      "Created a join-to-create channel.",
+    $"THE_CHANNEL_HAS_BEEN_SET_UP" |
+      "The channel has been set up!",
+    $"ITS_ALREADY_BEEN_SET_UP" |
+      "It's already been set up. No more than one per guild!",
+    $"YOURE_NOT_IN_A_TEMP_VC" |
+      "You're not in a temporary voice channel! Unless you are, in which case simply rejoin.",
+    $"THE_USER_IS_NOTORIN_THE_BLOCKLIST" |
+      "The user is {}in the blocklist of the channel.",
+    $"NOT" |
+      "not ",
+    $"THE_CHANNEL_YOURE_IN_DOES_NOT_BELONG_TO_YOU" |
+      "The channel you're in does not belong to you! Unless it does, in which case simply rejoin.",
+    $"REQUESTED_USER_NOT_FOUND" |
+      "Requested user not found. Please, try again.",
+    $"THE_USER_HAS_ADMIN_ACCESS_TO_THIS_CHANNEL" |
+      "The user has administrator access to this channel!",
+    $"THE_USER_IS_ALREADY_IN_THE_BLOCKLIST" |
+      "The user is already in the blocklist!",
+    $"THE_USER_WAS_ADDED_TO_THE_BLOCKLIST" |
+      "The user was added to the blocklist of the current channel.",
+    $"THE_USER_WAS_NOT_IN_THE_BLOCKLIST" |
+      "The user was not in the blocklist!",
+    $"THE_USER_WAS_REMOVED_FROM_THE_BLOCKLIST" |
+      "The user was removed from the blocklist of the current channel.",
+    $"GUILD_NOT_FOUND_IF_YOUVE_ALREADY_SET_IT" |
+      "Guild not found. If you've already set it, consider trying again. Otherwise, set it with {}.",
+    $"YOURE_VOTING_IN_FAVOUR_OF_THIS_GUILD" |
+      "You're voting in favour of this guild.",
+    $"HELLO_YOUR_CHOSEN_GUILD_IS" |
+      "Hello, {0}, your chosen guild is {1}.",
+    $"YOUR_CHOSEN_GUILD_IS_ALREADY" |
+      "Your chosen guild is already {}!",
+    $"YOURE_NOW_VOTING_IN_FAVOUR_OF_THIS_GUILD" |
+      "You're now voting in favour of this guild.",
+    $"SET_YOUR_GUILD_TO" |
+      "Set your guild to {}.",
+    $"THIS_GUILDS_VOTE_PROGRESS_IS" |
+      "This guild's vote progress is: __{0}__/**{1}**. The maximum amount of JTCs allowed here is {2}.{3}",
+    $"THIS_IS_THE_ABSOLUTE_MAXIMUM" |
+      " This is the absolute maximum.",
+    $"YOU_ALREADY_HAVE_A_TICKET" |
+      "You already have a ticket! DM the bot to contact the creator!",
+    $"COULDNT_CREATE_A_CHANNEL_FOR_THE_TICKET" |
+      "Couldn't create a channel for the ticket",
+    $"A_TICKET_HAS_BEEN_CREATED" |
+      "A ticket has been created.",
+    $"YOU_DONT_HAVE_A_TICKET" |
+      "You don't have a ticket, so no tickets were closed.",
+    $"YOUR_TICKET_HAS_BEEN_CLOSED" |
+      "Your ticket has been closed! You can create a new one at any point.",
+    $"NEXT_TIME_THE_PING_WILL_BE" |
+      "Next time the ping will be: **{}**.",
+    $"OFF" |
+      "off",
+    $"ON" |
+      "on",
+    $"IM_PREPARING" |
+      "I'm preparing! Please wait about 5-10 seconds and try again.",
+    $"VOTE_HERE" |
+      "Vote [here](https://top.gg/bot/{0}/vote) and earn JTC points "
+      "for a selected guild! See `{1}` for more information.",
+    $"A_CHANNEL_IS_ALREADY_BEING_SET_UP" |
+      "A channel is already being set up! Try again when it's done.",
+    $"A_TICKET_IS_ALREADY_BEING_SET_UP" |
+      "A ticket is already being created! Try again when it's done.",
+    $"UNDEFINED_COMMAND" |
+      "Undefined command, can't handle."
+  },
+  $"uk" | {
+    $"RESPONSE_NOT_FOUND" |
+      # "The response for this interaction could not be found.",
+      "Відповідь для цієї взаємодії не знайдено.",
+    $"YOU_ARE_NOT_IN_A_VC_YOU_CAN_EDIT" |
+      # "You are not in a VC you can edit. If you are, it's likely that the bot restarted while "
+      # "you were in the channel. In that case, **__rejoin it__**. Note that those commands edit temporary VCs only.",
+      "Ви не в ГК, який Ви можете редагувати. Якщо це не так, то імовірно, що бота було перезапущено, поки "
+      "Ви були в цьому ГК. У цьому випадку, просто **__перезайдіть у нього__**. Зверніть увагу, що ці команди редагують лише тимчасові ГК.",
+    $"THE_NAME_OF_THE_VC_IS_ALREADY" |
+      # "The name of the VC is already \"`{}`\".",
+      "Цей канал уже має назву \"`{}`\".",
+    $"THE_NAME_OF_THE_CHANNEL_HAS_CHANGED_FROM" |
+      # "The name of the channel has changed from \"`{0}` to \"`{1}`\".",
+      "Назву цього каналу було змінено з \"`{0}`\" на \"`{1}`\".",
+    $"GUILD_COULD_NOT_BE_FOUND" |
+      # "Guild could not be found. Please, try again.",
+      "Не вдалося знайти сервер. Будь ласка, спробуйте ще раз",
+    $"THE_BITRATE_IS_ALREADY" |
+      # "The bitrate is already `{}`.",
+      "Бітрейт уже `{}`.",
+    $"THE_NUMBER_CAN_ONLY_BE_BETWEEN" |
+      # "The number can only be between `8` and `{}` for this guild. "
+      # "Note that the maximum bitrate number also depends on the boost level.",
+      "Це число може бути лише між `8` та `{}` для цього сервера. "
+      "Зверніть увагу, що максимальний бітрейт іще залежить від рівня бусту.",
+    $"SET_BITRATE_TO" |
+      # "Set bitrate to `{}` successfully.",
+      "Успішно встановлено бітрейт на `{}`.",
+    $"FOR_VOICE_CHANNELS_ITS_IMPOSSIBLE_TO_MAKE_THE_LIMIT_GREATER" |
+      # "For voice channels, it's impossible to make the limit greater than `99`. "
+      # "You can make it infinite by putting `0` as argument.",
+      "Для голосових каналів, ліміт користувачів неможливо встановити на число, більше за `99`. "
+      "Ви можете зробити його безкінечним, встановивши `0` як аргумент.",
+    $"WELL_NOW_WERE_JUST_BEING_SILLY_ARENT_WE" |
+      # "Well now we're just being silly, aren't we?",
+      "Ну, тут ми просто бешкетуємо, ні?",
+    $"THE_USER_LIMIT_IS_ALREADY" |
+      # "The user limit is already `{}`.",
+      "Ліміт користувачів уже `{}`.",
+    $"USER_LIMIT_IS_SET_TO" |
+      # "User limit set to `{}` successfully.",
+      "Успішно встановлено ліміт користувачів на `{}`.",
+    $"THIS_IS_NOT_A_JTC_VC_I_KNOW_OF" |
+      # "This is not a JTC VC I know of.",
+      "Цей не є ПДС-каналом, про який я знаю.",
+    $"THE_NAME_IS_ALREADY" |
+      # "The name is already `{}` <a:skullspin:1121414918357389433>",
+      "Назва вже є `{}` <a:skullspin:1121414918357389433>",
+    $"THE_DEFAULT_NAME_IS_SET_TO" |
+      # "The default name is set to `{}`!",
+      "Встановлено назву за замовчуванням на `{}`!",
+    $"THE_LIMIT_SHOULD_BE_BETWEEN" |
+      # "The limit should be between `0` and `99` included, `0` for infinite",
+      "Ліміт повинен бути між `0` і `99` включно, `0` для безкінечного.",
+    $"THE_LIMIT_IS_ALREADY" |
+      # "The limit is already `{}` <a:skullspin:1121414918357389433>",
+      "Ліміт уже `{}` <a:skullspin:1121414918357389433>",
+    $"THE_DEFAULT_LIMIT_IS_SET_TO" |
+      # "The default limit is set to `{}`!",
+      "Встановлено ліміт за замовчуванням на `{}`.",
+    $"THE_DEFAULT_BITRATE_IS_SET_TO" |
+      # "The default bitrate is set to `{}`!",
+      "Встановлено бітрейт за замовчуванням на `{}`!",
+    $"THIS_GUILD_HAS_A_JTC_LIMIT_OF" |
+      # "This guild has a JTC limit of {0}.{1}",
+      "Ліміт ПДС-каналів у цьому сервері є {0}.{1}",
+    $"YOU_CAN_GET_MORE_BY_VOTING_THOUGH" |
+      # " You can get more by voting though!",
+      " Щоправда, Ви можете отримати більше, голосуючи!",
+    $"TRIED_TO_CREATE_A_JTC_CHANNEL_BUT_FAILED" |
+      # "Tried to create a join-to-create channel but failed. "
+      # "If this happens again, please report the incident by opening a ticket.",
+      "Спробував створити ПДС-канал, але не вдалося. "
+      "Якщо це станеться ще раз, будь ласка, повідомте про цей інцидент, відкривши тікет.",
+    $"CREATED_A_JTC_CHANNEL" |
+      # "Created a join-to-create channel.",
+      "Створив ПДС-канал.",
+    $"THE_CHANNEL_HAS_BEEN_SET_UP" |
+      # "The channel has been set up!",
+      "Було налаштовано ПДС-канал!",
+    $"ITS_ALREADY_BEEN_SET_UP" |
+      # "It's already been set up. No more than one per guild!",
+      "Його вже було налаштовано. Не більше ніж один за сервер!",
+    $"YOURE_NOT_IN_A_TEMP_VC" |
+      # "You're not in a temporary voice channel! Unless you are, in which case simply rejoin.",
+      "Ви не в тимчасовому голосовому каналі! Хіба що це не так, у якому разі просто перезайдіть.",
+    $"THE_USER_IS_NOTORIN_THE_BLOCKLIST" |
+      # "The user is {}in the blocklist of the channel.",
+      "Користувач {}у чорному списку цього каналу.",
+    $"NOT" |
+      # "not ",
+      "не ",
+    $"THE_CHANNEL_YOURE_IN_DOES_NOT_BELONG_TO_YOU" |
+      # "The channel you're in does not belong to you! Unless it does, in which case simply rejoin.",
+      "Канал, у якому Ви є Вам не належить! Хіба що, це не так, у якому разі просто перезайдіть.",
+    $"REQUESTED_USER_NOT_FOUND" |
+      # "Requested user not found. Please, try again.",
+      "Не знайдено запитаного користувача. Будь ласка, спробуйте ще раз.",
+    $"THE_USER_HAS_ADMIN_ACCESS_TO_THIS_CHANNEL" |
+      # "The user has administrator access to this channel!",
+      "Користувач має доступ адміністратора до цього каналу!",
+    $"THE_USER_IS_ALREADY_IN_THE_BLOCKLIST" |
+      # "The user is already in the blocklist!",
+      "Користувач уже в чорному списку!",
+    $"THE_USER_WAS_ADDED_TO_THE_BLOCKLIST" |
+      # "The user was added to the blocklist of the current channel.",
+      "Користувача було додано в чорний список поточного каналу.",
+    $"THE_USER_WAS_NOT_IN_THE_BLOCKLIST" |
+      # "The user was not in the blocklist!",
+      "Користувач не в чорному списку!",
+    $"THE_USER_WAS_REMOVED_FROM_THE_BLOCKLIST" |
+      # "The user was removed from the blocklist of the current channel.",
+      "Користувача було видалено з чорного списку поточного каналу.",
+    $"GUILD_NOT_FOUND_IF_YOUVE_ALREADY_SET_IT" |
+      # "Guild not found. If you've already set it, consider trying again. Otherwise, set it with {}.",
+      "Не вдалося знайти сервер. Якщо Ви вже вибрали, можливо спробуйте ще раз. Інакше, виберіть її використовуючи {}.",
+    $"YOURE_VOTING_IN_FAVOUR_OF_THIS_GUILD" |
+      # "You're voting in favour of this guild.",
+      "Ви голосуєте на користь цьому серверу.",
+    $"HELLO_YOUR_CHOSEN_GUILD_IS" |
+      # "Hello, {0}, your chosen guild is {1}.",
+      "Вітаю, {0}, Вами вибраний сервер є {1}.",
+    $"YOUR_CHOSEN_GUILD_IS_ALREADY" |
+      # "Your chosen guild is already {}!",
+      "Вами вибраний сервер уже є {}!",
+    $"YOURE_NOW_VOTING_IN_FAVOUR_OF_THIS_GUILD" |
+      # "You're now voting in favour of this guild.",
+      "Тепер Ви голосуєте на користь цьому серверу",
+    $"SET_YOUR_GUILD_TO" |
+      # "Set your guild to {}.",
+      "Встановив Ваш сервер на {}.",
+    $"THIS_GUILDS_VOTE_PROGRESS_IS" |
+      # "This guild's vote progress is: __{0}__/**{1}**. The maximum amount of JTCs allowed here is {2}.{3}",
+      "Прогрес голосування цьому серверу є: __{0}__/**{1}**. Тут максимальна кількість ПДС-каналів є {2}.{3}",
+    $"THIS_IS_THE_ABSOLUTE_MAXIMUM" |
+      # " This is the absolute maximum.",
+      " Це абсолютний максимум.",
+    $"YOU_ALREADY_HAVE_A_TICKET" |
+      # "You already have a ticket! DM the bot to contact the creator!",
+      "У Вас уже є тікет! Напишіть боту ПП, щоби вступити в контакт із його творцем!",
+    $"COULDNT_CREATE_A_CHANNEL_FOR_THE_TICKET" |
+      # "Couldn't create a channel for the ticket",
+      "Не вдалося створити канал для Вашого тікету.",
+    $"A_TICKET_HAS_BEEN_CREATED" |
+      # "A ticket has been created.",
+      "Було створено тікет.",
+    $"YOU_DONT_HAVE_A_TICKET" |
+      # "You don't have a ticket, so no tickets were closed.",
+      "У Вас немає тікету, тому жоден не був закритий.",
+    $"YOUR_TICKET_HAS_BEEN_CLOSED" |
+      # "Your ticket has been closed! You can create a new one at any point.",
+      "Ваш тікет було закрито! Ви можете створити новий у будь-який момент.",
+    $"NEXT_TIME_THE_PING_WILL_BE" |
+      # "Next time the ping will be: **{}**.",
+      "Наступного разу сповіщення буде: **{}**.",
+    $"OFF" |
+      # "off",
+      "вимк",
+    $"ON" |
+      # "on",
+      "ввімк",
+    $"IM_PREPARING" |
+      # "I'm preparing! Please wait about 5-10 seconds and try again.",
+      "Я готуюсь! Будь ласка, зачекайте приблизно 5-10 секунд і спробуйте ще раз.",
+    $"VOTE_HERE" |
+      # "Vote [here](https://top.gg/bot/{0}/vote) and earn JTC points "
+      # "for a selected guild! See `{1}` for more information.",
+      "Голосуйте [тут](https://top.gg/bot/{0}/vote) і отримайте очки для ПДС-каналів "
+      "для вибраного серверу! Див. `{1}` для більш детальної інформації.",
+    $"A_CHANNEL_IS_ALREADY_BEING_SET_UP" |
+      # "A channel is already being set up! Try again when it's done.",
+      "Уже налаштовується канал! Спробуйте ще раз, коли він готовий.",
+    $"A_TICKET_IS_ALREADY_BEING_SET_UP" |
+      # "A ticket is already being created! Try again when it's done."
+      "Уже створюється тікет! Спробуйте ще раз, коли він готовий.",
+    $"UNDEFINED_COMMAND" |
+      # "Undefined command, can't handle."
+      "Команда не визначена, не можу обробити."
+  }
 }\

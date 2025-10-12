@@ -1,7 +1,7 @@
 #ifndef OPTIONS_H
 #define OPTIONS_H
 
-#include "commands.hpp"
+#include "guiding_light/commands.hpp"
 
 /**
  * @brief Handles a launch option.
@@ -15,5 +15,10 @@ void exec_subcommand(std::string_view cmd);
  * @param argv A C-style string array of the launch options.
  */
 void exec_subcommands(const int& argc, char** argv);
+
+/**
+ * @brief Kills every single guidingLight process besides the current one.
+ */
+void killall();
 
 #endif

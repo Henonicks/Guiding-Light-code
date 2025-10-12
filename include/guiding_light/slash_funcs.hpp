@@ -14,13 +14,13 @@
  * @brief Every function that's used directly in the slashcommand handler.
  */
 namespace slash {
-	extern bool enabled;
+	inline bool enabled = false;
 
-	extern std::map <std::string, std::map <dpp::snowflake, bool>> in_progress; // finished states of commands
+	inline std::map <std::string, std::map <dpp::snowflake, bool>> in_progress; // finished states of commands
 
-	extern std::map <std::string, dpp::slashcommand> global_created, guild_created;
-	extern std::vector <dpp::embed> help_embeds;
-	
+	inline std::map <std::string, dpp::slashcommand> global_created, guild_created;
+	inline std::vector <dpp::embed> help_embeds;
+
 	/**
 	 * @brief set a JTC value - either default or current one.
 	 */

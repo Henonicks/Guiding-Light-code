@@ -12,9 +12,10 @@ namespace db {
 	using BIGINT = unsigned long long;
 	// SQL types that I use
 
-	extern std::string_view LOCATION;
-	extern std::string_view SELECT_LOCATION;
-	extern const std::set <std::string> table_names;
+	inline std::string_view LOCATION = "../database";
+	inline std::string_view SELECT_LOCATION = "../database/select";
+	inline const std::set <std::string> table_names =
+		{"jtc_vcs", "temp_vc_notifications", "jtc_default_values", "no_temp_ping", "topgg_guild_choices", "topgg_guild_votes_amount", "no_noguild_reminder", "topgg_notifications", "tickets", "temp_vcs"};
 
 	class wrapper : public sqlite::database {
 	public:
@@ -40,11 +41,11 @@ namespace db {
 
 	// A map with true/false values representing the existence of potential
 	// pending errors, caught during an SQL query in functions.
-	extern std::map <std::string, bool> errors_pending;
+	inline std::map <std::string, bool> errors_pending;
 
 	std::string line_comment(std::string_view comment);
 
-	extern wrapper sql;
+	inline wrapper sql{""};
 
 	/**
 	 * @brief Tries to connect to the database and reports whether the connection was successful.
