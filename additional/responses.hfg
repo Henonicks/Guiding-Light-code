@@ -454,7 +454,7 @@
       "I'm preparing! Please wait about 5-10 seconds and try again.",
     $"VOTE_HERE" |
       "Vote [here](https://top.gg/bot/{0}/vote) and earn JTC points "
-      "for a selected guild! See `{1}` for more information.",
+      "for a selected guild! See {1} for more information.",
     $"A_CHANNEL_IS_ALREADY_BEING_SET_UP" |
       "A channel is already being set up! Try again when it's done.",
     $"A_TICKET_IS_ALREADY_BEING_SET_UP" |
@@ -629,9 +629,9 @@
       "Я готуюсь! Будь ласка, зачекайте приблизно 5-10 секунд і спробуйте ще раз.",
     $"VOTE_HERE" |
       # "Vote [here](https://top.gg/bot/{0}/vote) and earn JTC points "
-      # "for a selected guild! See `{1}` for more information.",
+      # "for a selected guild! See {1} for more information.",
       "Голосуйте [тут](https://top.gg/bot/{0}/vote) і отримайте очки для ПДС-каналів "
-      "для вибраного серверу! Див. `{1}` для більш детальної інформації.",
+      "для вибраного серверу! Див. {1} для більш детальної інформації.",
     $"A_CHANNEL_IS_ALREADY_BEING_SET_UP" |
       # "A channel is already being set up! Try again when it's done.",
       "Уже налаштовується канал! Спробуйте ще раз, коли він готовий.",
