@@ -11,8 +11,9 @@ inline dpp::snowflake BOT_DM_LOGS, MY_ID, TOPGG_WEBHOOK_CHANNEL_ID, MY_GUILD_ID,
 inline std::ofstream my_logs_release, my_logs_dev, guild_logs_release, guild_logs_dev, other_logs_release, other_logs_dev, sql_logs_release, sql_logs_dev;
 inline dpp::start_type BOT_RETURN;
 inline bool IS_DEV, IS_CLI;
-inline int DELAY;
+inline int CACHE_DELAY = 5;
 inline uint64_t guild_amount, channel_amount, user_amount;
+inline bool move_on;
 inline henifig::value_array PING_RESPONSES;
 
 #endif
