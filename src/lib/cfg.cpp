@@ -183,6 +183,10 @@ void cfg::write_down_slashcommands() {
 			slash::global_created[x.second.name] = x.second;
 		}
 		bot->guild_commands_get(MY_PRIVATE_GUILD_ID, [](const dpp::confirmation_callback_t& callback) -> void {
+			if (callback.is_error()) {
+				error_callback(callback);
+				return;
+			}
 			const auto& map = callback.get <dpp::slashcommand_map>();
 			for (const auto& x : map) {
 				slash::guild_created[x.second.name] = x.second;

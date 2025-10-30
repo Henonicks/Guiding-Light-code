@@ -2,7 +2,7 @@
 
 #include "guiding_light/launch_options.hpp"
 
-void exec_subcommand(std::string_view cmd) {
+void exec_subcommand(const std::string_view cmd) {
     if (!command_options_list.contains(std::string(cmd))) {
         std::cout << "Unknown command: " << cmd << '\n';
     }

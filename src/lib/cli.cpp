@@ -259,11 +259,11 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 			}
 		}
 		if (created.empty() && not_created.empty()) {
-			bot->guild_bulk_command_create(map_values_to_vector(slashcommands::list_guild), MY_PRIVATE_GUILD_ID);
+			bot->guild_bulk_command_create(map_values_to_vector(slashcommands::list_guild), MY_PRIVATE_GUILD_ID, error_callback);
 		}
 		else {
 			if (!created.empty()) {
-				bot->guild_bulk_command_create(created, MY_PRIVATE_GUILD_ID);
+				bot->guild_bulk_command_create(created, MY_PRIVATE_GUILD_ID, error_callback);
 			}
 			for (const std::string& x : not_created) {
 				std::cout << fmt::format("{}: guild slashcommand has NOT been defined.\n", x);
@@ -278,8 +278,8 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 		}
 		cfg::write_down_slashcommands();
 		if (cmd.size() == 1) {
-			bot->global_bulk_command_delete();
-			bot->guild_bulk_command_delete(MY_PRIVATE_GUILD_ID);
+			bot->global_bulk_command_delete(error_callback);
+			bot->guild_bulk_command_delete(MY_PRIVATE_GUILD_ID, error_callback);
 			slash::global_created.clear();
 			slash::guild_created.clear();
 		}
@@ -288,7 +288,7 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 		}
 		else {
 			if (slash::global_created.contains(cmd[1])) {
-				bot->global_command_delete(slash::global_created[cmd[1]].id);
+				bot->global_command_delete(slash::global_created[cmd[1]].id, error_callback);
 				slash::global_created.erase(cmd[1]);
 			}
 			else {

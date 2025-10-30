@@ -64,7 +64,7 @@ int main(const int argc, char** argv) {
 		}
 		get_lang();
 		if (!slash::enabled) {
-			event.reply(response_emsg(IM_PREPARING, lang));
+			event.reply(response_emsg(IM_PREPARING, lang), error_callback);
 			return;
 		}
 		const std::string_view button_id = event.custom_id;
@@ -80,13 +80,13 @@ int main(const int argc, char** argv) {
 			no_temp_ping[user_id] = !no_temp_ping[user_id];
 			event.reply(response_fmtemsg(NEXT_TIME_THE_PING_WILL_BE, lang,
 				{no_temp_ping[user_id] == true ? response(OFF, lang) : response(ON, lang)})
-				.set_channel_id(event.command.channel_id));
+				.set_channel_id(event.command.channel_id), error_callback);
 		}
 		else if (button_id.starts_with("help")) {
-			event.reply(dpp::ir_update_message, cfg::help_message(lang, button_id[4] - '0'));
+			event.reply(dpp::ir_update_message, cfg::help_message(lang, button_id[4] - '0'), error_callback);
 		}
 		else {
-			event.reply(response_emsg(UNDEFINED_COMMAND, lang));
+			event.reply(response_emsg(UNDEFINED_COMMAND, lang), error_callback);
 		}
 	});
 
@@ -114,7 +114,7 @@ int main(const int argc, char** argv) {
 				// If there was a failure in granting a guild a vote point
 				// and the user has not been notified about that before,
 				// notify them.
-				bot->direct_message_create(voted_user_id, dpp::message("You have just voted and missed out on the chance to vote in favor of a guild! Choosing a guild with `/guild set` and voting for me on top.gg grants it guild points which can then be turned into JTC VCs!"));
+				bot->direct_message_create(voted_user_id, dpp::message("You have just voted and missed out on the chance to vote in favor of a guild! Choosing a guild with `/guild set` and voting for me on top.gg grants it guild points which can then be turned into JTC VCs!"), error_callback);
 				topgg::no_noguild_reminder[voted_user_id] = true;
 				db::sql << "INSERT INTO no_noguild_reminder VALUES (?);" << voted_user_id.str();
 			}
@@ -138,7 +138,7 @@ int main(const int argc, char** argv) {
 		}
 		if (!temp_vcs[event.updated.id].channel_id.empty()) {
 			if (blocklist_updated(event.updated)) {
-				bot->message_create(dpp::message(event.updated.id, "The blocklist of this channel has been updated."));
+				bot->message_create(dpp::message(event.updated.id, "The blocklist of this channel has been updated."), error_callback);
 			}
 		}
 	});
@@ -227,7 +227,7 @@ int main(const int argc, char** argv) {
 		}
 		get_lang();
 		if (!slash::enabled) {
-			event.reply(response_emsg(IM_PREPARING, lang));
+			event.reply(response_emsg(IM_PREPARING, lang), error_callback);
 			co_return;
 		}
 		const dpp::snowflake& guild_id = event.command.guild_id;
@@ -235,19 +235,20 @@ int main(const int argc, char** argv) {
 		const std::string cmd_name = event.command.get_command_name();
 		const dpp::command_interaction cmd = event.command.get_command_interaction();
 		if (cmd_name == "help") {
-			event.reply(cfg::help_message(lang));
+			log(fmt::format("Provide the user {} with some help, NOW!", user_id));
+			event.reply(cfg::help_message(lang), error_callback);
 		}
 		else if (cmd_name == "logs") {
-			if (event.command.usr.id != MY_ID) {
-				bot->direct_message_create(MY_ID, dpp::message(fmt::format("Ayo {} checking logs wht", event.command.usr.id)));
+			if (user_id != MY_ID) {
+				error_log(fmt::format("User {} is checking the logs! Check your perms!", user_id));
 			}
 			std::string_view file_name = cmd.options[0].name == "dpp" ? "other_logs.log" : cmd.options[0].name == "mine" ? "my_logs.log" : cmd.options[0].name == "guild" ? "guild_logs.log" : "sql_logs.log";
 			const dpp::message message = dpp::message().add_file(file_name, dpp::utility::read_file(fmt::format("{0}/{1}/{2}", logs_directory, MODE_NAME, file_name))).set_flags(dpp::m_ephemeral);
-			event.reply(message);
+			event.reply(message, error_callback);
 		}
 		else if (cmd_name == "select") {
-			if (event.command.usr.id != MY_ID) {
-				bot->direct_message_create(MY_ID, dpp::message(fmt::format("Ayo {} selecting wht", event.command.usr.id)));
+			if (user_id != MY_ID) {
+				error_log(fmt::format("User {} is selecting! Check your perms!", user_id));
 			}
 			std::string table_name = cmd.options[0].name;
 			for (char& x : table_name) {
@@ -257,10 +258,11 @@ int main(const int argc, char** argv) {
 			}
 			system(fmt::format(R"(sqlite3 ../database/{0}.db '.mode markdown' ".output ../database/select/{0}/{1}.md" "SELECT * FROM {1}";)", MODE_NAME, table_name).c_str());
 			const dpp::message message = dpp::message().add_file("db.md", dpp::utility::read_file(fmt::format("../database/select/{0}/{1}.md", MODE_NAME, table_name))).set_flags(dpp::m_ephemeral);
-			event.reply(message);
+			event.reply(message, error_callback);
 		}
 		else if (cmd_name == "vote") {
-			event.reply(response_fmtemsg(VOTE_HERE, lang, {bot->me.id.str(), slash::get_mention("help")}));
+			log(fmt::format("User {} wants to vote, it seems!", user_id));
+			event.reply(response_fmtemsg(VOTE_HERE, lang, {bot->me.id.str(), slash::get_mention("help")}), error_callback);
 			co_return;
 		}
 		else if (cmd_name == "guild") {
@@ -285,7 +287,7 @@ int main(const int argc, char** argv) {
 		else if (cmd_name == "setup") {
 			bool& creation_status = slash::in_progress[cmd_name][guild_id];
 			if (creation_status) {
-				event.reply(response_emsg(A_CHANNEL_IS_ALREADY_BEING_SET_UP, lang));
+				event.reply(response_emsg(A_CHANNEL_IS_ALREADY_BEING_SET_UP, lang), error_callback);
 				co_return;
 			}
 			creation_status = true;
@@ -306,7 +308,7 @@ int main(const int argc, char** argv) {
 		else if (cmd_name == "ticket") {
 			auto& creation_status = slash::in_progress[cmd_name][user_id];
 			if (creation_status) {
-				event.reply(response_emsg(A_TICKET_IS_ALREADY_BEING_SET_UP, lang));
+				event.reply(response_emsg(A_TICKET_IS_ALREADY_BEING_SET_UP, lang), error_callback);
 				co_return;
 			}
 			if (cmd.options[0].name == "create") {
@@ -323,15 +325,15 @@ int main(const int argc, char** argv) {
 			cfg::read_config();
 			cfg::pray();
 			if (!db::connection_successful()) {
-				event.reply(dpp::message("COULDN'T CONNECT TO THE DATABASE! THIS IS A DISASTER! RUN WHILE YOU CAN!").set_flags(dpp::m_ephemeral));
+				event.reply(dpp::message("COULDN'T CONNECT TO THE DATABASE! THIS IS A DISASTER! RUN WHILE YOU CAN!").set_flags(dpp::m_ephemeral), error_callback);
 				log("Reload: COULDN'T CONNECT TO THE DATABASE! THIS IS A DISASTER! RUN WHILE YOU CAN!");
 				co_return;
 			}
-			event.reply(dpp::message("Reloaded").set_flags(dpp::m_ephemeral));
+			event.reply(dpp::message("Reloaded").set_flags(dpp::m_ephemeral), error_callback);
 			log("Finished reloading.");
 		}
 		else {
-			event.reply(response_emsg(UNDEFINED_COMMAND, lang));
+			event.reply(response_emsg(UNDEFINED_COMMAND, lang), error_callback);
 		}
 	});
 
