@@ -14,19 +14,26 @@ void bot_log(const dpp::log_t& _log) {
 			const uint64_t new_channel_amount = dpp::get_channel_count();
 			const uint64_t new_user_amount = dpp::get_user_count();
 			if (!(new_guild_amount > guild_amount || new_channel_amount > channel_amount || new_user_amount > user_amount)) {
-				log("Done! Doing stuff...");
-				cfg::pray();
-				cfg::write_down_slashcommands();
-				log("Done doing stuff!");
-				bot->stop_timer(h);
+				if (!move_on) {
+					log("Confirming the absence of cache updates...");
+					move_on = true;
+				}
+				else {
+					log("Done! Doing stuff...");
+					cfg::pray();
+					cfg::write_down_slashcommands();
+					log("Done doing stuff!");
+					bot->stop_timer(h);
+				}
 			}
 			else {
+				move_on = false;
 				guild_amount = new_guild_amount;
 				channel_amount = new_channel_amount;
 				user_amount = new_user_amount;
 				log(fmt::format("Amount of guilds, channels and users: {0}, {1}, {2}", new_guild_amount, new_channel_amount, new_user_amount));
 			}
-		}, DELAY);
+		}, CACHE_DELAY);
 	}
 }
 
