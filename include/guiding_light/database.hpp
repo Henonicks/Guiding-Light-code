@@ -15,7 +15,7 @@ namespace db {
 	inline std::string_view LOCATION = "../database";
 	inline std::string_view SELECT_LOCATION = "../database/select";
 	inline const std::set <std::string> table_names =
-		{"jtc_vcs", "temp_vc_notifications", "jtc_default_values", "no_temp_ping", "topgg_guild_choices", "topgg_guild_votes_amount", "no_noguild_reminder", "topgg_notifications", "tickets", "temp_vcs"};
+		{"jtc_vcs", "temp_vc_notifications", "jtc_default_values", "no_temp_ping", "topgg_guild_choices", "topgg_guild_votes_amount", "no_noguild_reminder", "topgg_notifications", "tickets", "temp_vcs", "channel_name_edit_timers"};
 
 	class wrapper : public sqlite::database {
 	public:

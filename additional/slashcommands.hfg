@@ -261,6 +261,10 @@
         $"temp_vcs" | {
           $"NAME" | "temp_vcs",
           $"DESCRIPTION" | "The table containing the IDs of temporary VCs."
+        },
+        $"channel_name_edit_timers" | {
+          $"NAME" | "channel_name_edit_timers",
+          $"DESCRIPTION" | "The table containing the timestamps of when a temp VC's name can be changed again."
         }
       }
     },

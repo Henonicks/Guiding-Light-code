@@ -1,14 +1,14 @@
 #include "guiding_light/slash_funcs.hpp"
 
+#include "guiding_light/ratelimit.hpp"
 #include "guiding_light/responses.hpp"
 
 dpp::coroutine <> slash::set::current(const dpp::slashcommand_t& event) {
 	get_lang();
 	const dpp::command_interaction cmd = event.command.get_command_interaction();
-	const dpp::user user = event.command.get_issuing_user();
-	const dpp::snowflake& user_id = user.id;
-	const dpp::snowflake& channel_id = vc_statuses[user_id];
-	log(fmt::format("{0} is trying to edit the voice channel {1}.", user_id, channel_id));
+	const dpp::user& user = event.command.get_issuing_user();
+	const dpp::snowflake& channel_id = vc_statuses[user.id];
+	log(fmt::format("{0} is trying to edit the voice channel {1}.", user.id, channel_id));
 	const bool user_is_main = !channel_id.empty();
 	if (!user_is_main) {
 		log("But the channel is not theirs.");
@@ -25,13 +25,18 @@ dpp::coroutine <> slash::set::current(const dpp::slashcommand_t& event) {
 				event.reply(response_fmtemsg(THE_NAME_OF_THE_VC_IS_ALREADY, lang, {old_name}), error_callback);
 			}
 			else {
+				if (channel_edits[cet_name][channel_id] >= 1) {
+					log(fmt::format("But look at that! This would make for the rename number {0} for the channel {1} which is way over the limit of 1!", channel_edits[cet_name][channel_id] + 1, channel_id));
+					event.reply(response_fmtemsg(THIS_CHANNEL_HAS_BEEN_RENAMED_WITHIN_THE_LAST_5_MINUTES, lang, {dpp::utility::timestamp(channel_edit_timers[cet_name][channel_id], dpp::utility::tf_relative_time)}), error_callback);
+					co_return;
+				}
 				channel.set_name(argument);
-				bot->channel_edit(channel, [event, old_name, argument, lang](const dpp::confirmation_callback_t& callback) {
+				bot->channel_edit(channel, [event, old_name, argument, lang, channel_id](const dpp::confirmation_callback_t& callback) {
 					log("Trying to change the name...");
-					if (callback.is_error()) {
-						error_feedback(callback, event);
+					if (error_feedback(callback, event)) {
 						return;
 					}
+					add_channel_edit(channel_id, cet_name);
 					log("Success.");
 					event.reply(response_fmtemsg(THE_NAME_OF_THE_CHANNEL_HAS_CHANGED_FROM, lang, {old_name, argument}), error_callback);
 				});
@@ -64,8 +69,7 @@ dpp::coroutine <> slash::set::current(const dpp::slashcommand_t& event) {
 				content = response_fmt(SET_BITRATE_TO, lang, {std::to_string(argument)});
 				channel.set_bitrate(argument);
 				const dpp::confirmation_callback_t& callback = co_await bot->co_channel_edit(channel);
-				if (callback.is_error()) {
-					error_feedback(callback, event);
+				if (error_feedback(callback, event)) {
 					co_return;
 				}
 				log("Success.");
@@ -83,7 +87,7 @@ dpp::coroutine <> slash::set::current(const dpp::slashcommand_t& event) {
 			else if (argument < 0) {
 				log("lmao");
 				event.reply(response_emsg(WELL_NOW_WERE_JUST_BEING_SILLY_ARENT_WE, lang), error_callback);
-				bot->guild_member_move(0, temp_vcs[vc_statuses[user_id]].guild_id, user_id, error_callback);
+				bot->guild_member_move(0, temp_vcs[vc_statuses[user.id]].guild_id, user.id, error_callback);
 				// easter egg
 			}
 			else {
@@ -95,8 +99,7 @@ dpp::coroutine <> slash::set::current(const dpp::slashcommand_t& event) {
 					log("Trying to change the limit...");
 					channel.set_user_limit(argument);
 					bot->channel_edit(channel, [event, argument, lang](const dpp::confirmation_callback_t& callback) {
-						if (callback.is_error()) {
-							error_feedback(callback, event);
+						if (error_feedback(callback, event)) {
 							return;
 						}
 						log("Success.");
@@ -119,7 +122,7 @@ dpp::coroutine <> slash::set::default_values(const dpp::slashcommand_t& event) {
 	const jtc_defaults defs = jtc_default_values[channel_id];
 	if (defs.channel_id.empty()) {
 		log("But that's not a JTC VC.");
-		co_await event.co_reply(response_emsg(THIS_IS_NOT_A_JTC_VC_I_KNOW_OF, lang));
+		event.reply(response_emsg(THIS_IS_NOT_A_JTC_VC_I_KNOW_OF, lang), error_callback);
 		co_return;
 	}
 	jtc_defaults new_defs;
@@ -128,7 +131,7 @@ dpp::coroutine <> slash::set::default_values(const dpp::slashcommand_t& event) {
 		log(fmt::format("They are trying to change the default name from `{0}` to `{1}`.", defs.name, name));
 		if (defs.name == name) {
 			log("But the default name is already that.");
-			co_await event.co_reply(response_fmtemsg(THE_NAME_IS_ALREADY, lang, {name}));
+			event.reply(response_fmtemsg(THE_NAME_IS_ALREADY, lang, {name}), error_callback);
 			co_return;
 		}
 		new_defs.channel_id = defs.channel_id;
@@ -152,7 +155,7 @@ dpp::coroutine <> slash::set::default_values(const dpp::slashcommand_t& event) {
 		else {
 			if (defs.limit == limit) {
 				log("But the default limit is already that.");
-				co_await event.co_reply(response_fmtemsg(THE_LIMIT_IS_ALREADY, lang, {std::to_string(limit)}));
+				event.reply(response_fmtemsg(THE_LIMIT_IS_ALREADY, lang, {std::to_string(limit)}), error_callback);
 				co_return;
 			}
 			jtc_default_values.erase(channel_id);
@@ -213,8 +216,8 @@ dpp::coroutine <> slash::setup(const dpp::slashcommand_t& event) {
 		const int8_t limit = ::topgg::jtc::count_allowed_jtcs(guild_id);
 		if (jtc_vc_amount[guild_id] >= limit) {
 			log(fmt::format("But there are already {0} JTC VCs while the limit is {1}.", jtc_vc_amount[guild_id], limit));
-			co_await event.co_reply(response_fmtemsg(THIS_GUILD_HAS_A_JTC_LIMIT_OF, lang,
-				{std::to_string(limit), (limit < 10 ? response_str(YOU_CAN_GET_MORE_BY_VOTING_THOUGH, lang) : "")}));
+			event.reply(response_fmtemsg(THIS_GUILD_HAS_A_JTC_LIMIT_OF, lang,
+				{std::to_string(limit), (limit < 10 ? response_str(YOU_CAN_GET_MORE_BY_VOTING_THOUGH, lang) : "")}), error_callback);
 			co_return;
 		}
 		const auto max = (int8_t)std::get <long>(cmd.options[0].options[0].value);
@@ -227,9 +230,8 @@ dpp::coroutine <> slash::setup(const dpp::slashcommand_t& event) {
 		channel.set_user_limit(1); // For the normal users, only one will be able to create a JTC at the same time.
 		log("Trying to create a JTC VC.");
 		const dpp::confirmation_callback_t& callback = co_await bot->co_channel_create(channel);
-		if (callback.is_error()) {
-			error_callback(callback);
-			co_await event.co_reply(response_emsg(TRIED_TO_CREATE_A_JTC_CHANNEL_BUT_FAILED, lang));
+		if (error_callback(callback)) {
+			event.reply(response_emsg(TRIED_TO_CREATE_A_JTC_CHANNEL_BUT_FAILED, lang), error_callback);
 			co_return;
 		}
 		++jtc_vc_amount[guild_id];
@@ -240,7 +242,7 @@ dpp::coroutine <> slash::setup(const dpp::slashcommand_t& event) {
 		db::sql << "INSERT INTO jtc_vcs VALUES (?, ?);" << new_channel.id.str() << new_channel.guild_id.str();
 		db::sql << "INSERT INTO jtc_default_values VALUES (?, ?, ?, ?);" << new_channel.id.str() << "VC for {username}" << max << 64;
 		log("Success.");
-		co_await event.co_reply(response_emsg(CREATED_A_JTC_CHANNEL, lang));
+		event.reply(response_emsg(CREATED_A_JTC_CHANNEL, lang), error_callback);
 	}
 	else {
 		log("They are trying to set up a notification channel.");
@@ -269,11 +271,11 @@ dpp::coroutine <> slash::setup(const dpp::slashcommand_t& event) {
 			db::sql << "INSERT INTO " + (std::string)(is_jtc ? "temp_vc_notifications" : "topgg_notifications") + " VALUES (?, ?);" << new_channel.id.str() << new_channel.guild_id.str();
 			(is_jtc ? temp_vc_notifications : topgg_notifications)[new_channel.guild_id] = new_channel.id;
 			log("Success.");
-			co_await event.co_reply(response_emsg(THE_CHANNEL_HAS_BEEN_SET_UP, lang));
+			event.reply(response_emsg(THE_CHANNEL_HAS_BEEN_SET_UP, lang), error_callback);
 		}
 		else {
 			log("It already exists.");
-			co_await event.co_reply(response_emsg(ITS_ALREADY_BEEN_SET_UP, lang));
+			event.reply(response_emsg(ITS_ALREADY_BEEN_SET_UP, lang), error_callback);
 		}
 	}
 }
@@ -323,7 +325,7 @@ dpp::coroutine <> slash::blocklist::add(const dpp::slashcommand_t& event) {
 	else {
 		channel->set_permission_overwrite(requested_id, dpp::ot_member, 0, dpp::p_view_channel);
 		log("Trying to edit the channel...");
-		const dpp::confirmation_callback_t callback = co_await bot->co_channel_edit(*channel);
+		const dpp::confirmation_callback_t& callback = co_await bot->co_channel_edit(*channel);
 		if (callback.is_error()) {
 			error_feedback(callback, event);
 			co_return;
@@ -444,7 +446,7 @@ dpp::coroutine <> slash::ticket::create(const dpp::slashcommand_t& event) {
 	log(fmt::format("User {} is trying to create a ticket.", user_id));
 	if (!tickets[user_id].empty()) {
 		log(fmt::format("But there's already the channel {}.", tickets[user_id]));
-		co_await event.co_reply(response_emsg(YOU_ALREADY_HAVE_A_TICKET, lang));
+		event.reply(response_emsg(YOU_ALREADY_HAVE_A_TICKET, lang), error_callback);
 		co_return;
 	}
 	dpp::channel channel = dpp::channel()
@@ -456,12 +458,18 @@ dpp::coroutine <> slash::ticket::create(const dpp::slashcommand_t& event) {
 		co_return;
 	}
 	channel = callback.get <dpp::channel>();
+	log("Trying to DM the user...");
+	const dpp::confirmation_callback_t& dm_callback = co_await bot->co_direct_message_create(user_id, response_emsg(CREATING_A_TICKET_FOR_YOU, lang));
+	if (error_callback(dm_callback)) {
+		event.reply(response_emsg(COULDNT_SEND_YOU_A_DM, lang));
+		co_return;
+	}
 	co_await bot->co_message_create(dpp::message(channel.id, fmt::format("<@{}> is contacting you.", user_id)));
 	tickets[user_id] = channel.id;
 	ck_tickets[channel.id] = user_id;
 	db::sql << "INSERT INTO tickets VALUES (?, ?);" << user_id.str() << channel.id.str();
 	log("Success.");
-	co_await event.co_reply(response_emsg(A_TICKET_HAS_BEEN_CREATED, lang));
+	event.reply(response_emsg(A_TICKET_HAS_BEEN_CREATED, lang), error_callback);
 }
 
 void slash::ticket::close(const dpp::slashcommand_t& event) {

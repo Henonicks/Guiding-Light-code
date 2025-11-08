@@ -44,10 +44,12 @@ void log(const std::string_view message) {
 	// i know you're itching to replace "std::endl" with "'\n'" but please don't do it cuz then the logs won't work bro trust
 }
 
-void error_log(const std::string_view message) {
+void error_log(const std::string_view message, const std::string_view human_readable) {
 	const uint64_t current_time = bot->uptime().to_secs();
 	if (current_time >= last_error_message + 10) {
-		bot->message_create(dpp::message(LOGS_CHANNEL_ID, fmt::format("ERROR! <@{0}> Go check **your** logs! Current message: `{1}`", MY_ID, message)).set_allowed_mentions(true));
+		bot->message_create(dpp::message(LOGS_CHANNEL_ID, fmt::format("ERROR! <@{0}> Go check **your** logs! Current message: `{1}`",
+			MY_ID, !human_readable.empty() ? human_readable : message))
+		.set_allowed_mentions(true), error_callback);
 		last_error_message = current_time;
 	}
 	log(message);
@@ -68,34 +70,55 @@ void sql_log(const sqlite::sqlite_exception& e, const std::string_view function)
 	// this ain't a drill, this is the way that I dream of goin' out
 }
 
-void error_callback(const dpp::confirmation_callback_t& callback) {
+bool error_callback(const dpp::confirmation_callback_t& callback) {
 	if (callback.is_error()) {
+		std::string error = "ERROR! ";
 		if (!callback.get_error().errors.empty()) {
-			std::string error = "ERROR!";
 			for (const auto& x : callback.get_error().errors) {
-				error += fmt::format("\nFIELD: {0} REASON: {1} OBJECT: {2} CODE: {3}", x.field, x.reason, x.object, x.code);
+				error += fmt::format("\n\tFIELD: {0} REASON: {1} OBJECT: {2} CODE: {3}", x.field, x.reason, x.object, x.code);
 			}
-			log(error);
 		}
 		else {
-			log("ERROR!" + callback.get_error().human_readable);
+			error += callback.get_error().human_readable;
 		}
+		if (!callback.http_info.headers.empty()) {
+			error += "\nHeaders:\n{";
+			for (const auto& [key, value] : callback.http_info.headers) {
+				error += fmt::format("\n\t{0}: {1}", key, value);
+			}
+			error += "\n}";
+		}
+		if (!callback.http_info.body.empty()) {
+			error += fmt::format("\nReply body: \n\t{}", callback.http_info.body);
+		}
+		error_log(error, callback.get_error().human_readable);
+		return true;
 	}
+	return false;
 }
 
 bool error_feedback(const dpp::confirmation_callback_t& callback, const dpp::interaction_create_t& event, std::string_view error_intro) {
 	if (callback.is_error()) {
+		std::string error = "ERROR! ";
 		if (!callback.get_error().errors.empty()) {
-			std::string error = "ERROR!";
 			for (const auto& x : callback.get_error().errors) {
-				error += fmt::format("\nFIELD: {0} REASON: {1} OBJECT: {2} CODE: {3}", x.field, x.reason, x.object, x.code);
+				error += fmt::format("\n\tFIELD: {0} REASON: {1} OBJECT: {2} CODE: {3}", x.field, x.reason, x.object, x.code);
 			}
-			log(error);
 		}
 		else {
-			log("ERROR!" + callback.get_error().human_readable);
+			error += callback.get_error().human_readable;
 		}
-		event.reply(fmt::format("{0}: {1}.", error_intro, callback.get_error().message), error_callback);
+		if (!callback.http_info.headers.empty()) {
+			error += "\nHeaders:";
+			for (const auto& [key, value] : callback.http_info.headers) {
+				error += fmt::format("\n\t{0}: {1}", key, value);
+			}
+		}
+		if (!callback.http_info.body.empty()) {
+			error += fmt::format("\nReply body: \n\t{}", callback.http_info.body);
+		}
+		error_log(error, callback.get_error().human_readable);
+		event.reply(dpp::message(fmt::format("{0}: {1}.", error_intro, callback.get_error().message)).set_flags(dpp::m_ephemeral), error_callback);
 		return true;
 	}
 	return false;
@@ -103,16 +126,25 @@ bool error_feedback(const dpp::confirmation_callback_t& callback, const dpp::int
 
 bool error_feedback(const dpp::confirmation_callback_t& callback, const dpp::message_create_t& event, std::string_view error_intro) {
 	if (callback.is_error()) {
+		std::string error = "ERROR! ";
 		if (!callback.get_error().errors.empty()) {
-			std::string error = "ERROR!";
 			for (const auto& x : callback.get_error().errors) {
-				error += fmt::format("\nFIELD: {0} REASON: {1} OBJECT: {2} CODE: {3}", x.field, x.reason, x.object, x.code);
+				error += fmt::format("\n\tFIELD: {0} REASON: {1} OBJECT: {2} CODE: {3}", x.field, x.reason, x.object, x.code);
 			}
-			log(error);
 		}
 		else {
-			log("ERROR!" + callback.get_error().human_readable);
+			error += callback.get_error().human_readable;
 		}
+		if (!callback.http_info.headers.empty()) {
+			error += "\nHeaders:";
+			for (const auto& [key, value] : callback.http_info.headers) {
+				error += fmt::format("\n\t{0}: {1}", key, value);
+			}
+		}
+		if (!callback.http_info.body.empty()) {
+			error += fmt::format("\nReply body: \n\t{}", callback.http_info.body);
+		}
+		error_log(error, callback.get_error().human_readable);
 		event.reply(fmt::format("{0}: {1}.", error_intro, callback.get_error().message), true, error_callback);
 		return true;
 	}

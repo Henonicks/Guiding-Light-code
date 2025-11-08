@@ -6,12 +6,8 @@
 #include "guiding_light/responses.hpp"
 #include "guiding_light/slash_funcs.hpp"
 
-/**
- * @brief Checks if a bash command exists.
- */
 bool command_exists(std::string_view command) {
 	return !system(fmt::format("which {} >>/dev/null 2>>/dev/null", command).c_str());
-	// Try to execute the file, if it succeeds, it definitely exists.
 }
 
 dpp::command_option localise_command_option(const henifig::value_map& current_options, const dpp::command_option& original_option, const std::string_view lang) {
@@ -250,36 +246,12 @@ void slashcommands::init() {
 	);
 	ticket.set_dm_permission(true);
 
-	select.add_option(
-		make_default(dpp::co_sub_command, select, "jtc_vcs")
-	);
-	select.add_option(
-		make_default(dpp::co_sub_command, select, "temp_vc_notifications")
-	);
-	select.add_option(
-		make_default(dpp::co_sub_command, select, "jtc_default_values")
-	);
-	select.add_option(
-		make_default(dpp::co_sub_command, select, "no_temp_ping")
-	);
-	select.add_option(
-		make_default(dpp::co_sub_command, select, "topgg_guild_choices")
-	);
-	select.add_option(
-		make_default(dpp::co_sub_command, select, "topgg_guild_votes_amount")
-	);
-	select.add_option(
-		make_default(dpp::co_sub_command, select, "no_noguild_reminder")
-	);
-	select.add_option(
-		make_default(dpp::co_sub_command, select, "topgg_notifications")
-	);
-	select.add_option(
-		make_default(dpp::co_sub_command, select, "tickets")
-	);
-	select.add_option(
-		make_default(dpp::co_sub_command, select, "temp_vcs")
-	);
+	for (const std::string& x : db::table_names) {
+		select.add_option(
+			make_default(dpp::co_sub_command, select, x)
+		);
+	}
+
 	logs.set_default_permissions(dpp::permissions::p_administrator);
 
 	reload.set_default_permissions(dpp::permissions::p_administrator);

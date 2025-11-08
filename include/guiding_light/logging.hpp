@@ -22,8 +22,9 @@ void log(std::string_view message);
 /**
  * @brief Does the same as @ref log but also sends a message to a specific channel.
  * @param message The log to be printed.
+ * @param human_readable The human-readable version of the error.
  */
-void error_log(std::string_view message);
+void error_log(std::string_view message, std::string_view human_readable = "");
 
 /**
  * @brief Logs a message briefly describing the guild the bot
@@ -42,25 +43,28 @@ void sql_log(const sqlite::sqlite_exception& e, std::string_view function = {});
 /**
  * @brief Prints the error of a request made by the bot.
  * @param callback The callback containing the error.
+ * @return Whether the callback truly has an error.
  */
-void error_callback(const dpp::confirmation_callback_t& callback);
+bool error_callback(const dpp::confirmation_callback_t& callback);
 
 /**
- *
+ * @brief Prints the error of a request made by the bot.
  * @param callback The callback containing the error.
  * @param event The event to reply to.
  * @param error_intro The part of the error message before
  * the actual error ("Error" by default).
+ * @return Whether the callback truly has an error.
  */
 bool error_feedback(const dpp::confirmation_callback_t& callback, const dpp::interaction_create_t& event,
 					std::string_view error_intro = "Error");
 
 /**
- *
+ * @brief Prints the error of a request made by the bot.
  * @param callback The callback containing the error.
  * @param event The event to reply to.
  * @param error_intro The part of the error message before
  * the actual error ("Error" by default).
+ * @return Whether the callback truly has an error.
  */
 bool error_feedback(const dpp::confirmation_callback_t& callback, const dpp::message_create_t& event,
 					std::string_view error_intro = "Error");

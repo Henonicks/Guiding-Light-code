@@ -55,7 +55,7 @@ void cfg::init_logs() {
 }
 
 void cfg::pray() { // I'll pray that when this function starts executing we have all the cache because Discord doesn't let me know whether all the cache I've received at a certain point is everything or there's more and there's no better way to do this I promise
-	db::sql << "SELECT * FROM jtc_vcs;" + db::line_comment("pray::jtc_vcs") >> [](const db::BIGINT& channel_id, const db::BIGINT& guild_id) {
+	db::sql << "SELECT * FROM jtc_vcs;" + db::line_comment("pray::jtc_vcs") >> [](const db::BIGINT channel_id, const db::BIGINT guild_id) {
 		const dpp::channel* channel = dpp::find_channel(channel_id);
 		if (channel != nullptr) {
 			jtc_vcs[channel_id] = guild_id;
@@ -66,7 +66,7 @@ void cfg::pray() { // I'll pray that when this function starts executing we have
 			error_log(fmt::format("Couldn't find the JTC VC {0} in the guild {1}. Deleting.", channel_id, guild_id));
 		}
 	};
-	db::sql << "SELECT * FROM temp_vc_notifications;" + db::line_comment("pray::temp_vc_notifications") >> [](const db::BIGINT& channel_id, const db::BIGINT& guild_id) {
+	db::sql << "SELECT * FROM temp_vc_notifications;" + db::line_comment("pray::temp_vc_notifications") >> [](const db::BIGINT channel_id, const db::BIGINT guild_id) {
 		const dpp::channel* channel = dpp::find_channel(channel_id);
 		if (channel != nullptr) {
 			temp_vc_notifications[guild_id] = channel_id;
@@ -77,7 +77,7 @@ void cfg::pray() { // I'll pray that when this function starts executing we have
 		}
 	};
 
-	db::sql << "SELECT * FROM jtc_default_values;" + db::line_comment("pray::jtc_default_values") >> [](const db::BIGINT& channel_id, const std::string& name, const db::TINYINT& limit, const db::MEDIUMINT& bitrate) {
+	db::sql << "SELECT * FROM jtc_default_values;" + db::line_comment("pray::jtc_default_values") >> [](const db::BIGINT channel_id, const std::string& name, const db::TINYINT limit, const db::MEDIUMINT bitrate) {
 		const dpp::channel* channel = dpp::find_channel(channel_id);
 		if (channel != nullptr) {
 			jtc_default_values[channel_id] = {channel_id, name, (int8_t)limit, (int16_t)bitrate};
@@ -88,7 +88,7 @@ void cfg::pray() { // I'll pray that when this function starts executing we have
 		}
 	};
 
-	db::sql << "SELECT * FROM no_temp_ping;" + db::line_comment("pray::no_temp_ping") >> [](const db::BIGINT& user_id) {
+	db::sql << "SELECT * FROM no_temp_ping;" + db::line_comment("pray::no_temp_ping") >> [](const db::BIGINT user_id) {
 		const dpp::user* user = dpp::find_user(user_id);
 		if (user != nullptr) {
 			no_temp_ping[user_id] = true;
@@ -99,7 +99,7 @@ void cfg::pray() { // I'll pray that when this function starts executing we have
 		}
 	};
 	
-	db::sql << "SELECT * FROM topgg_guild_choices;" + db::line_comment("pray::jtc_vcs") >> [](const db::BIGINT& user_id, const db::BIGINT& guild_id) {
+	db::sql << "SELECT * FROM topgg_guild_choices;" + db::line_comment("pray::jtc_vcs") >> [](const db::BIGINT user_id, const db::BIGINT guild_id) {
 		const dpp::user* user = dpp::find_user(user_id);
 		if (user != nullptr) {
 			topgg::guild_choices[user_id] = guild_id;
@@ -110,7 +110,7 @@ void cfg::pray() { // I'll pray that when this function starts executing we have
 		}
 	};
 	
-	db::sql << "SELECT * FROM topgg_guild_votes_amount;" + db::line_comment("pray::guild_votes_amount") >> [](const db::BIGINT& guild_id, const int& votes) {
+	db::sql << "SELECT * FROM topgg_guild_votes_amount;" + db::line_comment("pray::guild_votes_amount") >> [](const db::BIGINT guild_id, const int votes) {
 		const dpp::guild* guild = dpp::find_guild(guild_id);
 		if (guild != nullptr) {
 			topgg::guild_votes_amount[guild_id] = votes;
@@ -121,7 +121,7 @@ void cfg::pray() { // I'll pray that when this function starts executing we have
 		}
 	};
 	
-	db::sql << "SELECT * FROM no_noguild_reminder;" + db::line_comment("pray::no_noguild_reminder") >> [](const db::BIGINT& user_id) {
+	db::sql << "SELECT * FROM no_noguild_reminder;" + db::line_comment("pray::no_noguild_reminder") >> [](const db::BIGINT user_id) {
 		const dpp::user* user = dpp::find_user(user_id);
 		if (user != nullptr) {
 			topgg::no_noguild_reminder[user_id] = true;
@@ -132,7 +132,7 @@ void cfg::pray() { // I'll pray that when this function starts executing we have
 		}
 	};
 	
-	db::sql << "SELECT * FROM topgg_notifications;" + db::line_comment("pray::topgg_notifications") >> [](const db::BIGINT& channel_id, const db::BIGINT& guild_id) {
+	db::sql << "SELECT * FROM topgg_notifications;" + db::line_comment("pray::topgg_notifications") >> [](const db::BIGINT channel_id, const db::BIGINT guild_id) {
 		const dpp::channel* channel = dpp::find_channel(channel_id);
 		if (channel != nullptr) {
 			topgg_notifications[guild_id] = channel_id;
@@ -156,7 +156,7 @@ void cfg::pray() { // I'll pray that when this function starts executing we have
 		}
 	};
 	
-	db::sql << "SELECT * FROM temp_vcs;" + db::line_comment("pray::temp_vcs") >> [](const db::BIGINT& channel_id, const db::BIGINT& guild_id, const db::BIGINT& creator_id, const db::BIGINT& parent_id) {
+	db::sql << "SELECT * FROM temp_vcs;" + db::line_comment("pray::temp_vcs") >> [](const db::BIGINT channel_id, const db::BIGINT guild_id, const db::BIGINT& creator_id, const db::BIGINT parent_id) {
 		const dpp::channel* channel = dpp::find_channel(channel_id);
 		if (channel != nullptr) {
 			++temp_vc_amount[guild_id];
@@ -173,6 +173,25 @@ void cfg::pray() { // I'll pray that when this function starts executing we have
 		}
 	};
 
+	db::sql << "SELECT * FROM channel_name_edit_timers;" + db::line_comment("pray::name_edit_timers") >> [](const db::BIGINT channel_id, const time_t timer) {
+		const dpp::channel* channel = dpp::find_channel(channel_id);
+		if (channel != nullptr) {
+			const auto current_time = static_cast <time_t>(dpp::utility::time_f());
+			if (current_time < timer) {
+				channel_edits[cet_name][channel_id] = true;
+				channel_edit_timers[cet_name][channel_id] = timer;
+				remove_channel_edit(channel_id, cet_name, timer - current_time);
+			}
+			else {
+				db::sql << "DELETE FROM channel_name_edit_timers WHERE channel_id=?;" << channel_id;
+			}
+		}
+		else {
+			db::sql << "DELETE FROM channel_name_edit_timers WHERE channel_id=?;" << channel_id;
+			error_log(fmt::format("Couldn't find the temp VC {0} which is on cooldown from being renamed until {1}. Deleting.", channel_id, timer));
+		}
+	};
+
 	slash::enabled = true;
 }
 
@@ -183,8 +202,7 @@ void cfg::write_down_slashcommands() {
 			slash::global_created[x.second.name] = x.second;
 		}
 		bot->guild_commands_get(MY_PRIVATE_GUILD_ID, [](const dpp::confirmation_callback_t& callback) -> void {
-			if (callback.is_error()) {
-				error_callback(callback);
+			if (error_callback(callback)) {
 				return;
 			}
 			const auto& map = callback.get <dpp::slashcommand_map>();

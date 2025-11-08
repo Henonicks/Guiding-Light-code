@@ -27,8 +27,7 @@ void handle_dm_in(const dpp::message_create_t& event) {
 	dpp::message msg = event.msg;
 	msg.content = fmt::format("From {}: ", event.msg.author.get_mention()) + msg.content;
 	bot->message_create(preserve_attachments(msg).set_channel_id(tickets[user_id]), [event](const dpp::confirmation_callback_t& callback) -> void {
-		if (callback.is_error()) {
-			error_feedback(callback, event, "Failed to send");
+		if (error_feedback(callback, event, "Failed to send")) {
 			bot->message_add_reaction(event.msg, dpp::unicode_emoji::x, error_callback);
 			return;
 		}
@@ -52,8 +51,7 @@ void handle_dm_out(const dpp::message_create_t& event) {
 	}
 	msg.content = "From henonicks: " + msg.content;
 	bot->direct_message_create(user_id, preserve_attachments(msg), [event](const dpp::confirmation_callback_t& callback) -> void {
-		if (callback.is_error()) {
-			error_feedback(callback, event, "Failed to send");
+		if (error_feedback(callback, event, "Failed to send")) {
 			return;
 		}
 		bot->message_add_reaction(event.msg, dpp::unicode_emoji::white_check_mark, error_callback);
