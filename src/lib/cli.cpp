@@ -118,6 +118,7 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 		db::sql << "CREATE TABLE topgg_notifications (channel_id BIGINT PRIMARY KEY, guild_id BIGINT);" + comment;
 		db::sql << "CREATE TABLE tickets (user_id BIGINT PRIMARY KEY, channel_id BIGINT);" + comment;
 		db::sql << "CREATE TABLE temp_vcs (channel_id BIGINT PRIMARY KEY, guild_id BIGINT, creator_id BIGINT, parent_id BIGINT);" + comment;
+		db::sql << "CREATE TABLE channel_name_edit_timers (channel_id BIGINT PRIMARY KEY, timer BIGINT);" + comment;
 	}},
 	{"conv_db", [](const std::vector <std::string>&) {
 		bool is_error{};
@@ -213,15 +214,17 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 		}
 		if (created.empty() && not_created.empty()) {
 			bot->global_bulk_command_create(map_values_to_vector(slashcommands::list_global), [](const dpp::confirmation_callback_t& callback) {
-				error_callback(callback);
-				cfg::write_down_slashcommands();
+				if (!error_callback(callback)) {
+					cfg::write_down_slashcommands();
+				}
 			});
 		}
 		else {
 			if (!created.empty()) {
 				bot->global_bulk_command_create(created, [](const dpp::confirmation_callback_t& callback) {
-					error_callback(callback);
-					cfg::write_down_slashcommands();
+					if (!error_callback(callback)) {
+						cfg::write_down_slashcommands();
+					}
 				});
 			}
 			for (const std::string& x : not_created) {

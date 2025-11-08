@@ -9,6 +9,7 @@
 #include "guiding_light/slash_funcs.hpp"
 #include "guiding_light/topgg.hpp"
 #include "guiding_light/ticket.hpp"
+#include "guiding_light/ratelimit.hpp"
 
 #include "color.hpp"
 

@@ -459,187 +459,144 @@
       "A channel is already being set up! Try again when it's done.",
     $"A_TICKET_IS_ALREADY_BEING_SET_UP" |
       "A ticket is already being created! Try again when it's done.",
+    $"THIS_CHANNEL_HAS_BEEN_RENAMED_WITHIN_THE_LAST_5_MINUTES" |
+      "There channel has been renamed within the last 5 minutes! "
+      "You'll be able to edit it again {}.",
+    $"CREATING_A_TICKET_FOR_YOU" |
+      "Creating a ticket for you.",
+    $"TICKET_CREATED" |
+      "Successfully created a ticket.",
+    $"COULDNT_SEND_YOU_A_DM" |
+      "Couldn't send you a DM. Make sure they are open.",
     $"UNDEFINED_COMMAND" |
       "Undefined command, can't handle."
   },
   $"uk" | {
     $"RESPONSE_NOT_FOUND" |
-      # "The response for this interaction could not be found.",
       "Відповідь для цієї взаємодії не знайдено.",
     $"YOU_ARE_NOT_IN_A_VC_YOU_CAN_EDIT" |
-      # "You are not in a VC you can edit. If you are, it's likely that the bot restarted while "
-      # "you were in the channel. In that case, **__rejoin it__**. Note that those commands edit temporary VCs only.",
       "Ви не в ГК, який Ви можете редагувати. Якщо це не так, то імовірно, що бота було перезапущено, поки "
       "Ви були в цьому ГК. У цьому випадку, просто **__перезайдіть у нього__**. Зверніть увагу, що ці команди редагують лише тимчасові ГК.",
     $"THE_NAME_OF_THE_VC_IS_ALREADY" |
-      # "The name of the VC is already \"`{}`\".",
       "Цей канал уже має назву \"`{}`\".",
     $"THE_NAME_OF_THE_CHANNEL_HAS_CHANGED_FROM" |
-      # "The name of the channel has changed from \"`{0}` to \"`{1}`\".",
       "Назву цього каналу було змінено з \"`{0}`\" на \"`{1}`\".",
     $"GUILD_COULD_NOT_BE_FOUND" |
-      # "Guild could not be found. Please, try again.",
       "Не вдалося знайти сервер. Будь ласка, спробуйте ще раз",
     $"THE_BITRATE_IS_ALREADY" |
-      # "The bitrate is already `{}`.",
       "Бітрейт уже `{}`.",
     $"THE_NUMBER_CAN_ONLY_BE_BETWEEN" |
-      # "The number can only be between `8` and `{}` for this guild. "
-      # "Note that the maximum bitrate number also depends on the boost level.",
       "Це число може бути лише між `8` та `{}` для цього сервера. "
       "Зверніть увагу, що максимальний бітрейт іще залежить від рівня бусту.",
     $"SET_BITRATE_TO" |
-      # "Set bitrate to `{}` successfully.",
       "Успішно встановлено бітрейт на `{}`.",
     $"FOR_VOICE_CHANNELS_ITS_IMPOSSIBLE_TO_MAKE_THE_LIMIT_GREATER" |
-      # "For voice channels, it's impossible to make the limit greater than `99`. "
-      # "You can make it infinite by putting `0` as argument.",
       "Для голосових каналів, ліміт користувачів неможливо встановити на число, більше за `99`. "
       "Ви можете зробити його безкінечним, встановивши `0` як аргумент.",
     $"WELL_NOW_WERE_JUST_BEING_SILLY_ARENT_WE" |
-      # "Well now we're just being silly, aren't we?",
       "Ну, тут ми просто бешкетуємо, ні?",
     $"THE_USER_LIMIT_IS_ALREADY" |
-      # "The user limit is already `{}`.",
       "Ліміт користувачів уже `{}`.",
     $"USER_LIMIT_IS_SET_TO" |
-      # "User limit set to `{}` successfully.",
       "Успішно встановлено ліміт користувачів на `{}`.",
     $"THIS_IS_NOT_A_JTC_VC_I_KNOW_OF" |
-      # "This is not a JTC VC I know of.",
       "Цей не є ПДС-каналом, про який я знаю.",
     $"THE_NAME_IS_ALREADY" |
-      # "The name is already `{}` <a:skullspin:1121414918357389433>",
       "Назва вже є `{}` <a:skullspin:1121414918357389433>",
     $"THE_DEFAULT_NAME_IS_SET_TO" |
-      # "The default name is set to `{}`!",
       "Встановлено назву за замовчуванням на `{}`!",
     $"THE_LIMIT_SHOULD_BE_BETWEEN" |
-      # "The limit should be between `0` and `99` included, `0` for infinite",
       "Ліміт повинен бути між `0` і `99` включно, `0` для безкінечного.",
     $"THE_LIMIT_IS_ALREADY" |
-      # "The limit is already `{}` <a:skullspin:1121414918357389433>",
       "Ліміт уже `{}` <a:skullspin:1121414918357389433>",
     $"THE_DEFAULT_LIMIT_IS_SET_TO" |
-      # "The default limit is set to `{}`!",
       "Встановлено ліміт за замовчуванням на `{}`.",
     $"THE_DEFAULT_BITRATE_IS_SET_TO" |
-      # "The default bitrate is set to `{}`!",
       "Встановлено бітрейт за замовчуванням на `{}`!",
     $"THIS_GUILD_HAS_A_JTC_LIMIT_OF" |
-      # "This guild has a JTC limit of {0}.{1}",
       "Ліміт ПДС-каналів у цьому сервері є {0}.{1}",
     $"YOU_CAN_GET_MORE_BY_VOTING_THOUGH" |
-      # " You can get more by voting though!",
       " Щоправда, Ви можете отримати більше, голосуючи!",
     $"TRIED_TO_CREATE_A_JTC_CHANNEL_BUT_FAILED" |
-      # "Tried to create a join-to-create channel but failed. "
-      # "If this happens again, please report the incident by opening a ticket.",
       "Спробував створити ПДС-канал, але не вдалося. "
       "Якщо це станеться ще раз, будь ласка, повідомте про цей інцидент, відкривши тікет.",
     $"CREATED_A_JTC_CHANNEL" |
-      # "Created a join-to-create channel.",
       "Створив ПДС-канал.",
     $"THE_CHANNEL_HAS_BEEN_SET_UP" |
-      # "The channel has been set up!",
       "Було налаштовано ПДС-канал!",
     $"ITS_ALREADY_BEEN_SET_UP" |
-      # "It's already been set up. No more than one per guild!",
       "Його вже було налаштовано. Не більше ніж один за сервер!",
     $"YOURE_NOT_IN_A_TEMP_VC" |
-      # "You're not in a temporary voice channel! Unless you are, in which case simply rejoin.",
       "Ви не в тимчасовому голосовому каналі! Хіба що це не так, у якому разі просто перезайдіть.",
     $"THE_USER_IS_NOTORIN_THE_BLOCKLIST" |
-      # "The user is {}in the blocklist of the channel.",
       "Користувач {}у чорному списку цього каналу.",
     $"NOT" |
-      # "not ",
       "не ",
     $"THE_CHANNEL_YOURE_IN_DOES_NOT_BELONG_TO_YOU" |
-      # "The channel you're in does not belong to you! Unless it does, in which case simply rejoin.",
       "Канал, у якому Ви є Вам не належить! Хіба що, це не так, у якому разі просто перезайдіть.",
     $"REQUESTED_USER_NOT_FOUND" |
-      # "Requested user not found. Please, try again.",
       "Не знайдено запитаного користувача. Будь ласка, спробуйте ще раз.",
     $"THE_USER_HAS_ADMIN_ACCESS_TO_THIS_CHANNEL" |
-      # "The user has administrator access to this channel!",
       "Користувач має доступ адміністратора до цього каналу!",
     $"THE_USER_IS_ALREADY_IN_THE_BLOCKLIST" |
-      # "The user is already in the blocklist!",
       "Користувач уже в чорному списку!",
     $"THE_USER_WAS_ADDED_TO_THE_BLOCKLIST" |
-      # "The user was added to the blocklist of the current channel.",
       "Користувача було додано в чорний список поточного каналу.",
     $"THE_USER_WAS_NOT_IN_THE_BLOCKLIST" |
-      # "The user was not in the blocklist!",
       "Користувач не в чорному списку!",
     $"THE_USER_WAS_REMOVED_FROM_THE_BLOCKLIST" |
-      # "The user was removed from the blocklist of the current channel.",
       "Користувача було видалено з чорного списку поточного каналу.",
     $"GUILD_NOT_FOUND_IF_YOUVE_ALREADY_SET_IT" |
-      # "Guild not found. If you've already set it, consider trying again. Otherwise, set it with {}.",
       "Не вдалося знайти сервер. Якщо Ви вже вибрали, можливо спробуйте ще раз. Інакше, виберіть її використовуючи {}.",
     $"YOURE_VOTING_IN_FAVOUR_OF_THIS_GUILD" |
-      # "You're voting in favour of this guild.",
       "Ви голосуєте на користь цьому серверу.",
     $"HELLO_YOUR_CHOSEN_GUILD_IS" |
-      # "Hello, {0}, your chosen guild is {1}.",
       "Вітаю, {0}, Вами вибраний сервер є {1}.",
     $"YOUR_CHOSEN_GUILD_IS_ALREADY" |
-      # "Your chosen guild is already {}!",
       "Вами вибраний сервер уже є {}!",
     $"YOURE_NOW_VOTING_IN_FAVOUR_OF_THIS_GUILD" |
-      # "You're now voting in favour of this guild.",
       "Тепер Ви голосуєте на користь цьому серверу",
     $"SET_YOUR_GUILD_TO" |
-      # "Set your guild to {}.",
       "Встановив Ваш сервер на {}.",
     $"THIS_GUILDS_VOTE_PROGRESS_IS" |
-      # "This guild's vote progress is: __{0}__/**{1}**. The maximum amount of JTCs allowed here is {2}.{3}",
       "Прогрес голосування цьому серверу є: __{0}__/**{1}**. Тут максимальна кількість ПДС-каналів є {2}.{3}",
     $"THIS_IS_THE_ABSOLUTE_MAXIMUM" |
-      # " This is the absolute maximum.",
       " Це абсолютний максимум.",
     $"YOU_ALREADY_HAVE_A_TICKET" |
-      # "You already have a ticket! DM the bot to contact the creator!",
       "У Вас уже є тікет! Напишіть боту ПП, щоби вступити в контакт із його творцем!",
     $"COULDNT_CREATE_A_CHANNEL_FOR_THE_TICKET" |
-      # "Couldn't create a channel for the ticket",
       "Не вдалося створити канал для Вашого тікету.",
     $"A_TICKET_HAS_BEEN_CREATED" |
-      # "A ticket has been created.",
       "Було створено тікет.",
     $"YOU_DONT_HAVE_A_TICKET" |
-      # "You don't have a ticket, so no tickets were closed.",
       "У Вас немає тікету, тому жоден не був закритий.",
     $"YOUR_TICKET_HAS_BEEN_CLOSED" |
-      # "Your ticket has been closed! You can create a new one at any point.",
       "Ваш тікет було закрито! Ви можете створити новий у будь-який момент.",
     $"NEXT_TIME_THE_PING_WILL_BE" |
-      # "Next time the ping will be: **{}**.",
       "Наступного разу сповіщення буде: **{}**.",
     $"OFF" |
-      # "off",
       "вимк",
     $"ON" |
-      # "on",
       "ввімк",
     $"IM_PREPARING" |
-      # "I'm preparing! Please wait about 5-10 seconds and try again.",
       "Я готуюсь! Будь ласка, зачекайте приблизно 5-10 секунд і спробуйте ще раз.",
     $"VOTE_HERE" |
-      # "Vote [here](https://top.gg/bot/{0}/vote) and earn JTC points "
-      # "for a selected guild! See {1} for more information.",
       "Голосуйте [тут](https://top.gg/bot/{0}/vote) і отримайте очки для ПДС-каналів "
       "для вибраного серверу! Див. {1} для більш детальної інформації.",
     $"A_CHANNEL_IS_ALREADY_BEING_SET_UP" |
-      # "A channel is already being set up! Try again when it's done.",
       "Уже налаштовується канал! Спробуйте ще раз, коли він готовий.",
     $"A_TICKET_IS_ALREADY_BEING_SET_UP" |
-      # "A ticket is already being created! Try again when it's done."
       "Уже створюється тікет! Спробуйте ще раз, коли він готовий.",
+    $"THIS_CHANNEL_HAS_BEEN_RENAMED_WITHIN_THE_LAST_5_MINUTES" |
+      "Цей канал уже було переіменовано за останні 5 хвилин! "
+      "Ви зможете це зробити знову {}.",
+    $"CREATING_A_TICKET_FOR_YOU" |
+      "Створюю для Вас тікет.",
+    $"TICKET_CREATED" |
+      "Тікет успішно створено.",
+    $"COULDNT_SEND_YOU_A_DM" |
+      "Не вдалося надіслати Вам приватне повідомлення. Переконайтеся, що вони відкриті.",
     $"UNDEFINED_COMMAND" |
-      # "Undefined command, can't handle."
       "Команда не визначена, не можу обробити."
   }
 }\

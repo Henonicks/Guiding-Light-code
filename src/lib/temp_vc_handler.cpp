@@ -45,7 +45,7 @@ void temp_vc_create_owner_msg(const temp_vc_query& q, const dpp::snowflake& chan
 }
 
 void temp_vc_delete_msg(const dpp::user& user, const dpp::channel* channel) {
-	log(fmt::format("`{0}` ({1}) left a temp VC. Guild ID: {1}, channel ID: {2}, channel name: `{3}`, notification channel ID: {4}",
+	log(fmt::format("`{0}` ({1}) left a temp VC. Guild ID: {2}, channel ID: {3}, channel name: `{4}`, notification channel ID: {5}",
 		user.format_username(), user.id, channel->guild_id, channel->id,
 		channel->name, temp_vc_notifications[channel->guild_id]));
 	const dpp::snowflake& channel_id = temp_vc_notifications[channel->guild_id];
@@ -169,13 +169,15 @@ void temp_vc_create(const temp_vc_query& q) {
 			temp_vcs_queue.pop();
 			handling_user_id = 0;
 			++temp_vc_amount[q.guild_id];
+			if (error_callback(callback)) {
+				return;
+			}
 			const auto channel = std::get <dpp::channel>(callback.value);
 			temp_vc_create_owner_msg(q, channel.id);
 			temp_vcs[channel.id] = {channel.id, channel.guild_id, q.usr->id, q.channel_id};
 			bot->guild_member_move(channel.id, channel.guild_id, q.usr->id, [channel, q](const dpp::confirmation_callback_t& callback) -> void {
-				if (callback.is_error()) {
-					log(fmt::format("Couldn't move {} into the new VC, deleting it.", q.usr->id));
-					error_callback(callback);
+				if (error_callback(callback)) {
+					log(fmt::format("Above is the reason I couldn't move {} into the new VC, deleting it.", q.usr->id));
 					bot->channel_delete(channel.id, error_callback);
 					return;
 				}
@@ -184,7 +186,6 @@ void temp_vc_create(const temp_vc_query& q) {
 					temp_vc_create_msg(q, channel);
 				}
 			});
-			error_callback(callback);
 		});
 		if (called_separately) {
 			return;
