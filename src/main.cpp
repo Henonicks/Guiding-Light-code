@@ -32,7 +32,7 @@ int main(const int argc, char** argv) {
 	// Write down the right release/dev address into the bot pointer.
 	bot_is_starting = &(!IS_DEV ? bot_release_is_starting : bot_dev_is_starting);
 	// also a pointer, it's only used in the CLI mode.
-	
+
 	_bot_release.on_log([](const dpp::log_t& log) -> void {
 		bot_log(log);
 	});
@@ -337,13 +337,21 @@ int main(const int argc, char** argv) {
 		}
 	});
 
-	signal(SIGINT, [](const int) -> void {
+	std::signal(SIGINT, [](const int code) -> void {
 		if (!IS_CLI) {
 			log("Ну, все, я пішов спати, бувай, добраніч.");
-			std::cout << "Ну, все, я пішов спати, бувай, добраніч." << '\n';
+			std::cout << "Ну, все, я пішов спати, бувай, добраніч.\n";
 			// Ukrainian for "Well, that's it, I'm going to bed, bye, goodnight."
+			dump_data(code);
 		}
-		exit(0);
+	});
+
+	std::signal(SIGTERM, [](const int code) -> void {
+		if (!IS_CLI) {
+			log("I have been told to kill myself, doing it now.");
+			std::cout << "I have been told to kill myself, doing it now.\n";
+			dump_data(code);
+		}
 	});
 
 	bot->start(BOT_RETURN);

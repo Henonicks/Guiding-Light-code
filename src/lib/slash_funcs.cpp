@@ -53,9 +53,9 @@ dpp::coroutine <> slash::set::current(const dpp::slashcommand_t& event) {
 			dpp::message to_reply = dpp::message().set_flags(dpp::m_ephemeral);
 			std::string content;
 			const int max_bitrate = ((guild->premium_tier == 0) ?
-						       96 : (guild->premium_tier == 1) ?
-									128 : (guild->premium_tier == 2) ?
-										  256 : 384);
+			                   96 : (guild->premium_tier == 1) ?
+			                        128 : (guild->premium_tier == 2) ?
+			                             256 : 384);
 			if (channel.bitrate == argument) {
 				content = response_fmt(THE_BITRATE_IS_ALREADY, lang, {std::to_string(argument)});
 				log("But the bitrate is already that.");
