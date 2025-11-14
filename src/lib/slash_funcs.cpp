@@ -220,7 +220,7 @@ dpp::coroutine <> slash::setup(const dpp::slashcommand_t& event) {
 				{std::to_string(limit), (limit < 10 ? response_str(YOU_CAN_GET_MORE_BY_VOTING_THOUGH, lang) : "")}), error_callback);
 			co_return;
 		}
-		const auto max = cast <int8_t>(std::get<long>(cmd.options[0].options[0].value));
+		const auto max = cast <int8_t>(std::get <long>(cmd.options[0].options[0].value));
 		dpp::channel channel;
 		channel.set_type(dpp::channel_type::CHANNEL_VOICE);
 		channel.set_name(fmt::format("Join-to-create for {}", max > 0 ? std::to_string(max) : "infinite"));
