@@ -193,6 +193,17 @@ void cfg::pray() { // I'll pray that when this function starts executing we have
 	};
 
 	slash::enabled = true;
+	const auto set_presence = []() -> void {
+		bot->set_presence(dpp::presence(dpp::ps_idle, dpp::activity(
+			dpp::activity_type::at_watching, "VCs in " + std::to_string(dpp::get_guild_count()) + " guilds", "", ""
+		)));
+	};
+	set_presence();
+	bot->start_timer([set_presence](const dpp::timer&) -> void {
+		set_presence();
+	}, 180);
+	// Keep on setting the presence to update the guild count on it.
+
 }
 
 void cfg::write_down_slashcommands() {
