@@ -1,7 +1,5 @@
 #include "guiding_light/commands.hpp"
 
-#include <dpp/unicode_emoji.h>
-
 #include "guiding_light/cli.hpp"
 #include "guiding_light/responses.hpp"
 #include "guiding_light/slash_funcs.hpp"
@@ -33,10 +31,10 @@ dpp::command_option localise_command_option(const henifig::value_map& current_op
 
 dpp::command_option localise_command_options(const dpp::command_option& original_option, const dpp::slashcommand& cmd, const std::string_view option, henifig::value_map commands = cfg::slashcommands["COMMANDS"]) {
 	dpp::command_option res = original_option;
-	for (const auto& lang : commands | std::views::keys) {
+	for (const std::string& lang : commands | std::views::keys) {
 		if (lang != "default") {
 			if (commands.at(lang).get <henifig::value_map>().contains(cmd.name) && commands.at(lang)[cmd.name]["OPTIONS"].get <henifig::value_map>().contains(option.data())) {
-				res = localise_command_option(commands.at(lang.data())[cmd.name]["OPTIONS"][option], res, lang);
+				res = localise_command_option(commands.at(lang)[cmd.name]["OPTIONS"][option], res, lang);
 			}
 		}
 	}
@@ -45,7 +43,7 @@ dpp::command_option localise_command_options(const dpp::command_option& original
 
 dpp::slashcommand localise_slashcommand(const dpp::slashcommand& original_slashcommand, const henifig::value_map& commands = cfg::slashcommands["COMMANDS"]) {
 	dpp::slashcommand res = original_slashcommand;
-	for (const auto& lang : commands | std::views::keys) {
+	for (const std::string& lang : commands | std::views::keys) {
 		if (lang != "default") {
 			if (commands.at(lang).get <henifig::value_map>().contains(res.name)) {
 				res.add_localization(lang, commands.at(lang)[res.name]["NAME"], commands.at(lang)[res.name]["DESCRIPTION"]);
@@ -56,7 +54,7 @@ dpp::slashcommand localise_slashcommand(const dpp::slashcommand& original_slashc
 }
 
 dpp::slashcommand make_default(const std::string_view name, const henifig::value_map& commands = cfg::slashcommands["COMMANDS"]) {
-	return dpp::slashcommand(commands.at("default")[name]["NAME"].get <std::string>(), commands.at("default")[name]["DESCRIPTION"].get <std::string>(), bot->me.id);
+	return {commands.at("default")[name]["NAME"].get <std::string>(), commands.at("default")[name]["DESCRIPTION"].get <std::string>(), bot->me.id};
 }
 
 const henifig::value_map* get_opt_by_path(const std::string_view path, const henifig::value_map& command) {

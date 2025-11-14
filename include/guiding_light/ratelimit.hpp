@@ -1,7 +1,7 @@
 #ifndef RATELIMIT_H
 #define RATELIMIT_H
 
-#include "guiding_light.hpp"
+#include "guiding_light/guiding_light.hpp"
 
 inline constexpr uint16_t CHANNEL_RENAME_RATELIMIT_SECONDS = 600 / 2; // twice per ten minutes
 

@@ -1,5 +1,9 @@
 #include "guiding_light/ticket_handler.hpp"
 
+#include "guiding_light/slash_funcs.hpp"
+
+#include "dpp/unicode_emoji.h"
+
 dpp::message preserve_attachments(const dpp::message& msg) {
 	auto repost = dpp::message(msg.content);
 	for (const dpp::attachment& x : msg.attachments) {

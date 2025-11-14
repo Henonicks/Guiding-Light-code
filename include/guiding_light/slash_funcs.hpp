@@ -1,14 +1,8 @@
 #ifndef SLASH_FUNCS_H
 #define SLASH_FUNCS_H
 
-#include "database.hpp"
-#include "ticket.hpp"
-#include "topgg.hpp"
-#include "logging.hpp"
-#include "notification_channel.hpp"
-#include "jtc_vc.hpp"
-#include "jtc_defaults.hpp"
-#include "temp_vc.hpp"
+#include "guiding_light/logging.hpp"
+#include "guiding_light/temp_vc.hpp"
 
 /**
  * @brief Every function that's used directly in the slashcommand handler.

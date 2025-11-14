@@ -1,10 +1,10 @@
 #ifndef GUIDING_LIGHT_H
 #define GUIDING_LIGHT_H
 
+#define cast static_cast
+
 #include "no_warns/dpp/dpp.h"
-#include <dpp/nlohmann/json.hpp>
 #include <fmt/format.h>
-#include <fmt/args.h>
 #include "guiding_light/config_values.hpp"
 
 using user_snowflake = dpp::snowflake;

@@ -1,5 +1,8 @@
 #include "guiding_light/temp_vc_handler.hpp"
 
+#include "guiding_light/logging.hpp"
+#include "guiding_light/exception.hpp"
+
 void temp_vc_create_msg(const temp_vc_query& q, const dpp::channel& channel) {
 	const std::string description = fmt::format("A new temporary channel has been created {0}. Join the channel, **{1}** (<#{2}>)!",
 		!channel.parent_id.empty() ? fmt::format("in the <#{}> category", channel.parent_id) : "outside the categories",
@@ -68,7 +71,7 @@ void temp_vc_create(const temp_vc_query& q) {
 	if (q.usr == nullptr) {
 		log(fmt::format("User not found. Channel: {}", q.channel_id));
 		if (!q.channel_id.empty()) {
-			bot->message_create(dpp::message(q.channel_id, "Couldn't get user info. Can't create a temp VC.").set_allowed_mentions(true), error_callback);
+			bot->message_create(dpp::message(q.channel_id, "Couldn't get user info. Can't create a temp VC."), error_callback);
 		}
 		return;
 	}
@@ -88,7 +91,7 @@ void temp_vc_create(const temp_vc_query& q) {
 	dpp::channel new_channel;
 	new_channel.set_type(dpp::channel_type::CHANNEL_VOICE);
 	const jtc_defaults& defs = jtc_default_values[q.channel_id];
-	for (int i = 0; i < (int)defs.name.size(); i++) {
+	for (int i = 0; i < cast <int>(defs.name.size()); i++) {
 		if (defs.name[i] == '{') {
 			if (defs.name.size() - i >= 10) { // text {username}
 				std::string temp_string;	  // 0123456789	14
@@ -110,7 +113,7 @@ void temp_vc_create(const temp_vc_query& q) {
 		// In that case we're gonna replace each occurrence with
 		// Its first 10 letters.
 		std::string newer_name;
-		for (int i = 0; i < (int)defs.name.size(); i++) {
+		for (int i = 0; i < cast <int>(defs.name.size()); i++) {
 			if (defs.name[i] == '{') {
 				if (defs.name.size() - i >= 10) { // text {username}
 					std::string temp_string;	  // 0123456789	14
@@ -135,6 +138,11 @@ void temp_vc_create(const temp_vc_query& q) {
 	dpp::channel current = *dpp::find_channel(q.channel_id);
 	new_channel.set_parent_id(current.parent_id);
 	new_channel.set_user_limit(limit);
+	for (const dpp::permission_overwrite& x : current.permission_overwrites) {
+		if (x.deny.can(dpp::p_view_channel)) {
+			new_channel.add_permission_overwrite(x.id, cast <dpp::overwrite_type>(x.type), 0, x.deny);
+		}
+	}
 	const dpp::timer_callback_t timer_function = [new_channel, current, q](const bool& called_separately) -> void {
 		log("Attempting to create a temporary VC.");
 		if (temp_vcs_queue.empty()) {
@@ -214,6 +222,7 @@ void temp_vc_create(const temp_vc_query& q) {
 
 bool blocklist_updated(const dpp::channel& channel) {
 	auto unbanned = banned[channel.id];
+	// TODO: should unbanned be a reference?
 	bool flag{};
 	for (const auto& x : channel.permission_overwrites) {
 		if (banned[channel.id].contains(x.id) && (x.allow.can(dpp::p_view_channel) || !x.deny.can(dpp::p_view_channel))) {

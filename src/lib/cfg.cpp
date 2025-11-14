@@ -80,7 +80,7 @@ void cfg::pray() { // I'll pray that when this function starts executing we have
 	db::sql << "SELECT * FROM jtc_default_values;" + db::line_comment("pray::jtc_default_values") >> [](const db::BIGINT channel_id, const std::string& name, const db::TINYINT limit, const db::MEDIUMINT bitrate) {
 		const dpp::channel* channel = dpp::find_channel(channel_id);
 		if (channel != nullptr) {
-			jtc_default_values[channel_id] = {channel_id, name, (int8_t)limit, (int16_t)bitrate};
+			jtc_default_values[channel_id] = {channel_id, name, cast <int8_t>(limit), cast <int16_t>(bitrate)};
 		}
 		else {
 			db::sql << "DELETE FROM jtc_default_values WHERE channel_id=?;" << channel_id;
@@ -161,7 +161,7 @@ void cfg::pray() { // I'll pray that when this function starts executing we have
 		if (channel != nullptr) {
 			++temp_vc_amount[guild_id];
 			temp_vcs[channel_id] = {channel_id, guild_id, creator_id, parent_id};
-			for (const auto& x : channel->permission_overwrites) {
+			for (const dpp::permission_overwrite& x : channel->permission_overwrites) {
 				if (x.deny.can(dpp::p_view_channel)) {
 					banned[channel->id].insert(x.id);
 				}
@@ -176,7 +176,7 @@ void cfg::pray() { // I'll pray that when this function starts executing we have
 	db::sql << "SELECT * FROM channel_name_edit_timers;" + db::line_comment("pray::name_edit_timers") >> [](const db::BIGINT channel_id, const time_t timer) {
 		const dpp::channel* channel = dpp::find_channel(channel_id);
 		if (channel != nullptr) {
-			const auto current_time = static_cast <time_t>(dpp::utility::time_f());
+			const auto current_time = cast <time_t>(dpp::utility::time_f());
 			if (current_time < timer) {
 				channel_edits[cet_name][channel_id] = true;
 				channel_edit_timers[cet_name][channel_id] = timer;
@@ -198,16 +198,16 @@ void cfg::pray() { // I'll pray that when this function starts executing we have
 void cfg::write_down_slashcommands() {
 	bot->global_commands_get([](const dpp::confirmation_callback_t& callback) -> void {
 		const auto& map = callback.get <dpp::slashcommand_map>();
-		for (const auto& x : map) {
-			slash::global_created[x.second.name] = x.second;
+		for (const auto& cmd : map | std::views::values) {
+			slash::global_created[cmd.name] = cmd;
 		}
 		bot->guild_commands_get(MY_PRIVATE_GUILD_ID, [](const dpp::confirmation_callback_t& callback) -> void {
 			if (error_callback(callback)) {
 				return;
 			}
 			const auto& map = callback.get <dpp::slashcommand_map>();
-			for (const auto& x : map) {
-				slash::guild_created[x.second.name] = x.second;
+			for (const auto& cmd : map | std::views::values) {
+				slash::guild_created[cmd.name] = cmd;
 			}
 		});
 	});

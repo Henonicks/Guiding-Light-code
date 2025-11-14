@@ -1,10 +1,7 @@
 #ifndef TICKET_HANDLER_H
 #define TICKET_HANDLER_H
 
-#include "guiding_light.hpp"
-#include "dpp/unicode_emoji.h"
-#include "ticket.hpp"
-#include "slash_funcs.hpp"
+#include "guiding_light/guiding_light.hpp"
 
 /**
  * @brief Puts attachment links inside the message to preserve them when sharing.
