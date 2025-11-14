@@ -85,9 +85,15 @@ int main(const int argc, char** argv) {
 			else {
 				db::sql << "INSERT INTO no_temp_ping VALUES (?);" << user_id.str();
 			}
-			no_temp_ping[user_id] = !no_temp_ping[user_id];
+			const bool new_tp_rule = !no_temp_ping[user_id];
+			if (!new_tp_rule) {
+				no_temp_ping.erase(user_id);
+			}
+			else {
+				no_temp_ping[user_id] = new_tp_rule;
+			}
 			event.reply(response_fmtemsg(NEXT_TIME_THE_PING_WILL_BE, lang,
-				{no_temp_ping[user_id] == true ? response(OFF, lang) : response(ON, lang)})
+				{new_tp_rule == true ? response(OFF, lang) : response(ON, lang)})
 				.set_channel_id(event.command.channel_id), error_callback);
 		}
 		else if (button_id.starts_with("help")) {
@@ -162,13 +168,23 @@ int main(const int argc, char** argv) {
 			if (!jtc_vcs[channel_id].empty()) {
 				jtc_default_values.erase(channel_id);
 				jtc_vcs.erase(channel_id);
-				--jtc_vc_amount[guild_id];
+				if (jtc_vc_amount[guild_id] == 1) {
+					jtc_vc_amount.erase(guild_id);
+				}
+				else {
+					--jtc_vc_amount[guild_id];
+				}
 				db::sql << "DELETE FROM jtc_vcs WHERE channel_id=?;" << channel_id.str();
 				db::sql << "DELETE FROM jtc_default_values WHERE channel_id=?;" << channel_id.str();
 			}
 			if (!temp_vcs[channel_id].channel_id.empty()) {
 				banned.erase(channel_id);
-				--temp_vc_amount[guild_id];
+				if (temp_vc_amount[guild_id] == 1) {
+					temp_vc_amount.erase(guild_id);
+				}
+				else {
+					--temp_vc_amount[guild_id];
+				}
 				temp_vcs.erase(channel_id);
 				db::sql << "DELETE FROM temp_vcs WHERE channel_id=?;" << channel_id.str();
 			}
@@ -226,7 +242,12 @@ int main(const int argc, char** argv) {
 			const dpp::channel* channel = dpp::find_channel(channel_id);
 			temp_vc_delete_msg(user, channel);
 		}
-		vc_statuses[user_id] = event.state.channel_id;
+		if (!event.state.channel_id.empty()) {
+			vc_statuses[user_id] = event.state.channel_id;
+		}
+		else {
+			vc_statuses.erase(user_id);
+		}
 	});
 
 	bot->on_slashcommand([](const dpp::slashcommand_t& event) -> dpp::task <> {
@@ -300,7 +321,7 @@ int main(const int argc, char** argv) {
 			}
 			creation_status = true;
 			co_await slash::setup(event);
-			creation_status = false;
+			slash::in_progress[cmd_name].erase(guild_id);
 		}
 		else if (cmd_name == "blocklist") {
 			if (cmd.options[0].name == "add") {
