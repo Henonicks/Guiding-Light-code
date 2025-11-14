@@ -1,5 +1,8 @@
 #include "guiding_light/temp_vc_handler.hpp"
 
+#include "guiding_light/logging.hpp"
+#include "guiding_light/exception.hpp"
+
 void temp_vc_create_msg(const temp_vc_query& q, const dpp::channel& channel) {
 	const std::string description = fmt::format("A new temporary channel has been created {0}. Join the channel, **{1}** (<#{2}>)!",
 		!channel.parent_id.empty() ? fmt::format("in the <#{}> category", channel.parent_id) : "outside the categories",
@@ -88,7 +91,7 @@ void temp_vc_create(const temp_vc_query& q) {
 	dpp::channel new_channel;
 	new_channel.set_type(dpp::channel_type::CHANNEL_VOICE);
 	const jtc_defaults& defs = jtc_default_values[q.channel_id];
-	for (int i = 0; i < (int)defs.name.size(); i++) {
+	for (int i = 0; i < cast <int>(defs.name.size()); i++) {
 		if (defs.name[i] == '{') {
 			if (defs.name.size() - i >= 10) { // text {username}
 				std::string temp_string;	  // 0123456789	14
@@ -110,7 +113,7 @@ void temp_vc_create(const temp_vc_query& q) {
 		// In that case we're gonna replace each occurrence with
 		// Its first 10 letters.
 		std::string newer_name;
-		for (int i = 0; i < (int)defs.name.size(); i++) {
+		for (int i = 0; i < cast <int>(defs.name.size()); i++) {
 			if (defs.name[i] == '{') {
 				if (defs.name.size() - i >= 10) { // text {username}
 					std::string temp_string;	  // 0123456789	14
@@ -214,6 +217,7 @@ void temp_vc_create(const temp_vc_query& q) {
 
 bool blocklist_updated(const dpp::channel& channel) {
 	auto unbanned = banned[channel.id];
+	// TODO: should unbanned be a reference?
 	bool flag{};
 	for (const auto& x : channel.permission_overwrites) {
 		if (banned[channel.id].contains(x.id) && (x.allow.can(dpp::p_view_channel) || !x.deny.can(dpp::p_view_channel))) {

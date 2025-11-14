@@ -1,7 +1,7 @@
 #ifndef TEMP_VC_H
 #define TEMP_VC_H
 
-#include "guiding_light.hpp"
+#include "guiding_light/guiding_light.hpp"
 #include <unordered_set>
 
 struct temp_vc {

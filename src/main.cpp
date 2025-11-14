@@ -8,9 +8,6 @@
 std::unordered_map <dpp::snowflake, dpp::guild> all_bot_guilds;
 
 int main(const int argc, char** argv) {
-	std::vector <std::string> commands;
-	// Is this used?
-
 	cfg::check_sqlite3();
 	// Check if we have sqlite3 installed
 	exec_subcommands(argc, argv);
@@ -226,7 +223,7 @@ int main(const int argc, char** argv) {
 		}
 		channel_id = vc_statuses[user_id];
 		if (!temp_vcs[channel_id].channel_id.empty() && dpp::find_channel(channel_id)->get_voice_members().empty()) {
-			dpp::channel* channel = dpp::find_channel(channel_id);
+			const dpp::channel* channel = dpp::find_channel(channel_id);
 			temp_vc_delete_msg(user, channel);
 		}
 		vc_statuses[user_id] = event.state.channel_id;
@@ -317,7 +314,7 @@ int main(const int argc, char** argv) {
 			}
 		}
 		else if (cmd_name == "ticket") {
-			auto& creation_status = slash::in_progress[cmd_name][user_id];
+			bool& creation_status = slash::in_progress[cmd_name][user_id];
 			if (creation_status) {
 				event.reply(response_emsg(A_TICKET_IS_ALREADY_BEING_SET_UP, lang), error_callback);
 				co_return;

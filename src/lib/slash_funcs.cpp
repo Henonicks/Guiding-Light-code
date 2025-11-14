@@ -127,7 +127,7 @@ dpp::coroutine <> slash::set::default_values(const dpp::slashcommand_t& event) {
 	}
 	jtc_defaults new_defs;
 	if (cmd.options[0].options[0].name == "name") {
-		auto name = std::get <std::string>(cmd.options[0].options[0].options[0].value);
+		const auto name = std::get <std::string>(cmd.options[0].options[0].options[0].value);
 		log(fmt::format("They are trying to change the default name from `{0}` to `{1}`.", defs.name, name));
 		if (defs.name == name) {
 			log("But the default name is already that.");
@@ -162,7 +162,7 @@ dpp::coroutine <> slash::set::default_values(const dpp::slashcommand_t& event) {
 			db::sql << "DELETE FROM jtc_default_values WHERE channel_id=?;" << defs.channel_id.str();
 			new_defs.channel_id = defs.channel_id;
 			new_defs.name = defs.name;
-			new_defs.limit = (int8_t)limit;
+			new_defs.limit = cast <int8_t>(limit);
 			new_defs.bitrate = defs.bitrate;
 			jtc_default_values[channel_id] = new_defs;
 			db::sql << "INSERT INTO jtc_default_values VALUES (?, ?, ?, ?);" << channel_id.str() << defs.name << limit << defs.bitrate;
@@ -171,11 +171,11 @@ dpp::coroutine <> slash::set::default_values(const dpp::slashcommand_t& event) {
 		}
 	}
 	else if (cmd.options[0].options[0].name == "bitrate") {
-		auto bitrate = std::get <long>(cmd.options[0].options[0].options[0].value);
+		const auto bitrate = std::get <long>(cmd.options[0].options[0].options[0].value);
 		log("They are trying to change the default bitrate.");
 		dpp::message to_reply = dpp::message().set_flags(dpp::m_ephemeral);
 		std::string content;
-		int max_bitrate = ((guild.premium_tier == 0) ?
+		const int max_bitrate = ((guild.premium_tier == 0) ?
 			96 : (guild.premium_tier == 1) ?
 			128 : (guild.premium_tier == 2) ?
 			256 : 384);
@@ -192,7 +192,7 @@ dpp::coroutine <> slash::set::default_values(const dpp::slashcommand_t& event) {
 		else {
 			content = response_fmt(THE_DEFAULT_BITRATE_IS_SET_TO, lang, {std::to_string(bitrate)});
 			new_defs = defs;
-			new_defs.bitrate = (int16_t)bitrate;
+			new_defs.bitrate = cast <int16_t>(bitrate);
 			jtc_default_values[channel_id] = new_defs;
 			db::sql << "DELETE FROM jtc_default_values WHERE channel_id=?;" << channel_id.str();
 			db::sql << "INSERT INTO jtc_default_values VALUES (?, ?, ?, ?);" << channel_id.str() << defs.name << defs.limit << bitrate;
@@ -220,7 +220,7 @@ dpp::coroutine <> slash::setup(const dpp::slashcommand_t& event) {
 				{std::to_string(limit), (limit < 10 ? response_str(YOU_CAN_GET_MORE_BY_VOTING_THOUGH, lang) : "")}), error_callback);
 			co_return;
 		}
-		const auto max = (int8_t)std::get <long>(cmd.options[0].options[0].value);
+		const auto max = cast <int8_t>(std::get<long>(cmd.options[0].options[0].value));
 		dpp::channel channel;
 		channel.set_type(dpp::channel_type::CHANNEL_VOICE);
 		channel.set_name(fmt::format("Join-to-create for {}", max > 0 ? std::to_string(max) : "infinite"));
@@ -268,7 +268,7 @@ dpp::coroutine <> slash::setup(const dpp::slashcommand_t& event) {
 			const dpp::confirmation_callback_t& callback = co_await bot->co_channel_create(channel);
 			const auto new_channel = callback.get <dpp::channel>();
 			const std::string to_add = std::to_string(new_channel.id) + ' ' + std::to_string(new_channel.guild_id);
-			db::sql << "INSERT INTO " + (std::string)(is_jtc ? "temp_vc_notifications" : "topgg_notifications") + " VALUES (?, ?);" << new_channel.id.str() << new_channel.guild_id.str();
+			db::sql << "INSERT INTO " + cast <std::string>(is_jtc ? "temp_vc_notifications" : "topgg_notifications") + " VALUES (?, ?);" << new_channel.id.str() << new_channel.guild_id.str();
 			(is_jtc ? temp_vc_notifications : topgg_notifications)[new_channel.guild_id] = new_channel.id;
 			log("Success.");
 			event.reply(response_emsg(THE_CHANNEL_HAS_BEEN_SET_UP, lang), error_callback);

@@ -74,7 +74,7 @@ bool error_callback(const dpp::confirmation_callback_t& callback) {
 	if (callback.is_error()) {
 		std::string error = "ERROR! ";
 		if (!callback.get_error().errors.empty()) {
-			for (const auto& x : callback.get_error().errors) {
+			for (const dpp::error_detail& x : callback.get_error().errors) {
 				error += fmt::format("\n\tFIELD: {0} REASON: {1} OBJECT: {2} CODE: {3}", x.field, x.reason, x.object, x.code);
 			}
 		}
@@ -101,7 +101,7 @@ bool error_feedback(const dpp::confirmation_callback_t& callback, const dpp::int
 	if (callback.is_error()) {
 		std::string error = "ERROR! ";
 		if (!callback.get_error().errors.empty()) {
-			for (const auto& x : callback.get_error().errors) {
+			for (const dpp::error_detail& x : callback.get_error().errors) {
 				error += fmt::format("\n\tFIELD: {0} REASON: {1} OBJECT: {2} CODE: {3}", x.field, x.reason, x.object, x.code);
 			}
 		}

@@ -1,11 +1,8 @@
 #ifndef TEMP_VC_HANDLER_H
 #define TEMP_VC_HANDLER_H
 
-#include "temp_vc.hpp"
-#include "notification_channel.hpp"
-#include "jtc_defaults.hpp"
-#include "logging.hpp"
-#include "exception.hpp"
+#include "guiding_light/temp_vc.hpp"
+#include "guiding_light/notification_channel.hpp"
 
 inline user_snowflake handling_user_id; // the ID of the user that a VC is being created for
 

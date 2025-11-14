@@ -79,7 +79,6 @@ henifig::value_map cmd_response(const std::string_view name, const std::string_v
 	}
 }
 
-
 fmt::dynamic_format_arg_store <fmt::format_context> vec_to_fmt(const std::vector <std::string>& vec) {
 	fmt::dynamic_format_arg_store <fmt::format_context> fmt;
 	for (const std::string& x : vec) {

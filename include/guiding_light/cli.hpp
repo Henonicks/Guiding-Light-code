@@ -6,7 +6,7 @@
 #include "color.hpp"
 
 namespace cli {
-	inline const auto HISTORY_PATH = "cli/history.txt";
+	inline const char* HISTORY_PATH = "cli/history.txt";
 
 	extern const std::map <std::string, std::function <void(std::vector <std::string>)>> commands;
 	inline const std::map <std::string, std::string> manual = {

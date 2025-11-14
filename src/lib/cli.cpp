@@ -39,9 +39,9 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 		if (cmd.size() == 1) {
 			std::cout << "Usage: <command> [subcommand]\nTry help <command> to see how to use one of the commands or "
 			"help <list of commands> to see how to use multiple at once. Example:\nhelp cmd1 cmd2 cmd3.\nhelp ... explains every command.\nCommands: ";
-			for (const auto& x : manual) {
-				std::cout << x.first;
-				if (x.first != manual.rbegin()->first) {
+			for (const std::string& cmd : manual | std::views::keys) {
+				std::cout << cmd;
+				if (cmd != manual.rbegin()->first) {
 					std::cout << ", ";
 				}
 			}
@@ -49,7 +49,7 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 		}
 		else {
 			std::set <std::string> requested;
-			for (int i = 1; i < (int)cmd.size(); i++) {
+			for (int i = 1; i < cast <int>(cmd.size()); i++) {
 				if (cmd[i] == "...") {
 					requested.clear();
 					break;
@@ -57,8 +57,8 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 				requested.insert(cmd[i]);
 			}
 			if (requested.empty()) {
-				for (const auto& x : manual) {
-					std::cout << fmt::format("{0}: {1}\n\n", x.first, x.second);
+				for (const auto& [cmd_name, cmd_manual] : manual) {
+					std::cout << fmt::format("{0}: {1}\n\n", cmd_name, cmd_manual);
 				}
 			}
 			else {
@@ -129,7 +129,7 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 				uint64_t pos = line.find(' ');
 				while (pos != std::string::npos) {
 					line.replace(pos, 1, "','");
-					pos = (int)line.find(' ');
+					pos = cast <int>(line.find(' '));
 				}
 				line = '\'' + line + '\'';
 				try {
@@ -194,16 +194,16 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 		}
 		std::vector <dpp::slashcommand> created;
 		std::vector <std::string> not_created;
-		for (int i = 1; i < (int)cmd.size(); i++) {
+		for (int i = 1; i < cast <int>(cmd.size()); i++) {
 			if (cmd[i] == "...") {
 				created.clear();
 				not_created.clear();
 				break;
 			}
 			bool exists{};
-			for (const auto& x : slashcommands::list_global) {
-				if (cmd[i] == x.first) {
-					created.push_back(x.second);
+			for (const auto& [name, command] : slashcommands::list_global) {
+				if (cmd[i] == name) {
+					created.push_back(command);
 					exists = true;
 					break;
 				}
@@ -243,16 +243,16 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 		}
 		std::vector <dpp::slashcommand> created;
 		std::vector <std::string> not_created;
-		for (int i = 1; i < (int)cmd.size(); i++) {
+		for (int i = 1; i < cast <int>(cmd.size()); i++) {
 			if (cmd[i] == "...") {
 				created.clear();
 				not_created.clear();
 				break;
 			}
 			bool exists{};
-			for (const auto& x : slashcommands::list_guild) {
-				if (cmd[i] == x.first) {
-					created.push_back(x.second);
+			for (const auto& [name, command] : slashcommands::list_guild) {
+				if (cmd[i] == name) {
+					created.push_back(command);
 					exists = true;
 					break;
 				}
@@ -378,7 +378,7 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 	}},
 };
 
-std::vector <std::string> cli::tokenise(std::string_view line) {
+std::vector <std::string> cli::tokenise(const std::string_view line) {
 	std::string token;
 	std::vector <std::string> tokens;
 	for (const char& x : line) {
@@ -389,7 +389,7 @@ std::vector <std::string> cli::tokenise(std::string_view line) {
 			}
 		}
 		else {
-			token += tolower(x);
+			token += cast <char>(tolower(x));
 		}
 	}
 	if (!token.empty()) {
@@ -409,7 +409,6 @@ void cli::exec_command(const std::vector <std::string>& cmd) {
 void cli::init() {
 	cfg::read_config();
 	slashcommands::init();
-	// assert(db::connection_successful());
 	db::connection_successful();
 	const std::filesystem::path history_path(HISTORY_PATH);
 	if (!std::filesystem::exists(history_path)) {
@@ -440,7 +439,7 @@ void cli::init() {
 			for (auto it = cmd.begin(); it != cmd.end() - 1; ++it) {
 				line += *it;
 			}
-			for (const auto& x : completions.at(cmd[0])) {
+			for (const std::string& x : completions.at(cmd[0])) {
 				if (x.starts_with(*cmd.rbegin())) {
 					valid_completions.push_back(x);
 				}
@@ -450,7 +449,7 @@ void cli::init() {
 			}
 		}
 		else {
-			for (const auto& x : map_keys_to_vector(completions)) {
+			for (const std::string& x : map_keys_to_vector(completions)) {
 				if (x.starts_with(cmd[0])) {
 					valid_completions.push_back(x);
 				}
