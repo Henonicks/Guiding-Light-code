@@ -3,6 +3,8 @@
 
 #include "guiding_light/commands.hpp"
 
+inline bool TO_DUMP = false;
+
 /**
  * @brief Handles a launch option.
  * @param cmd The launch option to be handled.

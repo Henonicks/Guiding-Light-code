@@ -4,7 +4,7 @@
 #include "guiding_light/guiding_light.hpp"
 
 inline const std::set <std::string> command_options_list =
-	{"--return", "--dev", "--cli", "--killall"};
+	{"--return", "--dev", "--cli", "--killall", "--dump"};
 
 namespace logs {
 	inline const std::set <std::string> list =

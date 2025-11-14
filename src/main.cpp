@@ -17,8 +17,6 @@ int main(const int argc, char** argv) {
 	// Execute any subcommands provided with <path>/guidingLight [subcommands].
 	cfg::read_config();
 	// Write down the values from the config into variables.
-	cfg::init_logs();
-	// Open the log files. Create them if needed.
 
 	dpp::cluster _bot_release(BOT_TOKEN, IS_CLI ? dpp::i_default_intents : dpp::i_guilds | dpp::i_guild_members | dpp::i_guild_voice_states | dpp::i_direct_messages | dpp::i_message_content | dpp::i_guild_webhooks | dpp::i_guild_messages);
 	bot_release = &_bot_release;
@@ -30,6 +28,19 @@ int main(const int argc, char** argv) {
 
 	bot = get_bot();
 	// Write down the right release/dev address into the bot pointer.
+
+	if (TO_DUMP) {
+		std::cout << "Dumping and exiting.\n";
+		bot->start(dpp::st_return);
+		dump_data(0, [] {
+			std::cout << "Could not dump. But screw you, I'm still exiting.\n";
+		});
+	}
+	else {
+		cfg::init_logs();
+		// Open the log files. Create them if needed.
+	}
+
 	bot_is_starting = &(!IS_DEV ? bot_release_is_starting : bot_dev_is_starting);
 	// also a pointer, it's only used in the CLI mode.
 
@@ -354,6 +365,12 @@ int main(const int argc, char** argv) {
 		}
 	});
 
-	bot->start(BOT_RETURN);
+	if (!TO_DUMP) {
+		bot->start(BOT_RETURN);
+	}
+	else {
+		std::this_thread::sleep_for(std::chrono::milliseconds(100000));
+		std::cout << "It's been a second and there is still no dump. Exiting now.\n";
+	}
 	return 0;
 }

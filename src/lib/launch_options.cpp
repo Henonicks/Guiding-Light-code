@@ -1,5 +1,3 @@
-#include <unistd.h>
-
 #include "guiding_light/launch_options.hpp"
 
 void exec_subcommand(const std::string_view cmd) {
@@ -17,6 +15,9 @@ void exec_subcommand(const std::string_view cmd) {
 	}
 	else if (cmd == "--killall") {
 		killall();
+	}
+	else if (cmd == "--dump") {
+		TO_DUMP = true;
 	}
 	else {
 		std::cout << "Command not implemented: " << cmd << '\n';

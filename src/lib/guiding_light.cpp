@@ -17,7 +17,7 @@ std::string bot_name() {
 	// See README.md if you wonder why these names.
 }
 
-void dump_data(const int code) {
+void dump_data(const int code, const std::function <void()>& on_error) {
 	bot->message_create(
 		dpp::message(LOGS_CHANNEL_ID, "Shutting down, dumping.")
 			.add_file(fmt::format("{}.db", MODE_NAME), dpp::utility::read_file(fmt::format("../database/{}.db", MODE_NAME)))
@@ -25,7 +25,7 @@ void dump_data(const int code) {
 			.add_file("other_logs.log", dpp::utility::read_file(fmt::format("../logging/bot/{}/other_logs.log", MODE_NAME)))
 			.add_file("guild_logs.log", dpp::utility::read_file(fmt::format("../logging/bot/{}/guild_logs.log", MODE_NAME)))
 			.add_file("sql_logs.log", dpp::utility::read_file(fmt::format("../logging/bot/{}/sql_logs.log", MODE_NAME)))
-	, [code](const dpp::confirmation_callback_t& callback) {
+	, [code, on_error](const dpp::confirmation_callback_t& callback) {
 		if (!error_callback(callback)) {
 			log("Goodnight!");
 			std::cout << "Goodnight!\n";
@@ -34,6 +34,7 @@ void dump_data(const int code) {
 		else {
 			log("nvm lmao");
 			std::cout << "nvm lmao\n";
+			on_error();
 		}
 	});
 }
