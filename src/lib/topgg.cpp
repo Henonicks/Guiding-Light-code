@@ -18,7 +18,9 @@ bool topgg::vote(const dpp::snowflake& user_id, const bool& weekend) {
 	db::sql << "DELETE FROM topgg_guild_votes_amount WHERE guild_id=?;" << guild_id.str();
 	db::sql << "INSERT INTO topgg_guild_votes_amount VALUES (?, ?);" << guild_id.str() << guild_votes_amount[guild_id];
 	const dpp::snowflake& channel_id = topgg_notifications[guild_id];
-	bot->message_create(dpp::message(channel_id, fmt::format("<@{0}> has voted.{1}", user_id, weekend ? " A bonus point is granted as today is a weekend!" : "")), error_callback);
+	if (!channel_id.empty()) {
+		bot->message_create(dpp::message(channel_id, fmt::format("<@{0}> has voted.{1}", user_id, weekend ? " A bonus point is granted as today is a weekend!" : "")), error_callback);
+	}
 	return failure;
 }
 
