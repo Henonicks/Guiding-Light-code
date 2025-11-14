@@ -5,8 +5,6 @@
 #include "guiding_light/cli.hpp"
 #include "guiding_light/responses.hpp"
 
-std::unordered_map <dpp::snowflake, dpp::guild> all_bot_guilds;
-
 int main(const int argc, char** argv) {
 	cfg::check_sqlite3();
 	// Check if we have sqlite3 installed
@@ -52,19 +50,6 @@ int main(const int argc, char** argv) {
 	if (IS_CLI) {
 		cli::enter();
 	}
-
-	/* Register slash commands here in on_ready */
-	bot->on_ready([](const dpp::ready_t&) -> void {
-		if (IS_CLI) {
-			return;
-		}
-		if (dpp::run_once <struct register_bot_commands>()) {
-			bot->start_timer([](const dpp::timer&) -> void {
-				bot->set_presence(dpp::presence(dpp::ps_idle, dpp::activity(dpp::activity_type::at_watching, "VCs in " + std::to_string(all_bot_guilds.size()) + " guilds", "", "")));
-			}, 180);
-			// Keep on setting the presence to update the guild count on it.
-		}
-	});
 
 	bot->on_button_click([](const dpp::button_click_t& event) -> void {
 		if (IS_CLI) {
@@ -210,15 +195,19 @@ int main(const int argc, char** argv) {
 		if (IS_CLI) {
 			return;
 		}
-		all_bot_guilds[event.created.id] = event.created;
-		guild_log("I have joined a guild. These are its stats:\nName: `" + event.created.name + "`\nID: `" + event.created.id.str() + "`\nMembers amount: `" + std::to_string(event.created.member_count) + "`");
+		guild_log(fmt::format("I have joined a guild. These are its stats:\n"
+			"Name: `{0}`\nID: `{1}`\nMembers count: `{2}`"
+			, event.created.name, event.created.id, event.created.member_count
+		));
 	});
 	bot->on_guild_delete([](const dpp::guild_delete_t& event) {
 		if (IS_CLI) {
 			return;
 		}
-		all_bot_guilds.erase(event.deleted.id);
-		guild_log("I have left a guild. These are its stats:\nName: `" + event.deleted.name + "`\nID: `" + event.deleted.id.str() + "`\nMembers amount: `" + std::to_string(event.deleted.member_count) + "`");
+		guild_log(fmt::format("I have left a guild. These are its stats:\n"
+			"Name: `{0}`\nID: `{1}`\nMembers count: `{2}`"
+			, event.deleted.name, event.deleted.id, event.deleted.member_count
+		));
 	});
 
 	bot->on_voice_state_update([](const dpp::voice_state_update_t& event) {

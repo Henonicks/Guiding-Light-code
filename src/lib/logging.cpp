@@ -4,6 +4,9 @@ void bot_log(const dpp::log_t& _log) {
 	std::ofstream* other_logs = &(IS_DEV ? other_logs_dev : other_logs_release);
 	*other_logs << fmt::format("[{0}]: {1}", dpp::utility::current_date_time(), _log.message) << std::endl;
 	if (_log.message == "Shards started.") {
+		if (IS_CLI) {
+			return;
+		}
 		if (!db::connection_successful()) {
 			std::cerr << fmt::format("{0} connection to DB failed! imma js crash ts g 💔🥀\nHINT: have you imported your database as database/{1}.db or initialised the database with init_db?", color::rize("ERROR:", "Red"), MODE_NAME) << std::endl;
 			exit(1);
