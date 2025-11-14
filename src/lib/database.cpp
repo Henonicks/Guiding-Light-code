@@ -35,12 +35,12 @@ sqlite::database_binder db::wrapper::operator <<(sqlite::str_ref _query) {
 		if (pos != std::string::npos) {
 			function = _query.substr(pos + 3).data();
 			if (errors_pending[function]) {
-				errors_pending[function] = false;
 				std::cerr << fmt::format(
 					"SQL errors occurred. Check logging/{0}/{1}/sql_logs.log for more info.\n",
 					IS_CLI ? "cli" : "bot", MODE_NAME
 				);
 			}
+			errors_pending.erase(function);
 		}
 		sql_log(e, function);
 		return database::operator <<(";");

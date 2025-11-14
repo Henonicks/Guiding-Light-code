@@ -82,6 +82,10 @@ void temp_vc_create(const temp_vc_query& q) {
 		to_return = true;
 	}
 	join_time[q.usr->id] = current_time;
+	bot->start_timer([q](const dpp::timer& h) {
+		join_time.erase(q.usr->id);
+		bot->stop_timer(h);
+	}, 5);
 	if (to_return) {
 		bot->guild_member_move(0, q.guild_id, q.usr->id, error_callback);
 		return;
