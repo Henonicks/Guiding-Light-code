@@ -135,7 +135,7 @@ void temp_vc_create(const temp_vc_query& q) {
 		}
 		new_name = newer_name;
 	}
-	const int8_t& limit = defs.limit;
+	const int8_t limit = defs.limit;
 	new_channel.set_name(new_name);
 	new_channel.set_guild_id(q.guild_id);
 	new_channel.set_bitrate(defs.bitrate);

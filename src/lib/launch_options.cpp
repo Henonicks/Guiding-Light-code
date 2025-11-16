@@ -1,10 +1,11 @@
 #include "guiding_light/launch_options.hpp"
 
-void exec_subcommand(const std::string_view cmd) {
+bool exec_subcommand(const std::string_view cmd) {
 	if (!command_options_list.contains(std::string(cmd))) {
 		std::cout << "Unknown command: " << cmd << '\n';
+		return false;
 	}
-	else if (cmd == "--dev") {
+	if (cmd == "--dev") {
 		IS_DEV = true;
 	}
 	else if (cmd == "--return") {
@@ -14,20 +15,31 @@ void exec_subcommand(const std::string_view cmd) {
 		IS_CLI = true;
 	}
 	else if (cmd == "--killall") {
-		killall();
+		TO_KILLALL = true;
 	}
 	else if (cmd == "--dump") {
 		TO_DUMP = true;
 	}
 	else {
 		std::cout << "Command not implemented: " << cmd << '\n';
+		return false;
 	}
+	return true;
 }
 
-void exec_subcommands(const int& argc, char** argv) {
+bool exec_subcommands(const int argc, char** argv) {
+	bool success = true;
 	for (int i = 1; i < argc; i++) {
-		exec_subcommand(argv[i]);
+		if (!exec_subcommand(argv[i])) {
+			success = false;
+		}
 	}
+	if (success) {
+		if (TO_KILLALL) {
+			killall();
+		}
+	}
+	return success;
 }
 
 void killall() {
