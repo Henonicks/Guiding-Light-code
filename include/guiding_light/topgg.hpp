@@ -1,10 +1,9 @@
 #ifndef TOPGG_H
 #define TOPGG_H
 
-#include "notification_channel.hpp"
+#include "guiding_light/notification_channel.hpp"
 
 namespace topgg {
-	inline int last_collection_time = 0;
 	inline std::map <user_snowflake, guild_snowflake> guild_choices;
 	inline std::map <guild_snowflake, int> guild_votes_amount;
 	inline constexpr std::array <int, 10> votes_leveling =
@@ -26,6 +25,13 @@ namespace topgg {
 		 * @return The amount of the JTCs.
 		 */
 		int8_t count_allowed_jtcs(const dpp::snowflake& guild_id);
+
+		/**
+		 * @brief Gets the requirement for the next level in a guild.
+		 * @param guild_id The ID of the guild to get the requirement for.
+		 * @return The requirement for the next level, or 0 if the maximum level has already been reached.
+		 */
+		int get_next_lvl_req(const dpp::snowflake& guild_id);
 	}
 }
 

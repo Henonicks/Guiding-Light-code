@@ -1,4 +1,5 @@
 #include "guiding_light/cli.hpp"
+
 #include "guiding_light/commands.tpp"
 
 void cli::read_until_provided(std::string& line) {

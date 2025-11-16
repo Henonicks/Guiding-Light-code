@@ -8,8 +8,11 @@
 int main(const int argc, char** argv) {
 	cfg::check_sqlite3();
 	// Check if we have sqlite3 installed
-	exec_subcommands(argc, argv);
-	// Execute any subcommands provided with <path>/guidingLight [subcommands].
+	if (!exec_subcommands(argc, argv)) {
+		// Execute any subcommands provided with <path>/guidingLight [subcommands].
+		std::cerr << "Failed to execute some subcommands. Quitting.\n";
+		exit(1);
+	}
 	cfg::read_config();
 	// Write down the values from the config into variables.
 
