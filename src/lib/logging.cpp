@@ -1,4 +1,5 @@
 #include "guiding_light/logging.hpp"
+#include "guiding_light/responses.hpp"
 
 void bot_log(const dpp::log_t& _log) {
 	std::ofstream* other_logs = &(IS_DEV ? other_logs_dev : other_logs_release);
@@ -100,7 +101,7 @@ bool error_callback(const dpp::confirmation_callback_t& callback) {
 	return false;
 }
 
-bool error_feedback(const dpp::confirmation_callback_t& callback, const dpp::interaction_create_t& event, std::string_view error_intro) {
+bool error_feedback(const dpp::confirmation_callback_t& callback, const dpp::interaction_create_t& event, const std::string_view lang, const std::string_view error_intro) {
 	if (callback.is_error()) {
 		std::string error = "ERROR! ";
 		if (!callback.get_error().errors.empty()) {
@@ -121,7 +122,8 @@ bool error_feedback(const dpp::confirmation_callback_t& callback, const dpp::int
 			error += fmt::format("\nReply body: \n\t{}", callback.http_info.body);
 		}
 		error_log(error, callback.get_error().human_readable);
-		event.reply(dpp::message(fmt::format("{0}: {1}.", error_intro, callback.get_error().message)).set_flags(dpp::m_ephemeral), error_callback);
+		const std::string human_readable = fmt::format("{0}: {1}. {2}\n{3}", error_intro, callback.get_error().message, error_response(callback.get_error().code, lang), response_str(CREATE_A_TICKET, lang));
+		event.reply(dpp::message(human_readable).set_flags(dpp::m_ephemeral), error_callback);
 		return true;
 	}
 	return false;
@@ -148,7 +150,8 @@ bool error_feedback(const dpp::confirmation_callback_t& callback, const dpp::mes
 			error += fmt::format("\nReply body: \n\t{}", callback.http_info.body);
 		}
 		error_log(error, callback.get_error().human_readable);
-		event.reply(fmt::format("{0}: {1}.", error_intro, callback.get_error().message), true, error_callback);
+		const std::string human_readable = fmt::format("{0}: {1}. {2}\n{3}", error_intro, callback.get_error().message, error_response(callback.get_error().code), response_str(CREATE_A_TICKET));
+		event.reply(dpp::message(human_readable), true, error_callback);
 		return true;
 	}
 	return false;

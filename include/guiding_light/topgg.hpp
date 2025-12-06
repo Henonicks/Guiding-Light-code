@@ -16,7 +16,7 @@ namespace topgg {
 	 * @param weekend True if it's a weekend, false otherwise.
 	 * @return True if the user voted in favour of a guild, false otherwise.
 	 */
-	bool vote(const dpp::snowflake& user_id, const bool& weekend);
+	bool vote(const dpp::snowflake& user_id, bool weekend);
 
 	namespace jtc {
 		/**

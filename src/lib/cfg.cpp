@@ -55,6 +55,26 @@ void cfg::init_logs() {
 }
 
 void cfg::pray() { // I'll pray that when this function starts executing we have all the cache because Discord doesn't let me know whether all the cache I've received at a certain point is everything or there's more and there's no better way to do this I promise
+	slash::enabled = false;
+
+	jtc_vcs.clear();
+	jtc_vc_amount.clear();
+	temp_vc_notifications.clear();
+	jtc_default_values.clear();
+	no_temp_ping.clear();
+	topgg::guild_choices.clear();
+	topgg::guild_votes_amount.clear();
+	topgg::no_noguild_reminder.clear();
+	topgg_notifications.clear();
+	tickets.clear();
+	ck_tickets.clear();
+	temp_vc_amount.clear();
+	temp_vcs.clear();
+	for (uint8_t i = 0; i < cet_size; i++) {
+		channel_edits[i].clear();
+		channel_edit_timers[i].clear();
+	}
+
 	db::sql << "SELECT * FROM jtc_vcs;" + db::line_comment("pray::jtc_vcs") >> [](const db::BIGINT channel_id, const db::BIGINT guild_id) {
 		const dpp::channel* channel = dpp::find_channel(channel_id);
 		if (channel != nullptr) {
@@ -98,7 +118,7 @@ void cfg::pray() { // I'll pray that when this function starts executing we have
 			error_log(fmt::format("While searching for temp ping blockers: couldn't find the user {}. Deleting.", user_id));
 		}
 	};
-	
+
 	db::sql << "SELECT * FROM topgg_guild_choices;" + db::line_comment("pray::jtc_vcs") >> [](const db::BIGINT user_id, const db::BIGINT guild_id) {
 		const dpp::user* user = dpp::find_user(user_id);
 		if (user != nullptr) {
@@ -109,7 +129,7 @@ void cfg::pray() { // I'll pray that when this function starts executing we have
 			error_log(fmt::format("Couldn't find the user {0} to get the top.gg choice {1} from. Deleting.", user_id, guild_id));
 		}
 	};
-	
+
 	db::sql << "SELECT * FROM topgg_guild_votes_amount;" + db::line_comment("pray::guild_votes_amount") >> [](const db::BIGINT guild_id, const int votes) {
 		const dpp::guild* guild = dpp::find_guild(guild_id);
 		if (guild != nullptr) {
@@ -120,7 +140,7 @@ void cfg::pray() { // I'll pray that when this function starts executing we have
 			error_log(fmt::format("Couldn't find the guild {0} to get {1} votes from. Deleting.", guild_id, votes));
 		}
 	};
-	
+
 	db::sql << "SELECT * FROM no_noguild_reminder;" + db::line_comment("pray::no_noguild_reminder") >> [](const db::BIGINT user_id) {
 		const dpp::user* user = dpp::find_user(user_id);
 		if (user != nullptr) {
@@ -131,7 +151,7 @@ void cfg::pray() { // I'll pray that when this function starts executing we have
 			error_log(fmt::format("While searching for no guild reminder blockers: couldn't find the user {}. Deleting.", user_id));
 		}
 	};
-	
+
 	db::sql << "SELECT * FROM topgg_notifications;" + db::line_comment("pray::topgg_notifications") >> [](const db::BIGINT channel_id, const db::BIGINT guild_id) {
 		const dpp::channel* channel = dpp::find_channel(channel_id);
 		if (channel != nullptr) {
@@ -142,7 +162,7 @@ void cfg::pray() { // I'll pray that when this function starts executing we have
 			error_log(fmt::format("Couldn't find the top.gg notifications channel {0} in the guild {1}. Deleting.", channel_id, guild_id));
 		}
 	};
-	
+
 	db::sql << "SELECT * FROM tickets;" + db::line_comment("pray::tickets") >> [](const db::BIGINT user_id, const db::BIGINT channel_id) {
 		const dpp::user* user = dpp::find_user(user_id);
 		const dpp::channel* channel = dpp::find_channel(channel_id);
@@ -155,7 +175,7 @@ void cfg::pray() { // I'll pray that when this function starts executing we have
 			error_log(fmt::format("Couldn't find the user {0} with the ticket channel {1}. Deleting.", user_id, channel_id));
 		}
 	};
-	
+
 	db::sql << "SELECT * FROM temp_vcs;" + db::line_comment("pray::temp_vcs") >> [](const db::BIGINT channel_id, const db::BIGINT guild_id, const db::BIGINT& creator_id, const db::BIGINT parent_id) {
 		const dpp::channel* channel = dpp::find_channel(channel_id);
 		if (channel != nullptr) {

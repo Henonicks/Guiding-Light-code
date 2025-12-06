@@ -33,7 +33,7 @@ dpp::coroutine <> slash::set::current(const dpp::slashcommand_t& event) {
 				channel.set_name(argument);
 				bot->channel_edit(channel, [event, old_name, argument, lang, channel_id](const dpp::confirmation_callback_t& callback) {
 					log("Trying to change the name...");
-					if (error_feedback(callback, event)) {
+					if (error_feedback(callback, event, lang)) {
 						return;
 					}
 					add_channel_edit(channel_id, cet_name);
@@ -69,7 +69,7 @@ dpp::coroutine <> slash::set::current(const dpp::slashcommand_t& event) {
 				content = response_fmt(SET_BITRATE_TO, lang, {std::to_string(argument)});
 				channel.set_bitrate(argument);
 				const dpp::confirmation_callback_t& callback = co_await bot->co_channel_edit(channel);
-				if (error_feedback(callback, event)) {
+				if (error_feedback(callback, event, lang)) {
 					co_return;
 				}
 				log("Success.");
@@ -99,7 +99,7 @@ dpp::coroutine <> slash::set::current(const dpp::slashcommand_t& event) {
 					log("Trying to change the limit...");
 					channel.set_user_limit(argument);
 					bot->channel_edit(channel, [event, argument, lang](const dpp::confirmation_callback_t& callback) {
-						if (error_feedback(callback, event)) {
+						if (error_feedback(callback, event, lang)) {
 							return;
 						}
 						log("Success.");
@@ -230,8 +230,7 @@ dpp::coroutine <> slash::setup(const dpp::slashcommand_t& event) {
 		channel.set_user_limit(1); // For the normal users, only one will be able to create a JTC at the same time.
 		log("Trying to create a JTC VC.");
 		const dpp::confirmation_callback_t& callback = co_await bot->co_channel_create(channel);
-		if (error_callback(callback)) {
-			event.reply(response_emsg(TRIED_TO_CREATE_A_JTC_CHANNEL_BUT_FAILED, lang), error_callback);
+		if (error_feedback(callback, event, lang)) {
 			co_return;
 		}
 		++jtc_vc_amount[guild_id];
@@ -327,7 +326,7 @@ dpp::coroutine <> slash::blocklist::add(const dpp::slashcommand_t& event) {
 		log("Trying to edit the channel...");
 		const dpp::confirmation_callback_t& callback = co_await bot->co_channel_edit(*channel);
 		if (callback.is_error()) {
-			error_feedback(callback, event);
+			error_feedback(callback, event, lang);
 			co_return;
 		}
 		log("Success.");
@@ -365,7 +364,7 @@ dpp::coroutine <> slash::blocklist::remove(const dpp::slashcommand_t& event) {
 		log("Trying to edit the channel...");
 		const dpp::confirmation_callback_t& callback = co_await bot->co_channel_edit(*channel);
 		if (callback.is_error()) {
-			error_feedback(callback, event);
+			error_feedback(callback, event, lang);
 			co_return;
 		}
 		banned[issuer_vc.channel_id].erase(requested_id);
@@ -454,7 +453,7 @@ dpp::coroutine <> slash::ticket::create(const dpp::slashcommand_t& event) {
 		.set_guild_id(TICKETS_GUILD_ID);
 	log("Trying to create a channel for the ticket...");
 	const dpp::confirmation_callback_t& callback = co_await bot->co_channel_create(channel);
-	if (error_feedback(callback, event, response(COULDNT_CREATE_A_CHANNEL_FOR_THE_TICKET, lang))) {
+	if (error_feedback(callback, event, lang, response(COULDNT_CREATE_A_CHANNEL_FOR_THE_TICKET, lang))) {
 		co_return;
 	}
 	channel = callback.get <dpp::channel>();

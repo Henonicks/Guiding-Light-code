@@ -1,6 +1,7 @@
 #include "guiding_light/responses.hpp"
 #include "guiding_light/config_values.hpp"
 #include "guiding_light/cfg.hpp"
+#include "guiding_light/cli.hpp"
 
 std::string random_response(const dpp::snowflake& user_id) {
 	std::random_device rd;
@@ -78,6 +79,26 @@ henifig::value_map cmd_response(const std::string_view name, const std::string_v
 		return henifig::value_map{};
 	}
 }
+
+std::string error_response(const uint32_t error_code, const std::string_view lang, const henifig::value_map& error_descriptions) {
+	std::string used_lang = lang.data();
+	if (!error_descriptions.contains(used_lang)) {
+		used_lang = "default";
+	}
+	const henifig::value_map& responses = error_descriptions.at(used_lang);
+	const std::string code_str = std::to_string(error_code);
+	if (responses.contains(code_str)) {
+		return responses.at(code_str);
+	}
+	else if (const henifig::value_map& fallback_responses = error_descriptions.at("default");
+	fallback_responses.contains(code_str)) {
+		return fallback_responses.at(code_str);
+	}
+	else {
+		return "";
+	}
+}
+
 
 fmt::dynamic_format_arg_store <fmt::format_context> vec_to_fmt(const std::vector <std::string>& vec) {
 	fmt::dynamic_format_arg_store <fmt::format_context> fmt;
