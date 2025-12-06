@@ -10,6 +10,7 @@ void temp_vc_create_msg(const temp_vc_query& q, const dpp::channel& channel) {
 	const dpp::embed temp_vc_create_embed = dpp::embed()
 		.set_color(dpp::colors::greenish_blue)
 		.set_description(description);
+	log("Sending the temp vc creation notification.");
 	bot->message_create(dpp::message(temp_vc_notifications[q.guild_id], temp_vc_create_embed), error_callback);
 }
 
@@ -44,6 +45,7 @@ void temp_vc_create_owner_msg(const temp_vc_query& q, const dpp::snowflake& chan
 			.set_id("temp_ping_toggle")
 		)
 	).set_allowed_mentions(true);
+	log("Sending the \"You own this channel!\" message.");
 	bot->message_create(message, error_callback);
 }
 
@@ -52,16 +54,24 @@ void temp_vc_delete_msg(const dpp::user& user, const dpp::channel* channel) {
 		user.format_username(), user.id, channel->guild_id, channel->id,
 		channel->name, temp_vc_notifications[channel->guild_id]));
 	const dpp::snowflake& channel_id = temp_vc_notifications[channel->guild_id];
+	log(fmt::format("Does their server ({}) have a temp vc notification channel though?", channel->guild_id));
 	if (!channel_id.empty()) {
+		log(fmt::format("Yes, it does, it's {}.", channel->id));
 		std::string description = "A temporary channel **" + channel->name + "**";
+		log("Is it in a category?");
 		const dpp::channel* category = dpp::find_channel(channel->parent_id);
 		if (category != nullptr) {
+			log(fmt::format("Yes, it is, in the category {}.", category->id));
 			description += " in the **" + category->get_mention() + "** category";
+		}
+		else {
+			log("No, it's not.");
 		}
 		description += " has been deleted.";
 		const dpp::embed temp_vc_delete_message = dpp::embed().
 		set_color(dpp::colors::blood_night).
 		set_description(description);
+		log("Sending the temp vc deletion announcement.");
 		bot->message_create(dpp::message(channel_id, temp_vc_delete_message), error_callback);
 	}
 	bot->channel_delete(channel->id, error_callback);
@@ -194,8 +204,13 @@ void temp_vc_create(const temp_vc_query& q) {
 					return;
 				}
 				db::sql << "INSERT INTO temp_vcs VALUES (?, ?, ?, ?);" << channel.id.str() << channel.guild_id.str() << q.usr->id.str() << q.channel_id.str();
+				log("Does this guild have a temp vc notification channel?");
 				if (!temp_vc_notifications[q.guild_id].empty()) {
+					log(fmt::format("Yes, it does, it's {}.", channel.id));
 					temp_vc_create_msg(q, channel);
+				}
+				else {
+					log("It does not.");
 				}
 			});
 		});

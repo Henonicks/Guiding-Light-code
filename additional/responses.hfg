@@ -343,6 +343,16 @@
             "Покликання на нього є в біографії бота."
     }
   },
+  $"ERROR_DESCRIPTIONS" | {
+    $"default" | {
+      $"50001" | "The bot cannot access this channel/guild, most likely due to the lack of permissions.",
+      $"50013" | "The bot doesn't have the permissions to make this action due to the improper setup of its roles' permissions."
+    },
+    $"uk" | {
+      $"50001" | "У бота не має доступу до цього каналу/сервера, швидше за все через нестачу дозволів.",
+      $"50013" | "У бота немає дозволів здійснити цю дію через неправильно налаштовану роль."
+    }
+  },
   $"default" | {
     $"RESPONSE_NOT_FOUND" |
       "The response for this interaction could not be found.",
@@ -468,6 +478,8 @@
       "Successfully created a ticket.",
     $"COULDNT_SEND_YOU_A_DM" |
       "Couldn't send you a DM. Make sure they are open.",
+    $"CREATE_A_TICKET" |
+      "Please, create a ticket if you need help resolving this issue.",
     $"UNDEFINED_COMMAND" |
       "Undefined command, can't handle."
   },
@@ -596,6 +608,8 @@
       "Тікет успішно створено.",
     $"COULDNT_SEND_YOU_A_DM" |
       "Не вдалося надіслати Вам приватне повідомлення. Переконайтеся, що вони відкриті.",
+    $"CREATE_A_TICKET" |
+      "Будь ласка, створіть тікет якщо вам потрібна допомога в розв'язанні цієї проблеми.",
     $"UNDEFINED_COMMAND" |
       "Команда не визначена, не можу обробити."
   }

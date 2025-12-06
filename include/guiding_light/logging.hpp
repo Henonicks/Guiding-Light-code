@@ -27,8 +27,7 @@ void log(std::string_view message);
 void error_log(std::string_view message, std::string_view human_readable = "");
 
 /**
- * @brief Logs a message briefly describing the guild the bot
- * has joined/left.
+ * @brief Logs a message briefly describing the guild the bot has joined/left.
  * @param message The log to be printed.
  */
 void guild_log(std::string_view message);
@@ -51,12 +50,13 @@ bool error_callback(const dpp::confirmation_callback_t& callback);
  * @brief Prints the error of a request made by the bot.
  * @param callback The callback containing the error.
  * @param event The event to reply to.
+ * @param lang The language to respond in (if available)
  * @param error_intro The part of the error message before
  * the actual error ("Error" by default).
  * @return Whether the callback truly has an error.
  */
 bool error_feedback(const dpp::confirmation_callback_t& callback, const dpp::interaction_create_t& event,
-					std::string_view error_intro = "Error");
+					std::string_view lang, std::string_view error_intro = "Error");
 
 /**
  * @brief Prints the error of a request made by the bot.

@@ -3,7 +3,7 @@
 #include "guiding_light/database.hpp"
 #include "guiding_light/logging.hpp"
 
-bool topgg::vote(const dpp::snowflake& user_id, const bool& weekend) {
+bool topgg::vote(const dpp::snowflake& user_id, const bool weekend) {
 	log(fmt::format("User {} just voted, hell yeah!", user_id));
 	bool failure = false;
 	const dpp::snowflake& guild_id = guild_choices[user_id];
