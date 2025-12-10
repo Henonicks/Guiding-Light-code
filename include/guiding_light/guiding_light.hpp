@@ -39,8 +39,7 @@ std::string bot_name();
 /**
  * @brief Dump the database and the logs in the log channel and quit.
  * @param code The code to quit with.
- * @param on_error The function to execute if the data could not be dumped successfully.
  */
-void dump_data(int code, const std::function <void()>& on_error = {});
+void dump_data(int code);
 
 #endif
