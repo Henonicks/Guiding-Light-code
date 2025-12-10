@@ -157,7 +157,7 @@ void temp_vc_create(const temp_vc_query& q) {
 			new_channel.add_permission_overwrite(x.id, cast <dpp::overwrite_type>(x.type), 0, x.deny);
 		}
 	}
-	const dpp::timer_callback_t timer_function = [new_channel, current, q](const bool& called_separately) -> void {
+	const dpp::timer_callback_t timer_function = [new_channel, current, q](const bool called_separately) -> void {
 		log("Attempting to create a temporary VC.");
 		if (temp_vcs_queue.empty()) {
 			log("The temporary VC queue is empty.");
@@ -187,7 +187,9 @@ void temp_vc_create(const temp_vc_query& q) {
 			return;
 		}
 		handling_user_id = q.usr->id;
+		log(fmt::format("Creating a temporary VC for {}", handling_user_id));
 		bot->channel_create(new_channel, [current, q](const dpp::confirmation_callback_t& callback) -> void {
+			log(fmt::format("A callback has arrived! Popping {} from the queue.", q.usr->id));
 			temp_vcs_queue.pop();
 			handling_user_id = 0;
 			++temp_vc_amount[q.guild_id];
