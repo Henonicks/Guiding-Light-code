@@ -27,16 +27,13 @@ int main(const int argc, char** argv) {
 	bot = get_bot();
 	// Write down the right release/dev address into the bot pointer.
 
+	cfg::init_logs();
+	// Open the log files. Create them if needed.
+
 	if (TO_DUMP) {
 		std::cout << "Dumping and exiting.\n";
 		bot->start(dpp::st_return);
-		dump_data(0, [] {
-			std::cout << "Could not dump. But screw you, I'm still exiting.\n";
-		});
-	}
-	else {
-		cfg::init_logs();
-		// Open the log files. Create them if needed.
+		dump_data(0);
 	}
 
 	bot_is_starting = &(!IS_DEV ? bot_release_is_starting : bot_dev_is_starting);
@@ -371,6 +368,14 @@ int main(const int argc, char** argv) {
 		if (!IS_CLI) {
 			log("I have been told to kill myself, doing it now.");
 			std::cout << "I have been told to kill myself, doing it now.\n";
+			dump_data(code);
+		}
+	});
+
+	std::signal(SIGSEGV, [](const int code) -> void {
+		if (!IS_CLI) {
+			log("I am not entitled to this memory.");
+			std::cout << "I am not entitled to this memory.\n";
 			dump_data(code);
 		}
 	});

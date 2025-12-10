@@ -6,6 +6,34 @@
 #include "guiding_light/cfg.hpp"
 
 inline uint64_t last_error_message = -10;
+inline constexpr int LOGS_MAX_SIZE = 8'000'000;
+inline std::map <std::ofstream*, std::string> logfile_paths;
+inline std::map <std::ofstream*, std::string> logfile_names;
+
+/**
+ * @brief Autodump a log file if it's about to be too big for upload on Discord.
+ * @param logfile The pointer to the log file to autodump.
+ */
+void autodump(std::ofstream* logfile);
+
+/**
+ * @brief Open a log file, deleting its contents.
+ * @param logfile The log file to open.
+ */
+void open_logfile(std::ofstream* logfile);
+
+/**
+ * @brief Dump a log file on Discord, back up locally upon fail through backup_logfile.
+ * @param logfile The log file to dump.
+ */
+void dump_logfile(std::ofstream* logfile);
+
+/**
+ * @brief Locally back up a log file.
+ * @param logfile The log file to back up.
+ * @param logfile_content The content to write to the backup file.
+ */
+void backup_logfile(std::ofstream* logfile, std::string_view logfile_content);
 
 /**
  * @brief Logs a message along with other logs from Discord.

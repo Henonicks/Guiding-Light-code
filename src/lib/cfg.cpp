@@ -44,14 +44,27 @@ void cfg::init_logs() {
 	if (!std::filesystem::exists(path_dev)) {
 		std::filesystem::create_directories(fmt::format("{}/dev", logs_directory));
 	}
-	my_logs_release = std::ofstream(fmt::format("{}/release/my_logs.log", logs_directory));
-	my_logs_dev = std::ofstream(fmt::format("{}/dev/my_logs.log", logs_directory));
-	guild_logs_release = std::ofstream(fmt::format("{}/release/guild_logs.log", logs_directory));
-	guild_logs_dev = std::ofstream(fmt::format("{}/dev/guild_logs.log", logs_directory));
-	other_logs_release = std::ofstream(fmt::format("{}/release/other_logs.log", logs_directory));
-	other_logs_dev = std::ofstream(fmt::format("{}/dev/other_logs.log", logs_directory));
-	sql_logs_release = std::ofstream(fmt::format("{}/release/sql_logs.log", logs_directory));
-	sql_logs_dev = std::ofstream(fmt::format("{}/dev/sql_logs.log", logs_directory));
+	logfile_paths[&my_logs_release] = fmt::format("{}/release/my_logs.log", logs_directory);
+	logfile_names[&my_logs_release] = "my_logs.log";
+	logfile_paths[&my_logs_dev] = fmt::format("{}/dev/my_logs.log", logs_directory);
+	logfile_names[&my_logs_dev] = "my_logs.log";
+	logfile_paths[&guild_logs_release] = fmt::format("{}/release/guild_logs.log", logs_directory);
+	logfile_names[&guild_logs_release] = "guild_logs.log";
+	logfile_paths[&guild_logs_dev] = fmt::format("{}/dev/guild_logs.log", logs_directory);
+	logfile_names[&guild_logs_dev] = "guild_logs.log";
+	logfile_paths[&other_logs_release] = fmt::format("{}/release/other_logs.log", logs_directory);
+	logfile_names[&other_logs_release] = "other_logs.log";
+	logfile_paths[&other_logs_dev] = fmt::format("{}/dev/other_logs.log", logs_directory);
+	logfile_names[&other_logs_dev] = "other_logs.log";
+	logfile_paths[&sql_logs_release] = fmt::format("{}/release/sql_logs.log", logs_directory);
+	logfile_names[&sql_logs_release] = "sql_logs.log";
+	logfile_paths[&sql_logs_dev] = fmt::format("{}/dev/sql_logs.log", logs_directory);
+	logfile_names[&sql_logs_dev] = "sql_logs.log";
+	for (auto& [logfile, path] : logfile_paths) {
+		if (!TO_DUMP) {
+			logfile->open(path);
+		}
+	}
 }
 
 void cfg::pray() { // I'll pray that when this function starts executing we have all the cache because Discord doesn't let me know whether all the cache I've received at a certain point is everything or there's more and there's no better way to do this I promise

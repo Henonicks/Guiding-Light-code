@@ -1,6 +1,45 @@
 #include "guiding_light/logging.hpp"
 #include "guiding_light/responses.hpp"
 
+void autodump(std::ofstream* logfile)  {
+	if (logfile->tellp() >= LOGS_MAX_SIZE) {
+		open_logfile(logfile);
+	}
+}
+
+void open_logfile(std::ofstream* logfile)  {
+	dump_logfile(logfile);
+	if (logfile->is_open()) {
+		logfile->close();
+		logfile->clear();
+	}
+	logfile->open(logfile_paths[logfile], std::ofstream::out | std::ofstream::trunc);
+}
+
+void dump_logfile(std::ofstream* logfile) {
+	const std::string logfile_content = dpp::utility::read_file(logfile_paths[logfile]);
+	bot->message_create(dpp::message(LOGS_CHANNEL_ID, "Autodumping.")
+		.add_file(logfile_names[logfile], logfile_content)
+	, [logfile_content, logfile](const dpp::confirmation_callback_t& callback) {
+		if (callback.is_error()) {
+			backup_logfile(logfile, logfile_content);
+		}
+	});
+}
+
+void backup_logfile(std::ofstream* logfile, const std::string_view logfile_content) {
+	for (int i = 0; true; i++) {
+		const std::string backup_path = logfile_paths[logfile] + ".backup" + std::to_string(i);
+		if (!std::filesystem::exists(backup_path)) {
+			std::ofstream backup_file;
+			backup_file.open(backup_path);
+			backup_file << logfile_content;
+			backup_file.close();
+			break;
+		}
+	}
+}
+
 void bot_log(const dpp::log_t& _log) {
 	std::ofstream* other_logs = &(IS_DEV ? other_logs_dev : other_logs_release);
 	*other_logs << fmt::format("[{0}]: {1}", dpp::utility::current_date_time(), _log.message) << std::endl;
@@ -44,6 +83,7 @@ void bot_log(const dpp::log_t& _log) {
 void log(const std::string_view message) {
 	std::ofstream* my_logs = &(IS_DEV ? my_logs_dev : my_logs_release);
 	*my_logs << fmt::format("[{0}]: {1}", dpp::utility::current_date_time(), message) << std::endl;
+	autodump(my_logs);
 	// Here's a note to myself,
 	// i know you're itching to replace "std::endl" with "'\n'" but please don't do it cuz then the logs won't work bro trust
 }
