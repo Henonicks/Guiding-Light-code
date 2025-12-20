@@ -75,6 +75,18 @@ void sql_log(const sqlite::sqlite_exception& e, std::string_view function = {});
 bool error_callback(const dpp::confirmation_callback_t& callback);
 
 /**
+ * @brief Prints the error of a request made by the bot in the logfile and a specified channel, optionally pinging a user.
+ * @param callback The callback containing the error.
+ * @param channel_id The ID of the channel to send the error in.
+ * @param user_id The ID of the user to ping (default 0 for no ping).
+ * @param error_intro The part of the error message before
+ * the actual error ("Error" by default)
+ * @return Whether the callback truly has an error.
+ */
+bool error_pingback(const dpp::confirmation_callback_t& callback, const channel_snowflake& channel_id,
+	const user_snowflake& user_id = 0, std::string_view error_intro = "Error");
+
+/**
  * @brief Prints the error of a request made by the bot.
  * @param callback The callback containing the error.
  * @param event The event to reply to.

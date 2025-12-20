@@ -9,7 +9,7 @@ This is a Discord bot written in C++ using the [D++](https://dpp.dev) library. I
 * sqlite3 (developed with 3.46.1)
 
 ### Compiler
-The bot is tested in-dev with g++-13 and hosted with clang++-18. It is advised to use g++ with the version of at least 13 as it uses coroutines which are unstable on g++-12 and earlier. I'm unaware of the coroutines situation with clang++.
+The bot is tested in-dev with g++-14 and clang++-18; it is hosted with clang++-18. Used are some features, unsupported by g++-13 and clang++-15.
 
 __***NOTE: g++-15 doesn't do well with coroutines (which this bot uses) at all! Do NOT try to use this bot with it compiled using g++-15!***__
 
@@ -29,7 +29,7 @@ Now you're ready to compile:
 
     make -j
 
-If DPP is installed in a different location you can specify the root directory to look in while running cmake 
+If DPP is installed in a different location you can specify the root directory to look in while running cmake
 
     cmake .. -DCMAKE_PREFIX_PATH=<your/path>
 
@@ -106,7 +106,7 @@ When you enter the CLI mode, you're logged into a pseudo-user - `guidingLight`, 
 
     guidingLight>
 
-The username is coloured depending on the mode. The `>` sign is coloured depending on the bot running status: red if it's not running, yellow if it's currently launching and green if it's running. This status is independent of anything but the CLI. This means that if you launch the bot and then enter the CLI mode, the status is considered to be "not running". To fix this, do `launch` when in the mode. 
+The username is coloured depending on the mode. The `>` sign is coloured depending on the bot running status: red if it's not running, yellow if it's currently launching and green if it's running. This status is independent of anything but the CLI. This means that if you launch the bot and then enter the CLI mode, the status is considered to be "not running". To fix this, do `launch` when in the mode.
 
 ## Monitoring
 
