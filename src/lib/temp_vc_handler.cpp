@@ -152,6 +152,9 @@ void temp_vc_create(const temp_vc_query& q) {
 	dpp::channel current = *dpp::find_channel(q.channel_id);
 	new_channel.set_parent_id(current.parent_id);
 	new_channel.set_user_limit(limit);
+	new_channel.add_permission_overwrite(bot->me.id, dpp::ot_member,
+		dpp::p_view_channel | dpp::p_send_messages | dpp::p_move_members | dpp::p_manage_channels,
+	0);
 	for (const dpp::permission_overwrite& x : current.permission_overwrites) {
 		if (x.deny.can(dpp::p_view_channel) && x.id != bot->me.id) {
 			new_channel.add_permission_overwrite(x.id, cast <dpp::overwrite_type>(x.type), 0, x.deny);
@@ -173,7 +176,7 @@ void temp_vc_create(const temp_vc_query& q) {
 			// We'll throw this exception as a sign that we've fully completed what we had to successfully.
 		}
 		if (temp_vcs_queue.front().usr->id != q.usr->id) {
-			log(fmt::format("The currently handled user ({0}) is not the last in the queue ({1}).",
+			log(fmt::format("The current user ({0}) is not the last in the queue ({1}).",
 				q.usr->id, temp_vcs_queue.front().usr->id));
 			return;
 		}
@@ -192,11 +195,11 @@ void temp_vc_create(const temp_vc_query& q) {
 		handling_user_id = q.usr->id;
 		log(fmt::format("Creating a temporary VC for {}", handling_user_id));
 		bot->channel_create(new_channel, [current, q](const dpp::confirmation_callback_t& callback) -> void {
-			log(fmt::format("A callback has arrived! Popping {} from the queue.", q.usr->id));
+			log(fmt::format("A callback has arrived! Popping {} from the queue.", temp_vcs_queue.front().usr->id));
 			temp_vcs_queue.pop();
 			handling_user_id = 0;
 			++temp_vc_amount[q.guild_id];
-			if (error_callback(callback)) {
+			if (error_pingback(callback, current.id, q.usr->id)) {
 				return;
 			}
 			const auto channel = std::get <dpp::channel>(callback.value);

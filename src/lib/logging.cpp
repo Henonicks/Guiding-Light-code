@@ -141,6 +141,37 @@ bool error_callback(const dpp::confirmation_callback_t& callback) {
 	return false;
 }
 
+bool error_pingback(const dpp::confirmation_callback_t& callback, const channel_snowflake& channel_id, const user_snowflake& user_id, const std::string_view error_intro) {
+	if (callback.is_error()) {
+		std::string error = "ERROR! ";
+		if (!callback.get_error().errors.empty()) {
+			for (const dpp::error_detail& x : callback.get_error().errors) {
+				error += fmt::format("\n\tFIELD: {0} REASON: {1} OBJECT: {2} CODE: {3}", x.field, x.reason, x.object, x.code);
+			}
+		}
+		else {
+			error += callback.get_error().human_readable;
+		}
+		if (!callback.http_info.headers.empty()) {
+			error += "\nHeaders:";
+			for (const auto& [key, value] : callback.http_info.headers) {
+				error += fmt::format("\n\t{0}: {1}", key, value);
+			}
+		}
+		if (!callback.http_info.body.empty()) {
+			error += fmt::format("\nReply body: \n\t{}", callback.http_info.body);
+		}
+		error_log(error, callback.get_error().human_readable);
+		const std::string human_readable = fmt::format("{0}{1}: {2}. {3}\n{4}",
+			(!user_id.empty() ? dpp::utility::user_mention(user_id) + '\n' : ""),
+			error_intro, callback.get_error().message, error_response(callback.get_error().code),
+			response_str(CREATE_A_TICKET));
+		bot->message_create(dpp::message(channel_id, human_readable).set_allowed_mentions(true), error_callback);
+		return true;
+	}
+	return false;
+}
+
 bool error_feedback(const dpp::confirmation_callback_t& callback, const dpp::interaction_create_t& event, const std::string_view lang, const std::string_view error_intro) {
 	if (callback.is_error()) {
 		std::string error = "ERROR! ";

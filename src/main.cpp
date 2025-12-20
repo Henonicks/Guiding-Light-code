@@ -216,20 +216,27 @@ int main(const int argc, char** argv) {
 		}
 		dpp::snowflake channel_id = event.state.channel_id;
 		const dpp::snowflake& user_id = event.state.user_id;
-		dpp::user* ptr = dpp::find_user(user_id);
-		const dpp::user user = *ptr;
+		dpp::user* user = dpp::find_user(user_id);
 		const dpp::snowflake& guild_id = event.state.guild_id;
 		if (!channel_id.empty()) {
 			if (!jtc_vcs[channel_id].empty()) {
-				const temp_vc_query q = {ptr, channel_id, guild_id};
+				const temp_vc_query q = {user, channel_id, guild_id};
 				temp_vcs_queue.push(q);
 				temp_vc_create(q);
 			}
+			else {
+				jtc_vcs.erase(channel_id);
+			}
 		}
 		channel_id = vc_statuses[user_id];
-		if (!temp_vcs[channel_id].channel_id.empty() && dpp::find_channel(channel_id)->get_voice_members().empty()) {
-			const dpp::channel* channel = dpp::find_channel(channel_id);
-			temp_vc_delete_msg(user, channel);
+		if (!temp_vcs[channel_id].channel_id.empty()) {
+			if (dpp::find_channel(channel_id)->get_voice_members().empty()) {
+				const dpp::channel* channel = dpp::find_channel(channel_id);
+				temp_vc_delete_msg(*user, channel);
+			}
+		}
+		else {
+			temp_vcs.erase(channel_id);
 		}
 		if (!event.state.channel_id.empty()) {
 			vc_statuses[user_id] = event.state.channel_id;
