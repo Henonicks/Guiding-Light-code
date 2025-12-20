@@ -152,17 +152,11 @@ void temp_vc_create(const temp_vc_query& q) {
 	dpp::channel current = *dpp::find_channel(q.channel_id);
 	new_channel.set_parent_id(current.parent_id);
 	new_channel.set_user_limit(limit);
-	new_channel.add_permission_overwrite(bot->me.id, dpp::ot_member,
-		dpp::p_view_channel | dpp::p_send_messages | dpp::p_move_members | dpp::p_manage_channels,
-	0);
 	for (const dpp::permission_overwrite& x : current.permission_overwrites) {
 		if (x.deny.can(dpp::p_view_channel) && x.id != bot->me.id) {
 			new_channel.add_permission_overwrite(x.id, cast <dpp::overwrite_type>(x.type), 0, x.deny);
 		}
 	}
-	new_channel.add_permission_overwrite(bot->me.id, dpp::ot_member,
-	    dpp::p_view_channel | dpp::p_send_messages | dpp::p_move_members | dpp::p_manage_channels | dpp::p_manage_roles,
-	0);
 	const dpp::timer_callback_t timer_function = [new_channel, current, q](const bool called_separately) -> void {
 		log("Attempting to create a temporary VC.");
 		if (temp_vcs_queue.empty()) {
