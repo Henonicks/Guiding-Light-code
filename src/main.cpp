@@ -93,6 +93,17 @@ int main(const int argc, char** argv) {
 		if (IS_CLI) {
 			return;
 		}
+		if (event.msg.content == "!dumpq") {
+			std::queue <temp_vc_query> copy = temp_vcs_queue;
+			std::cout << fmt::format("dumping the {} queries\n", copy.size());
+			while (!copy.empty()) {
+				const temp_vc_query& q = copy.front();
+				std::cout << "channel ID: " << q.channel_id << '\n'
+				          << "guild ID: " << q.guild_id << '\n'
+				          << "user ID: " << q.usr->id << '\n';
+				copy.pop();
+			}
+		}
 		const dpp::snowflake& user_id = event.msg.author.id;
 		// Same as with a button click.
 		if (user_id == bot->me.id) {
@@ -136,8 +147,25 @@ int main(const int argc, char** argv) {
 			return;
 		}
 		if (!temp_vcs[event.updated.id].channel_id.empty()) {
+			bool bans{}, mutes{};
 			if (blocklist_updated(event.updated)) {
-				bot->message_create(dpp::message(event.updated.id, "The blocklist of this channel has been updated."), error_callback);
+				bans = true;
+			}
+			if (mutelist_updated(event.updated)) {
+				mutes = true;
+			}
+			std::string content;
+			if (bans && mutes) {
+				content = "The blocklist and mutelist have been updated.";
+			}
+			else if (bans) {
+				content += "The blocklist has been updated.";
+			}
+			else if (mutes) {
+				content += "The mutelist has been updated.";
+			}
+			if (!content.empty()) {
+				bot->message_create(dpp::message(event.updated.id, content), error_callback);
 			}
 		}
 	});
@@ -281,6 +309,10 @@ int main(const int argc, char** argv) {
 					x = '_';
 				}
 			}
+			const std::filesystem::path select_path(fmt::format("{0}/{1}", db::SELECT_LOCATION, MODE_NAME));
+			if (!std::filesystem::exists(select_path)) {
+				std::filesystem::create_directories(select_path);
+			}
 			system(fmt::format(R"(sqlite3 ../database/{0}.db '.mode markdown' ".output ../database/select/{0}/{1}.md" "SELECT * FROM {1}";)", MODE_NAME, table_name).c_str());
 			const dpp::message message = dpp::message().add_file("db.md", dpp::utility::read_file(fmt::format("../database/select/{0}/{1}.md", MODE_NAME, table_name))).set_flags(dpp::m_ephemeral);
 			event.reply(message, error_callback);
@@ -319,15 +351,22 @@ int main(const int argc, char** argv) {
 			co_await slash::setup(event);
 			slash::in_progress[cmd_name].erase(guild_id);
 		}
-		else if (cmd_name == "blocklist") {
+		else if (cmd_name == "blocklist" || cmd_name == "mutelist") {
+			restrictions_types rest_type;
+			if (cmd_name == "blocklist") {
+				rest_type = RRT_BLOCKLIST;
+			}
+			else {
+				rest_type = RRT_MUTELIST;
+			}
 			if (cmd.options[0].name == "add") {
-				co_await slash::blocklist::add(event);
+				co_await slash::list::add(event, rest_type);
 			}
 			if (cmd.options[0].name == "remove") {
-				co_await slash::blocklist::remove(event);
+				co_await slash::list::remove(event, rest_type);
 			}
 			if (cmd.options[0].name == "status") {
-				slash::blocklist::status(event);
+				slash::list::status(event, rest_type);
 			}
 		}
 		else if (cmd_name == "ticket") {

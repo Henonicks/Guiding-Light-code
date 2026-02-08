@@ -204,6 +204,42 @@
         }
       }
     },
+    $"mutelist" | {
+      $"NAME" | "mutelist",
+      $"DESCRIPTION" | "Add/Remove a user from your channel's mutelist.",
+      $"OPTIONS" | {
+        $"add" | {
+          $"NAME" | "add",
+          $"DESCRIPTION" | "Add a user to the mutelist.",
+          $"OPTIONS" | {
+            $"user" | {
+              $"NAME" | "user",
+              $"DESCRIPTION" | "The user to be added to the mutelist."
+            }
+          }
+        },
+        $"remove" | {
+          $"NAME" | "remove",
+          $"DESCRIPTION" | "Remove a user from the mutelist.",
+          $"OPTIONS" | {
+            $"user" | {
+              $"NAME" | "user",
+              $"DESCRIPTION" | "The user to be removed from the mutelist."
+            }
+          }
+        },
+        $"status" | {
+          $"NAME" | "status",
+          $"DESCRIPTION" | "See the status of a user according to the mutelist.",
+          $"OPTIONS" | {
+            $"user" | {
+              $"NAME" | "user",
+              $"DESCRIPTION" | "The user to check the status of."
+            }
+          }
+        }
+      }
+    },
     $"ticket" | {
       $"NAME" | "ticket",
       $"DESCRIPTION" | "Create/Close a support ticket.",
@@ -450,7 +486,43 @@
           $"OPTIONS" | {
             $"user" | {
               $"NAME" | "користувач",
-              $"DESCRIPTION" | "Користувач, чий статус потрібно перевірити."
+              $"DESCRIPTION" | "Користувач, статус якого потрібно перевірити."
+            }
+          }
+        }
+      }
+    },
+    $"mutelist" | {
+      $"NAME" | "список-мутів",
+      $"DESCRIPTION" | "Додати/видалити користувача зі списку мутів Вашого каналу.",
+      $"OPTIONS" | {
+        $"add" | {
+          $"NAME" | "додати",
+          $"DESCRIPTION" | "Додати користувача до списку мутів.",
+          $"OPTIONS" | {
+            $"user" | {
+              $"NAME" | "користувач",
+              $"DESCRIPTION" | "Користувач, якого потрібно додати до списку мутів."
+            }
+          }
+        },
+        $"remove" | {
+          $"NAME" | "видалити",
+          $"DESCRIPTION" | "Видалити користувача зі списку мутів.",
+          $"OPTIONS" | {
+            $"user" | {
+              $"NAME" | "користувач",
+              $"DESCRIPTION" | "Користувач, якого потрібно видалити зі списку мутів."
+            }
+          }
+        },
+        $"status" | {
+          $"NAME" | "статус",
+          $"DESCRIPTION" | "Отримати статус користувача в списку мутів.",
+          $"OPTIONS" | {
+            $"user" | {
+              $"NAME" | "користувач",
+              $"DESCRIPTION" | "Користувач, статус якого потрібно перевірити."
             }
           }
         }

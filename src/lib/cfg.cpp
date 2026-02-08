@@ -3,6 +3,7 @@
 #include <dpp/unicode_emoji.h>
 
 #include "guiding_light/responses.hpp"
+#include "guiding_light/temp_vc_handler.hpp"
 
 void cfg::check_sqlite3() {
 	if (!command_exists("sqlite3")) {
@@ -195,7 +196,7 @@ void cfg::pray() { // I'll pray that when this function starts executing we have
 			++temp_vc_amount[guild_id];
 			temp_vcs[channel_id] = {channel_id, guild_id, creator_id, parent_id};
 			for (const dpp::permission_overwrite& x : channel->permission_overwrites) {
-				if (x.deny.can(dpp::p_view_channel)) {
+				if (!temp_vc_is_accessible(x)) {
 					banned[channel->id].insert(x.id);
 				}
 			}

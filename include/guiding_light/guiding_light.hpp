@@ -36,6 +36,9 @@ std::string bot_name();
 #define get_lang() \
 	const std::string_view lang = event.command.locale
 
+#define get_rest_list() \
+	auto* list = get_restrictions_list(rest_type)
+
 /**
  * @brief Dump the database and the logs in the log channel and quit.
  * @param code The code to quit with.

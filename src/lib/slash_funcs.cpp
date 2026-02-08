@@ -2,6 +2,7 @@
 
 #include "guiding_light/ratelimit.hpp"
 #include "guiding_light/responses.hpp"
+#include "guiding_light/temp_vc_handler.hpp"
 
 dpp::coroutine <> slash::set::current(const dpp::slashcommand_t& event) {
 	get_lang();
@@ -279,11 +280,12 @@ dpp::coroutine <> slash::setup(const dpp::slashcommand_t& event) {
 	}
 }
 
-void slash::blocklist::status(const dpp::slashcommand_t& event) {
+void slash::list::status(const dpp::slashcommand_t& event, const restrictions_types rest_type) {
 	get_lang();
+	get_rest_list();
 	const dpp::user& issuer = event.command.usr;
 	const dpp::snowflake channel_id = temp_vcs[vc_statuses[issuer.id]].channel_id;
-	log(fmt::format("{0} is checking the blocklist status of the channel {1}.", issuer.id, channel_id));
+	log(fmt::format("{0} is checking the restrictions list status of the channel {1} with the list type {2}.", issuer.id, channel_id, cast <int>(rest_type)));
 	if (channel_id.empty()) {
 		log("They're not in a channel though.");
 		event.reply(response_emsg(YOURE_NOT_IN_A_TEMP_VC, lang), error_callback);
@@ -291,11 +293,12 @@ void slash::blocklist::status(const dpp::slashcommand_t& event) {
 	}
 	const dpp::snowflake st_user_id = std::get <dpp::snowflake>(event.get_parameter("user"));
 	log(fmt::format("The user they're checking is {}.", st_user_id));
-	event.reply(response_fmtemsg(THE_USER_IS_NOTORIN_THE_BLOCKLIST, lang, {banned[channel_id].contains(st_user_id) ? "" : response_str(NOT, lang)}), error_callback);
+	event.reply(response_fmtemsg(THE_USER_IS_NOTORIN_THE_LIST, lang, {(*list)[channel_id].contains(st_user_id) ? "" : response_str(NOT, lang)}), error_callback);
 }
 
-dpp::coroutine <> slash::blocklist::add(const dpp::slashcommand_t& event) {
+dpp::coroutine <> slash::list::add(const dpp::slashcommand_t& event, const restrictions_types rest_type) {
 	get_lang();
+	get_rest_list();
 	const dpp::user& issuer = event.command.usr;
 	const temp_vc issuer_vc = temp_vcs[vc_statuses[issuer.id]];
 	const dpp::snowflake requested_id = std::get <dpp::snowflake>(event.get_parameter("user"));
@@ -317,12 +320,12 @@ dpp::coroutine <> slash::blocklist::add(const dpp::slashcommand_t& event) {
 		log("But the requested user is an administrator in said channel.");
 		event.reply(response_emsg(THE_USER_HAS_ADMIN_ACCESS_TO_THIS_CHANNEL, lang), error_callback);
 	}
-	else if (banned[issuer_vc.channel_id].contains(requested_id)) {
+	else if ((*list)[issuer_vc.channel_id].contains(requested_id)) {
 		log("But the requested user is already in the blocklist.");
 		event.reply(response_emsg(THE_USER_IS_ALREADY_IN_THE_BLOCKLIST, lang), error_callback);
 	}
 	else {
-		channel->set_permission_overwrite(requested_id, dpp::ot_member, 0, dpp::p_view_channel);
+		channel->set_permission_overwrite(requested_id, dpp::ot_member, 0, get_restriction_permissions(rest_type));
 		log("Trying to edit the channel...");
 		const dpp::confirmation_callback_t& callback = co_await bot->co_channel_edit(*channel);
 		if (callback.is_error()) {
@@ -330,7 +333,6 @@ dpp::coroutine <> slash::blocklist::add(const dpp::slashcommand_t& event) {
 			co_return;
 		}
 		log("Success.");
-		banned[issuer_vc.channel_id].insert(requested_id);
 		if (vc_statuses[issuer.id] == vc_statuses[requested_id]) {
 			bot->guild_member_move(0, issuer_vc.guild_id, requested_id);
 		}
@@ -338,8 +340,9 @@ dpp::coroutine <> slash::blocklist::add(const dpp::slashcommand_t& event) {
 	}
 }
 
-dpp::coroutine <> slash::blocklist::remove(const dpp::slashcommand_t& event) {
+dpp::coroutine <> slash::list::remove(const dpp::slashcommand_t& event, const restrictions_types rest_type) {
 	get_lang();
+	get_rest_list();
 	const dpp::user& issuer = event.command.usr;
 	const temp_vc issuer_vc = temp_vcs[vc_statuses[issuer.id]];
 	const dpp::snowflake requested_id = std::get <dpp::snowflake>(event.get_parameter("user"));
@@ -354,20 +357,19 @@ dpp::coroutine <> slash::blocklist::remove(const dpp::slashcommand_t& event) {
 		log("But the requested user could not be found.");
 		event.reply(response_emsg(REQUESTED_USER_NOT_FOUND, lang), error_callback);
 	}
-	else if (!banned[issuer_vc.channel_id].contains(requested_id)) {
+	else if (!(*list)[issuer_vc.channel_id].contains(requested_id)) {
 		log("But the requested user is already off the blocklist.");
 		event.reply(response_emsg(THE_USER_WAS_NOT_IN_THE_BLOCKLIST, lang), error_callback);
 	}
 	else {
 		dpp::channel* channel = dpp::find_channel(vc_statuses[issuer.id]);
-		channel->set_permission_overwrite(requested_id, dpp::ot_member, dpp::p_view_channel, 0);
+		channel->set_permission_overwrite(requested_id, dpp::ot_member, get_restriction_permissions(rest_type), 0);
 		log("Trying to edit the channel...");
 		const dpp::confirmation_callback_t& callback = co_await bot->co_channel_edit(*channel);
 		if (callback.is_error()) {
 			error_feedback(callback, event, lang);
 			co_return;
 		}
-		banned[issuer_vc.channel_id].erase(requested_id);
 		log("Success.");
 		event.reply(response_emsg(THE_USER_WAS_REMOVED_FROM_THE_BLOCKLIST, lang), error_callback);
 	}

@@ -91,6 +91,9 @@
   "blocklist add",
   "blocklist remove",
   "blocklist status"
+  "mutelist add",
+  "mutelist remove",
+  "mutelist status"
   ], [
   "vote",
   "guild set",
@@ -149,13 +152,26 @@
 
       "A blocklist is a list of users who aren\'t allowed to join your voice channel.\n"
 
-      "__**{4}**__ adds a user to the blocklist of the channel if a user is provided as the parameter.\n"
+      "__**{4}**__ adds a user to the blocklist of the channel if one is provided as the parameter.\n"
 
-      "__**{5}**__ removes a user from the blocklist of the channel if a user is provided "
+      "__**{5}**__ removes a user from the blocklist of the channel if one is provided "
       "as the parameter.\n"
 
       "__**{6}**__ tells you whether the requested user is in the blocklist or not.",
 
+
+      "## /mutelist\n"
+
+      "### Note: this command is in beta. If something goes wrong, please report it by creating a ticket.\n"
+
+      "A mutelist is a list of users who are muted in your voice channel.\n"
+
+      "__**{7}**__ adds a user to the mutelist of the channel if one is provided as the parameter.\n"
+
+      "__**{8}**__ removes a user from the blocklist of the channel if one is provided "
+      "as the parameter.\n"
+
+      "__**{9}**__ tells you whether the requested user is in the mutelist or not.",
 
       "# top.gg-related\n"
 
@@ -276,6 +292,19 @@
 
       "__**{6}**__ повідомляє Вас, чи був запитаний користувач у чорному списку.",
 
+      "## /список-мутів\n"
+
+      "### Попередження: ця команда в беті. Якщо щось іде не так, будь ласка, зробіть на це "
+      "скаргу, створивши тікет.\n"
+
+      "Список мутів - це список німих користувачів Вашого каналу.\n"
+
+      "__**{4}**__ додає користувача до списку мутів каналу, якщо його було вказано як параметр.\n"
+
+      "__**{5}**__ видаляє користувача зі списку мутів каналу, якщо його було вказано як параметр\n"
+
+      "__**{6}**__ повідомляє Вас, чи був запитаний користувач у списку мутів.",
+
 
       "# Пов'язані з top.gg\n"
 
@@ -365,6 +394,8 @@
       "The name of the channel has changed from \"`{0}` to \"`{1}`\".",
     $"GUILD_COULD_NOT_BE_FOUND" |
       "Guild could not be found. Please, try again.",
+    $"CHANNEL_COULD_NOT_BE_FOUND" |
+      "Не вдалося знайти канал. Будь ласка, спробуйте ще раз.",
     $"THE_BITRATE_IS_ALREADY" |
       "The bitrate is already `{}`.",
     $"THE_NUMBER_CAN_ONLY_BE_BETWEEN" |
@@ -410,8 +441,8 @@
       "It's already been set up. No more than one per guild!",
     $"YOURE_NOT_IN_A_TEMP_VC" |
       "You're not in a temporary voice channel! Unless you are, in which case simply rejoin.",
-    $"THE_USER_IS_NOTORIN_THE_BLOCKLIST" |
-      "The user is {}in the blocklist of the channel.",
+    $"THE_USER_IS_NOTORIN_THE_LIST" |
+      "The user is {}in the list of the channel.",
     $"NOT" |
       "not ",
     $"THE_CHANNEL_YOURE_IN_DOES_NOT_BELONG_TO_YOU" |
@@ -423,11 +454,11 @@
     $"THE_USER_IS_ALREADY_IN_THE_BLOCKLIST" |
       "The user is already in the blocklist!",
     $"THE_USER_WAS_ADDED_TO_THE_BLOCKLIST" |
-      "The user was added to the blocklist of the current channel.",
+      "The user has been added to the blocklist of the current channel.",
     $"THE_USER_WAS_NOT_IN_THE_BLOCKLIST" |
       "The user was not in the blocklist!",
     $"THE_USER_WAS_REMOVED_FROM_THE_BLOCKLIST" |
-      "The user was removed from the blocklist of the current channel.",
+      "The user has been removed from the blocklist of the current channel.",
     $"GUILD_NOT_FOUND_IF_YOUVE_ALREADY_SET_IT" |
       "Guild not found. If you've already set it, consider trying again. Otherwise, set it with {}.",
     $"YOURE_VOTING_IN_FAVOUR_OF_THIS_GUILD" |
@@ -494,7 +525,9 @@
     $"THE_NAME_OF_THE_CHANNEL_HAS_CHANGED_FROM" |
       "Назву цього каналу було змінено з \"`{0}`\" на \"`{1}`\".",
     $"GUILD_COULD_NOT_BE_FOUND" |
-      "Не вдалося знайти сервер. Будь ласка, спробуйте ще раз",
+      "Не вдалося знайти сервер. Будь ласка, спробуйте ще раз.",
+    $"CHANNEL_COULD_NOT_BE_FOUND" |
+      "Не вдалося знайти канал. Будь ласка, спробуйте ще раз.",
     $"THE_BITRATE_IS_ALREADY" |
       "Бітрейт уже `{}`.",
     $"THE_NUMBER_CAN_ONLY_BE_BETWEEN" |
@@ -540,8 +573,8 @@
       "Його вже було налаштовано. Не більше ніж один за сервер!",
     $"YOURE_NOT_IN_A_TEMP_VC" |
       "Ви не в тимчасовому голосовому каналі! Хіба що це не так, у якому разі просто перезайдіть.",
-    $"THE_USER_IS_NOTORIN_THE_BLOCKLIST" |
-      "Користувач {}у чорному списку цього каналу.",
+    $"THE_USER_IS_NOTORIN_THE_LIST" |
+      "Користувач {}у списку цього каналу.",
     $"NOT" |
       "не ",
     $"THE_CHANNEL_YOURE_IN_DOES_NOT_BELONG_TO_YOU" |

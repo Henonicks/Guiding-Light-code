@@ -241,18 +241,55 @@ void temp_vc_create(const temp_vc_query& q) {
 	}, 1);
 }
 
+bool temp_vc_is_accessible(const dpp::permission& overwrite) {
+	return overwrite.can(dpp::p_view_channel) && overwrite.can(dpp::p_connect);
+}
+
+bool temp_vc_is_accessible(const dpp::permission_overwrite& overwrite) {
+	return !overwrite.deny.can(dpp::p_view_channel) && !overwrite.deny.can(dpp::p_connect);
+}
+
+bool temp_vc_is_speakable(const dpp::permission& overwrite) {
+	return overwrite.can(dpp::p_speak);
+}
+
+bool temp_vc_is_speakable(const dpp::permission_overwrite& overwrite) {
+	return !overwrite.deny.can(dpp::p_speak);
+}
+
 bool blocklist_updated(const dpp::channel& channel) {
-	auto unbanned = banned[channel.id];
-	// TODO: should unbanned be a reference?
 	bool flag{};
 	for (const auto& x : channel.permission_overwrites) {
-		if (banned[channel.id].contains(x.id) && (x.allow.can(dpp::p_view_channel) || !x.deny.can(dpp::p_view_channel))) {
-			flag = true;
-			banned[channel.id].erase(x.id);
+		if (banned[channel.id].contains(x.id)) {
+			if (temp_vc_is_accessible(x)) {
+				flag = true;
+				banned[channel.id].erase(x.id);
+			}
 		}
-		if (unbanned.contains(x.id)) {
-			flag = true;
-			unbanned.erase(x.id);
+		else if (x.type == dpp::ot_member) {
+			if (!temp_vc_is_accessible(x)) {
+				flag = true;
+				banned[channel.id].insert(x.id);
+			}
+		}
+	}
+	return flag;
+}
+
+bool mutelist_updated(const dpp::channel& channel) {
+	bool flag{};
+	for (const auto& x : channel.permission_overwrites) {
+		if (muted[channel.id].contains(x.id)) {
+			if (temp_vc_is_speakable(x)) {
+				flag = true;
+				muted[channel.id].erase(x.id);
+			}
+		}
+		else if (x.type == dpp::ot_member) {
+			if (!temp_vc_is_speakable(x)) {
+				flag = true;
+				muted[channel.id].insert(x.id);
+			}
 		}
 	}
 	return flag;

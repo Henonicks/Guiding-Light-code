@@ -90,6 +90,7 @@ void slashcommands::init() {
 	dpp::slashcommand vote(localise_slashcommand(make_default("vote")));
 	dpp::slashcommand logs(localise_slashcommand(make_default("logs")));
 	dpp::slashcommand blocklist(localise_slashcommand(make_default("blocklist")));
+	dpp::slashcommand mutelist(localise_slashcommand(make_default("mutelist")));
 	dpp::slashcommand ticket(localise_slashcommand(make_default("ticket")));
 	dpp::slashcommand select(localise_slashcommand(make_default("select")));
 	dpp::slashcommand reload(localise_slashcommand(make_default("reload")));
@@ -232,6 +233,30 @@ void slashcommands::init() {
 		, blocklist, "status")
 	);
 
+	mutelist.add_option(
+		localise_command_options(
+			make_default(dpp::co_sub_command, mutelist, "add").add_option(
+				make_default(dpp::co_user, mutelist, "add/user")
+			)
+		, mutelist, "add")
+	);
+
+	mutelist.add_option(
+		localise_command_options(
+			make_default(dpp::co_sub_command, mutelist, "remove").add_option(
+				make_default(dpp::co_user, mutelist, "remove/user")
+			)
+		, mutelist, "remove")
+	);
+
+	mutelist.add_option(
+		localise_command_options(
+			make_default(dpp::co_sub_command, mutelist, "status").add_option(
+				make_default(dpp::co_user, mutelist, "status/user")
+			)
+		, mutelist, "status")
+	);
+
 	ticket.add_option(
 		localise_command_options(
 			make_default(dpp::co_sub_command, ticket, "create")
@@ -254,7 +279,7 @@ void slashcommands::init() {
 
 	reload.set_default_permissions(dpp::permissions::p_administrator);
 
-	list_global = { {"help", help}, {"setup", setup}, {"set", set}, {"guild", guild}, {"get", get}, {"vote", vote}, {"blocklist", blocklist}, {"ticket", ticket} };
+	list_global = { {"help", help}, {"setup", setup}, {"set", set}, {"guild", guild}, {"get", get}, {"vote", vote}, {"blocklist", blocklist}, {"mutelist", mutelist}, {"ticket", ticket} };
 	list_guild = { {"logs", logs}, {"select", select}, {"reload", reload} };
 }
 

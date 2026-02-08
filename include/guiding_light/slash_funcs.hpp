@@ -41,24 +41,27 @@ namespace slash {
 	/**
 	 * @brief Functions that control or check the blocklists
 	 */
-	namespace blocklist {
+	namespace list {
 		/**
-		 * @brief Adds a user to a blocklist.
+		 * @brief Adds a user to a list.
 		 * @param event The slashcommand event object which contains information about the request.
+		 * @param rest_type The type of the list to add the user to. Refer to the rest_types enum.
 		 */
-		dpp::coroutine <> add(const dpp::slashcommand_t& event);
+		dpp::coroutine <> add(const dpp::slashcommand_t& event, restrictions_types rest_type);
 
 		/**
 		 * @brief Removes a user from a blocklist.
 		 * @param event The slashcommand event object which contains information about the request.
+		 * @param rest_type The type of the list to add the user to. Refer to the rest_types enum.
 		 */
-		dpp::coroutine <> remove(const dpp::slashcommand_t& event);
+		dpp::coroutine <> remove(const dpp::slashcommand_t& event, restrictions_types rest_type);
 
 		/**
 		 * @brief Checks if a user is in a blocklist.
 		 * @param event The slashcommand event object which contains information about the request.
+		 * @param rest_type The type of the list to add the user to. Refer to the rest_types enum.
 		 */
-		void status(const dpp::slashcommand_t& event);
+		void status(const dpp::slashcommand_t& event, restrictions_types rest_type);
 	}
 
 	/**
