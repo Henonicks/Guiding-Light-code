@@ -26,6 +26,12 @@ void cfg::read_config() {
 	TICKETS_GUILD_ID = config["TICKETS_GUILD_ID"];
 	LOGS_CHANNEL_ID = config["LOGS_CHANNEL_ID"];
 
+	TOPGG_WEBHOOK_LISTEN_IP = config["TOPGG_WEBHOOK_LISTEN_IP"].get <std::string>();
+	TOPGG_WEBHOOK_LISTEN_PORT = config["TOPGG_WEBHOOK_LISTEN_PORT"];
+	TOPGG_WEBHOOK_SECRET = config["TOPGG_WEBHOOK_SECRET"].get <std::string>();
+
+	TOPGG_WEBHOOK = dpp::webhook(config["TOPGG_WEBHOOK_LINK"].get <std::string>());
+
 	BOT_TOKEN = config["BOT_TOKEN"].get <std::string>();
 	BOT_TOKEN_DEV = config["BOT_TOKEN_DEV"].get <std::string>();
 
@@ -227,6 +233,9 @@ void cfg::pray() { // I'll pray that when this function starts executing we have
 	};
 
 	slash::enabled = true;
+
+	std::cout << "Bot ready! Setting up the presence updater.\n";
+
 	const auto set_presence = []() -> void {
 		bot->set_presence(dpp::presence(dpp::ps_idle, dpp::activity(
 			dpp::activity_type::at_watching, "VCs in " + std::to_string(dpp::get_guild_count()) + " guilds", "", ""
@@ -238,6 +247,7 @@ void cfg::pray() { // I'll pray that when this function starts executing we have
 	}, 180);
 	// Keep on setting the presence to update the guild count on it.
 
+	std::cout << "Presence updater set up.\n";
 }
 
 void cfg::write_down_slashcommands() {
