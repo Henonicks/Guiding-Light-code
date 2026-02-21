@@ -20,6 +20,9 @@ bool exec_subcommand(const std::string_view cmd) {
 	else if (cmd == "--dump") {
 		TO_DUMP = true;
 	}
+	else if (cmd == "--no-topgg-server") {
+		NO_TOPGG_SERVER = true;
+	}
 	else {
 		std::cout << "Command not implemented: " << cmd << '\n';
 		return false;

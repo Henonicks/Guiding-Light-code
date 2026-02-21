@@ -7,6 +7,7 @@
 
 int main(const int argc, char** argv) {
 	std::cout << "Launching the bot.\n";
+	log("Launching the bot.");
 	cfg::check_sqlite3();
 	// Check if we have sqlite3 installed
 	if (!exec_subcommands(argc, argv)) {
@@ -55,7 +56,7 @@ int main(const int argc, char** argv) {
 	}
 
 	bot->on_button_click([](const dpp::button_click_t& event) -> void {
-		if (IS_CLI) {
+		if (IS_CLI || BOT_RETURN) {
 			return;
 		}
 		get_lang();
@@ -93,7 +94,7 @@ int main(const int argc, char** argv) {
 	});
 
 	bot->on_message_create([](const dpp::message_create_t& event) -> void {
-		if (IS_CLI) {
+		if (IS_CLI || BOT_RETURN) {
 			return;
 		}
 		if (IS_DEV && event.msg.content == "!dumpq") {
@@ -145,7 +146,7 @@ int main(const int argc, char** argv) {
 	});
 
 	bot->on_channel_update([](const dpp::channel_update_t& event) -> void {
-		if (IS_CLI) {
+		if (IS_CLI || BOT_RETURN) {
 			return;
 		}
 		if (!temp_vcs[event.updated.id].channel_id.empty()) {
@@ -173,7 +174,7 @@ int main(const int argc, char** argv) {
 	});
 
 	bot->on_channel_delete([](const dpp::channel_delete_t& event) -> void {
-		if (IS_CLI) {
+		if (IS_CLI || BOT_RETURN) {
 			return;
 		}
 		const dpp::channel_type type = event.deleted.get_type();
@@ -222,7 +223,7 @@ int main(const int argc, char** argv) {
 	});
 
 	bot->on_guild_create([](const dpp::guild_create_t& event) -> void {
-		if (IS_CLI) {
+		if (IS_CLI || BOT_RETURN) {
 			return;
 		}
 		guild_log(fmt::format("I have joined a guild. These are its stats:\n"
@@ -231,7 +232,7 @@ int main(const int argc, char** argv) {
 		));
 	});
 	bot->on_guild_delete([](const dpp::guild_delete_t& event) {
-		if (IS_CLI) {
+		if (IS_CLI || BOT_RETURN) {
 			return;
 		}
 		guild_log(fmt::format("I have left a guild. These are its stats:\n"
@@ -241,7 +242,7 @@ int main(const int argc, char** argv) {
 	});
 
 	bot->on_voice_state_update([](const dpp::voice_state_update_t& event) {
-		if (IS_CLI) {
+		if (IS_CLI || BOT_RETURN) {
 			return;
 		}
 		dpp::snowflake channel_id = event.state.channel_id;
@@ -277,7 +278,7 @@ int main(const int argc, char** argv) {
 	});
 
 	bot->on_slashcommand([](const dpp::slashcommand_t& event) -> dpp::task <> {
-		if (IS_CLI) {
+		if (IS_CLI || BOT_RETURN) {
 			co_return;
 		}
 		get_lang();
@@ -429,15 +430,7 @@ int main(const int argc, char** argv) {
 	});
 
 	if (!TO_DUMP) {
-		std::thread([] {
-			server_cluster = new dpp::cluster();
-			topgg_server = new dpp::http_server(server_cluster, TOPGG_WEBHOOK_LISTEN_IP, TOPGG_WEBHOOK_LISTEN_PORT, [](dpp::http_server_request* request) {
-				topgg::handle_request_if_topgg(request);
-			});
-			std::cout << "Listening to top.gg now.\n";
-			server_cluster->start();
-		}).detach();
-		bot->start(BOT_RETURN);
+		bot->start();
 	}
 	else {
 		std::this_thread::sleep_for(std::chrono::milliseconds(5000));

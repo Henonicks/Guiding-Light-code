@@ -18,6 +18,9 @@ std::string bot_name() {
 }
 
 void dump_data(const int code) {
+	if (bot_offline) {
+		exit(code);
+	}
 	bot->message_create(
 		dpp::message(LOGS_CHANNEL_ID, "Shutting down, dumping.")
 			.add_file(fmt::format("{}.db", MODE_NAME), dpp::utility::read_file(fmt::format("../database/{}.db", MODE_NAME)))
