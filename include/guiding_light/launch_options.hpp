@@ -3,8 +3,11 @@
 
 #include "guiding_light/commands.hpp"
 
+inline const std::set <std::string> command_options_list =
+{"--return", "--dev", "--cli", "--killall", "--dump", "--no-topgg-server"};
+
 inline dpp::start_type BOT_RETURN;
-inline bool IS_DEV, IS_CLI, TO_KILLALL, TO_DUMP;
+inline bool IS_DEV, IS_CLI, TO_KILLALL, TO_DUMP, NO_TOPGG_SERVER;
 
 /**
  * @brief Handles a launch option.

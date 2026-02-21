@@ -6,6 +6,8 @@
 #include "guiding_light/responses.hpp"
 
 int main(const int argc, char** argv) {
+	std::cout << "Launching the bot.\n";
+	log("Launching the bot.");
 	cfg::check_sqlite3();
 	// Check if we have sqlite3 installed
 	if (!exec_subcommands(argc, argv)) {
@@ -16,13 +18,15 @@ int main(const int argc, char** argv) {
 	cfg::read_config();
 	// Write down the values from the config into variables.
 
-	dpp::cluster _bot_release(BOT_TOKEN, IS_CLI ? dpp::i_default_intents : dpp::i_guilds | dpp::i_guild_members | dpp::i_guild_voice_states | dpp::i_direct_messages | dpp::i_message_content | dpp::i_guild_webhooks | dpp::i_guild_messages);
-	bot_release = &_bot_release;
-	dpp::cluster _bot_dev(BOT_TOKEN_DEV, IS_CLI ? dpp::i_default_intents : dpp::i_guilds | dpp::i_guild_members | dpp::i_guild_voice_states | dpp::i_direct_messages | dpp::i_message_content | dpp::i_guild_webhooks | dpp::i_guild_messages);
-	bot_dev = &_bot_dev;
+	bot_release = new dpp::cluster(BOT_TOKEN,
+		IS_CLI ? dpp::i_default_intents :
+		               dpp::i_guilds | dpp::i_guild_members | dpp::i_guild_voice_states | dpp::i_direct_messages | dpp::i_message_content | dpp::i_guild_webhooks | dpp::i_guild_messages);
+	bot_dev = new dpp::cluster(BOT_TOKEN_DEV,
+		IS_CLI ? dpp::i_default_intents :
+		               dpp::i_guilds | dpp::i_guild_members | dpp::i_guild_voice_states | dpp::i_direct_messages | dpp::i_message_content | dpp::i_guild_webhooks | dpp::i_guild_messages);
 
 	// In the CLI mode we can switch between the release and the dev modes and then launch the bots.
-	// To switch between them, we're gonna write down their addresses in pointers.
+	// To switch between them, we're gonna write their addresses to respective pointers.
 
 	bot = get_bot();
 	// Write down the right release/dev address into the bot pointer.
@@ -39,11 +43,11 @@ int main(const int argc, char** argv) {
 	bot_is_starting = &(!IS_DEV ? bot_release_is_starting : bot_dev_is_starting);
 	// also a pointer, it's only used in the CLI mode.
 
-	_bot_release.on_log([](const dpp::log_t& log) -> void {
+	bot_release->on_log([](const dpp::log_t& log) -> void {
 		bot_log(log);
 	});
 
-	_bot_dev.on_log([](const dpp::log_t& log) -> void {
+	bot_dev->on_log([](const dpp::log_t& log) -> void {
 		bot_log(log);
 	});
 
@@ -52,7 +56,7 @@ int main(const int argc, char** argv) {
 	}
 
 	bot->on_button_click([](const dpp::button_click_t& event) -> void {
-		if (IS_CLI) {
+		if (IS_CLI || BOT_RETURN) {
 			return;
 		}
 		get_lang();
@@ -90,10 +94,10 @@ int main(const int argc, char** argv) {
 	});
 
 	bot->on_message_create([](const dpp::message_create_t& event) -> void {
-		if (IS_CLI) {
+		if (IS_CLI || BOT_RETURN) {
 			return;
 		}
-		if (event.msg.content == "!dumpq") {
+		if (IS_DEV && event.msg.content == "!dumpq") {
 			std::queue <temp_vc_query> copy = temp_vcs_queue;
 			std::cout << fmt::format("dumping the {} queries\n", copy.size());
 			while (!copy.empty()) {
@@ -114,12 +118,11 @@ int main(const int argc, char** argv) {
 		// We don't want to reply to any of our own messages.
 		if (channel_id == TOPGG_WEBHOOK_CHANNEL_ID) {
 			const dpp::snowflake voted_user_id = msg.substr(2, msg.size() - bot->me.id.str().size() - 10);
-			const bool weekend = msg[2 + voted_user_id.str().size() + 2] == 't';
-			// The vote messages are formatted like this: <@${user_id}> ${weekend}> <@${bot_id}>
+			const int8_t weight = msg[2 + voted_user_id.str().size() + 2] - '0';
+			// The vote messages are formatted like this: <@${user_id}> ${weight}>
 			// Where ${user_id} is the ID of the user who voted,
-			// ${weekend} is a boolean stating whether it's a weekend or not
-			// And ${bot_id} is the ID of the bot which was voted for.
-			const bool failure = topgg::vote(voted_user_id, weekend);
+			// ${weight} is the amount of points the vote is worth
+			const bool failure = topgg::vote(voted_user_id, weight);
 			if (failure && !topgg::no_noguild_reminder[voted_user_id]) {
 				// If there was a failure in granting a guild a vote point
 				// and the user has not been notified about that before,
@@ -143,7 +146,7 @@ int main(const int argc, char** argv) {
 	});
 
 	bot->on_channel_update([](const dpp::channel_update_t& event) -> void {
-		if (IS_CLI) {
+		if (IS_CLI || BOT_RETURN) {
 			return;
 		}
 		if (!temp_vcs[event.updated.id].channel_id.empty()) {
@@ -171,7 +174,7 @@ int main(const int argc, char** argv) {
 	});
 
 	bot->on_channel_delete([](const dpp::channel_delete_t& event) -> void {
-		if (IS_CLI) {
+		if (IS_CLI || BOT_RETURN) {
 			return;
 		}
 		const dpp::channel_type type = event.deleted.get_type();
@@ -220,7 +223,7 @@ int main(const int argc, char** argv) {
 	});
 
 	bot->on_guild_create([](const dpp::guild_create_t& event) -> void {
-		if (IS_CLI) {
+		if (IS_CLI || BOT_RETURN) {
 			return;
 		}
 		guild_log(fmt::format("I have joined a guild. These are its stats:\n"
@@ -229,7 +232,7 @@ int main(const int argc, char** argv) {
 		));
 	});
 	bot->on_guild_delete([](const dpp::guild_delete_t& event) {
-		if (IS_CLI) {
+		if (IS_CLI || BOT_RETURN) {
 			return;
 		}
 		guild_log(fmt::format("I have left a guild. These are its stats:\n"
@@ -239,7 +242,7 @@ int main(const int argc, char** argv) {
 	});
 
 	bot->on_voice_state_update([](const dpp::voice_state_update_t& event) {
-		if (IS_CLI) {
+		if (IS_CLI || BOT_RETURN) {
 			return;
 		}
 		dpp::snowflake channel_id = event.state.channel_id;
@@ -275,7 +278,7 @@ int main(const int argc, char** argv) {
 	});
 
 	bot->on_slashcommand([](const dpp::slashcommand_t& event) -> dpp::task <> {
-		if (IS_CLI) {
+		if (IS_CLI || BOT_RETURN) {
 			co_return;
 		}
 		get_lang();
@@ -427,10 +430,10 @@ int main(const int argc, char** argv) {
 	});
 
 	if (!TO_DUMP) {
-		bot->start(BOT_RETURN);
+		bot->start();
 	}
 	else {
-		std::this_thread::sleep_for(std::chrono::milliseconds(100000));
+		std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 		std::cout << "It's been a second and there is still no dump. Exiting now.\n";
 	}
 	return 0;

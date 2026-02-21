@@ -2,6 +2,8 @@
 
 This is a Discord bot written in C++ using the [D++](https://dpp.dev) library. It's a JTC voice channels manager. It assumes that D++, along with its dependencies, as well as [fmtlib](https://fmt.dev) are already installed.
 
+[![Discord Bots](https://top.gg/api/widget/1101159652315627551.svg)](https://top.gg//bot/1101159652315627551)
+
 ## Dependencies
 * D++ 10.1.0+
 * fmtlib (developed on 9.1.0)
@@ -49,11 +51,16 @@ Create a config.hfg in `Guiding_Light_Config`, located above the `build` directo
 /BOT_TOKEN_DEV\ | "Test bot token here (use --dev when starting to test new changes without affecting anything used in production)",
 /BOT_DM_LOGS_ID\ | "(integer) The ID of the channel for DM logs",
 /MY_ID\ | "(integer) Your account's ID",
-/TOPGG_WEBHOOK_CHANNEL_ID\ | "(integer) The ID of the channel for top.gg vote webhook messages",
 /MY_GUILD_ID\ | "(integer) The ID of your guild. Not used anymore",
 /MY_PRIVATE_GUILD_ID\ | "(integer) The ID of your guild. Used to create commands only administrators (which I know can only be me) can use",
 /TICKETS_GUILD_ID\ | "(integer) The ID of your guild which contains tickets. Can be the same as MY_PRIVATE_GUILD_ID if you like"
 /LOGS_CHANNEL_ID\ | "(integer) The ID of the channel where the bot alerts you about errors when they occur.
+# The values below don't need to be included if the bot is run with --no-topgg-server
+/TOPGG_WEBHOOK_CHANNEL_ID\ | "(integer) The ID of the channel for top.gg vote webhook messages"
+/TOPGG_WEBHOOK_LISTEN_IP\ | "(string) The IP to attach the top.gg server to. 0.0.0.0 will usually work and that's what I use personally."
+/TOPGG_WEBHOOK_LISTEN_PORT\ | "(integer) The port to attach the top.gg server to."
+/TOPGG_WEBHOOK_SECRET\ | "(string) Your top.gg webhook secret. It is displayed when you create a webhook or reset its secret on the dashboard. Starts with whs"
+/TOPGG_WEBHOOK_LINK\ | "(string) Your Discord webhook link that will be used to send votes. Always needed if top.gg is enabled."
 ```
 
 ## Setup
@@ -98,6 +105,14 @@ Once you're done setting up, you can start the bot.
     ./guidingLight --cli
 
 `--dev` and `--cli` can be combined, although the `switch` command makes it unnecessary. `--return`, although not discarded, has no effect in this mode.
+
+### Start the bot without an http server (used as a top.gg webhook):
+
+    cd build
+    ./guidingLight --no-topgg-server
+
+### `--return` can be used so that this program ONLY acts as a top.gg webhook server, effectively separating the bot and the top.gg listener.
+`--no-topgg-server` and `--cli` can be combined, although `--cli` by design prevents the bot setup from running, including the code that sets up a top.gg listener.
 
 ## CLI mode
 

@@ -3,6 +3,8 @@
 
 #include "guiding_light/notification_channel.hpp"
 
+std::string cleanup_request_path(std::string_view path);
+
 namespace topgg {
 	inline std::map <user_snowflake, guild_snowflake> guild_choices;
 	inline std::map <guild_snowflake, int> guild_votes_amount;
@@ -10,13 +12,18 @@ namespace topgg {
 		{0, 225, 450, 800, 1300, 2000, 2750, 3350, 4350, 5000};
 	inline std::map <user_snowflake, bool> no_noguild_reminder;
 
+	void handle_request_if_topgg(dpp::http_server_request* request);
+
+	int16_t send_vote_info(const nlohmann::json& info_json);
+
 	/**
 	 * @brief Handles a top.gg vote for the bot.
 	 * @param user_id The ID of the user who voted.
-	 * @param weekend True if it's a weekend, false otherwise.
+	 * @param weight The weight of the vote, e.g. the amount of points it's worth.
+	 * top.gg states that it's always worth 1 except for when it's 2, which is on weekends.
 	 * @return True if the user voted in favour of a guild, false otherwise.
 	 */
-	bool vote(const dpp::snowflake& user_id, bool weekend);
+	bool vote(const dpp::snowflake& user_id, int8_t weight);
 
 	namespace jtc {
 		/**

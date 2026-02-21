@@ -22,9 +22,16 @@ void cfg::read_config() {
 	MY_ID = config["MY_ID"];
 	MY_GUILD_ID = config["MY_GUILD_ID"];
 	MY_PRIVATE_GUILD_ID = config["MY_PRIVATE_GUILD_ID"];
-	TOPGG_WEBHOOK_CHANNEL_ID = config["TOPGG_WEBHOOK_CHANNEL_ID"];
 	TICKETS_GUILD_ID = config["TICKETS_GUILD_ID"];
 	LOGS_CHANNEL_ID = config["LOGS_CHANNEL_ID"];
+
+	if (!NO_TOPGG_SERVER) {
+		TOPGG_WEBHOOK_CHANNEL_ID = config["TOPGG_WEBHOOK_CHANNEL_ID"];
+		TOPGG_WEBHOOK_LISTEN_IP = config["TOPGG_WEBHOOK_LISTEN_IP"].get <std::string>();
+		TOPGG_WEBHOOK_LISTEN_PORT = config["TOPGG_WEBHOOK_LISTEN_PORT"];
+		TOPGG_WEBHOOK_SECRET = config["TOPGG_WEBHOOK_SECRET"].get <std::string>();
+		TOPGG_WEBHOOK = dpp::webhook(config["TOPGG_WEBHOOK_LINK"].get <std::string>());
+	}
 
 	BOT_TOKEN = config["BOT_TOKEN"].get <std::string>();
 	BOT_TOKEN_DEV = config["BOT_TOKEN_DEV"].get <std::string>();
@@ -227,17 +234,62 @@ void cfg::pray() { // I'll pray that when this function starts executing we have
 	};
 
 	slash::enabled = true;
-	const auto set_presence = []() -> void {
-		bot->set_presence(dpp::presence(dpp::ps_idle, dpp::activity(
-			dpp::activity_type::at_watching, "VCs in " + std::to_string(dpp::get_guild_count()) + " guilds", "", ""
-		)));
-	};
-	set_presence();
-	bot->start_timer([set_presence](const dpp::timer&) -> void {
-		set_presence();
-	}, 180);
-	// Keep on setting the presence to update the guild count on it.
 
+	if (!BOT_RETURN) {
+		bot_offline = false;
+	}
+
+	if (already_prayed) {
+		return;
+	}
+
+	already_prayed = true;
+
+	std::cout << "Bot ready!\n";
+	log("Bot ready!");
+
+	if (!BOT_RETURN) {
+		std::cout << "Setting up the presence updater.\n";
+		log("Setting up the presence updater.");
+		const auto set_presence = []() -> void {
+			bot->set_presence(dpp::presence(dpp::ps_idle, dpp::activity(
+				dpp::activity_type::at_watching, "VCs in " + std::to_string(dpp::get_guild_count()) + " guilds", "", ""
+			)));
+		};
+		set_presence();
+		bot->start_timer([set_presence](const dpp::timer&) -> void {
+			set_presence();
+		}, 180);
+		// Keep on setting the presence to update the guild count on it.
+
+		std::cout << "Presence updater set up.\n";
+		log("Presence updater set up");
+	}
+	topgg_server_thread = new std::thread([] {
+		server_cluster = new dpp::cluster();
+		topgg_server = new dpp::http_server(server_cluster, TOPGG_WEBHOOK_LISTEN_IP, TOPGG_WEBHOOK_LISTEN_PORT, [](dpp::http_server_request* request) {
+			topgg::handle_request_if_topgg(request);
+		});
+		if (!NO_TOPGG_SERVER) { // for some reason if you combine --return and --no-topgg-server this will be printed
+			std::cout << "Now listening to top.gg.\n"; // I guess I don't know how threads work aye
+			log("Now listening to top.gg.");
+			server_cluster->start();
+		}
+	});
+	if (BOT_RETURN) {
+		std::cout << "We are now good to shut down the bot. Shutting down.\n";
+		log("We are now good to shut down the bot. Shutting down.");
+		bot->start_timer([](const dpp::timer&) {
+			bot_offline = true;
+			bot->shutdown(); // brain said you should delete instead of using shutdown due to raii but delete literally segfaults us so like
+		}, 1);
+		if (!NO_TOPGG_SERVER) {
+			topgg_server_thread->join();
+		}
+	}
+	else if (!NO_TOPGG_SERVER) {
+		topgg_server_thread->detach();
+	}
 }
 
 void cfg::write_down_slashcommands() {
