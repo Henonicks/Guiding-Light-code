@@ -22,15 +22,16 @@ void cfg::read_config() {
 	MY_ID = config["MY_ID"];
 	MY_GUILD_ID = config["MY_GUILD_ID"];
 	MY_PRIVATE_GUILD_ID = config["MY_PRIVATE_GUILD_ID"];
-	TOPGG_WEBHOOK_CHANNEL_ID = config["TOPGG_WEBHOOK_CHANNEL_ID"];
 	TICKETS_GUILD_ID = config["TICKETS_GUILD_ID"];
 	LOGS_CHANNEL_ID = config["LOGS_CHANNEL_ID"];
 
-	TOPGG_WEBHOOK_LISTEN_IP = config["TOPGG_WEBHOOK_LISTEN_IP"].get <std::string>();
-	TOPGG_WEBHOOK_LISTEN_PORT = config["TOPGG_WEBHOOK_LISTEN_PORT"];
-	TOPGG_WEBHOOK_SECRET = config["TOPGG_WEBHOOK_SECRET"].get <std::string>();
-
-	TOPGG_WEBHOOK = dpp::webhook(config["TOPGG_WEBHOOK_LINK"].get <std::string>());
+	if (!NO_TOPGG_SERVER) {
+		TOPGG_WEBHOOK_CHANNEL_ID = config["TOPGG_WEBHOOK_CHANNEL_ID"];
+		TOPGG_WEBHOOK_LISTEN_IP = config["TOPGG_WEBHOOK_LISTEN_IP"].get <std::string>();
+		TOPGG_WEBHOOK_LISTEN_PORT = config["TOPGG_WEBHOOK_LISTEN_PORT"];
+		TOPGG_WEBHOOK_SECRET = config["TOPGG_WEBHOOK_SECRET"].get <std::string>();
+		TOPGG_WEBHOOK = dpp::webhook(config["TOPGG_WEBHOOK_LINK"].get <std::string>());
+	}
 
 	BOT_TOKEN = config["BOT_TOKEN"].get <std::string>();
 	BOT_TOKEN_DEV = config["BOT_TOKEN_DEV"].get <std::string>();
@@ -247,9 +248,9 @@ void cfg::pray() { // I'll pray that when this function starts executing we have
 	std::cout << "Bot ready!\n";
 	log("Bot ready!");
 
-	if (BOT_RETURN) {
+	if (!BOT_RETURN) {
 		std::cout << "Setting up the presence updater.\n";
-		std::cout << "Setting up the presence updater.";
+		log("Setting up the presence updater.");
 		const auto set_presence = []() -> void {
 			bot->set_presence(dpp::presence(dpp::ps_idle, dpp::activity(
 				dpp::activity_type::at_watching, "VCs in " + std::to_string(dpp::get_guild_count()) + " guilds", "", ""
