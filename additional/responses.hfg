@@ -90,7 +90,7 @@
   "setup notification topgg",
   "blocklist add",
   "blocklist remove",
-  "blocklist status"
+  "blocklist status",
   "mutelist add",
   "mutelist remove",
   "mutelist status"
@@ -157,7 +157,7 @@
       "__**{5}**__ removes a user from the blocklist of the channel if one is provided "
       "as the parameter.\n"
 
-      "__**{6}**__ tells you whether the requested user is in the blocklist or not.",
+      "__**{6}**__ tells you whether the requested user is in the blocklist or not.\n"
 
 
       "## /mutelist\n"
@@ -290,7 +290,7 @@
 
       "__**{5}**__ видаляє користувача з чорного списку каналу, якщо його було вказано як параметр\n"
 
-      "__**{6}**__ повідомляє Вас, чи був запитаний користувач у чорному списку.",
+      "__**{6}**__ повідомляє Вас, чи був запитаний користувач у чорному списку.\n"
 
       "## /список-мутів\n"
 
