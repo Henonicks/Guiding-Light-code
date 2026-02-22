@@ -11,7 +11,7 @@ void temp_vc_delete_msg(const dpp::user& user, const dpp::channel* channel);
 void temp_vc_create(const temp_vc_query& q);
 bool temp_vc_is_accessible(const dpp::permission& overwrite);
 bool temp_vc_is_accessible(const dpp::permission_overwrite& overwrite);
-bool temp_vc_is_speakable(const dpp::permission_overwrite& overwrite);
+bool temp_vc_is_speakable(const dpp::permission& overwrite);
 bool temp_vc_is_speakable(const dpp::permission_overwrite& overwrite);
 bool blocklist_updated(const dpp::channel& channel);
 bool mutelist_updated(const dpp::channel& channel);

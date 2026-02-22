@@ -56,7 +56,7 @@ int main(const int argc, char** argv) {
 	}
 
 	bot->on_button_click([](const dpp::button_click_t& event) -> void {
-		if (IS_CLI || BOT_RETURN) {
+		if (IS_CLI) {
 			return;
 		}
 		get_lang();
@@ -94,7 +94,7 @@ int main(const int argc, char** argv) {
 	});
 
 	bot->on_message_create([](const dpp::message_create_t& event) -> void {
-		if (IS_CLI || BOT_RETURN) {
+		if (IS_CLI) {
 			return;
 		}
 		if (IS_DEV && event.msg.content == "!dumpq") {
@@ -146,7 +146,7 @@ int main(const int argc, char** argv) {
 	});
 
 	bot->on_channel_update([](const dpp::channel_update_t& event) -> void {
-		if (IS_CLI || BOT_RETURN) {
+		if (IS_CLI) {
 			return;
 		}
 		if (!temp_vcs[event.updated.id].channel_id.empty()) {
@@ -174,7 +174,7 @@ int main(const int argc, char** argv) {
 	});
 
 	bot->on_channel_delete([](const dpp::channel_delete_t& event) -> void {
-		if (IS_CLI || BOT_RETURN) {
+		if (IS_CLI) {
 			return;
 		}
 		const dpp::channel_type type = event.deleted.get_type();
@@ -223,7 +223,7 @@ int main(const int argc, char** argv) {
 	});
 
 	bot->on_guild_create([](const dpp::guild_create_t& event) -> void {
-		if (IS_CLI || BOT_RETURN) {
+		if (IS_CLI) {
 			return;
 		}
 		guild_log(fmt::format("I have joined a guild. These are its stats:\n"
@@ -232,7 +232,7 @@ int main(const int argc, char** argv) {
 		));
 	});
 	bot->on_guild_delete([](const dpp::guild_delete_t& event) {
-		if (IS_CLI || BOT_RETURN) {
+		if (IS_CLI) {
 			return;
 		}
 		guild_log(fmt::format("I have left a guild. These are its stats:\n"
@@ -242,7 +242,7 @@ int main(const int argc, char** argv) {
 	});
 
 	bot->on_voice_state_update([](const dpp::voice_state_update_t& event) {
-		if (IS_CLI || BOT_RETURN) {
+		if (IS_CLI) {
 			return;
 		}
 		dpp::snowflake channel_id = event.state.channel_id;
@@ -278,7 +278,7 @@ int main(const int argc, char** argv) {
 	});
 
 	bot->on_slashcommand([](const dpp::slashcommand_t& event) -> dpp::task <> {
-		if (IS_CLI || BOT_RETURN) {
+		if (IS_CLI) {
 			co_return;
 		}
 		get_lang();

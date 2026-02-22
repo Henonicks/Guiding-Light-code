@@ -18,7 +18,7 @@ std::string bot_name() {
 }
 
 void dump_data(const int code) {
-	if (bot_offline) {
+	if (!is_running()) {
 		exit(code);
 	}
 	bot->message_create(
