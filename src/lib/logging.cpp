@@ -64,9 +64,6 @@ void bot_log(const dpp::log_t& _log) {
 				else {
 					log("Done! Doing stuff...");
 					cfg::pray();
-					if (bot_offline) {
-						bot->stop_timer(h);
-					}
 					cfg::write_down_slashcommands();
 					log("Done doing stuff!");
 					bot->stop_timer(h);

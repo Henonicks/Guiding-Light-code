@@ -8,9 +8,6 @@ bool exec_subcommand(const std::string_view cmd) {
 	if (cmd == "--dev") {
 		IS_DEV = true;
 	}
-	else if (cmd == "--return") {
-		BOT_RETURN = dpp::st_return;
-	}
 	else if (cmd == "--cli") {
 		IS_CLI = true;
 	}
@@ -19,9 +16,6 @@ bool exec_subcommand(const std::string_view cmd) {
 	}
 	else if (cmd == "--dump") {
 		TO_DUMP = true;
-	}
-	else if (cmd == "--no-topgg-server") {
-		NO_TOPGG_SERVER = true;
 	}
 	else {
 		std::cout << "Command not implemented: " << cmd << '\n';

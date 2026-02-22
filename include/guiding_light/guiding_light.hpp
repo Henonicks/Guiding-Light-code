@@ -16,7 +16,6 @@ inline std::thread *topgg_server_thread;
 inline dpp::http_server *topgg_server;
 inline bool bot_dev_is_starting, bot_release_is_starting, *bot_is_starting;
 inline bool already_prayed;
-inline bool bot_offline = true;
 inline const char* DEFAULT_LANG = "en";
 
 /**

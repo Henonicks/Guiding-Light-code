@@ -3,7 +3,7 @@
 
 #include "guiding_light/guiding_light.hpp"
 
-inline constexpr uint16_t CHANNEL_RENAME_RATELIMIT_SECONDS = 600 / 2; // twice per ten minutes
+inline constexpr uint16_t CHANNEL_RENAME_RATELIMIT_SECONDS = 600 / 2; // twice every ten minutes
 
 enum channel_edit_type : uint8_t {
 	cet_name,
