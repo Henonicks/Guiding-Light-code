@@ -9,4 +9,9 @@ config.json
 logging/
 database/
 Guiding_Light_Config/
-compile_commands.json
+http_server/config.hfg
+http_server/logging/
+http_server/cmake-build-debug
+http_server/build
+http_server/.idea
+http_server/.vscode
