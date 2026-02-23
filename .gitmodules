@@ -10,3 +10,6 @@
 [submodule "Henifig"]
 	path = Henifig
 	url = https://github.com/Henonicks/Henifig
+[submodule "http_server/DPPTGG"]
+	path = http_server/DPPTGG
+	url = https://github.com/Henonicks/DPPTGG
