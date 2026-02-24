@@ -7,6 +7,14 @@ std::string TOPGG_BOT_WEBHOOK_SECRET;
 std::string TOPGG_SERVER_WEBHOOK_SECRET;
 dpp::webhook TOPGG_WEBHOOK;
 
+enum response_codes : uint16_t {
+	OK = 200,
+	NO_CONTENT = 204,
+	MOVED_PERMANENTLY = 301,
+	NOT_FOUND = 404,
+	INTERNAL_SERVER_ERROR = 500,
+};
+
 std::ofstream my_logs;
 std::ofstream dpp_logs;
 
@@ -73,7 +81,7 @@ int main() {
 
 	server_cluster = new dpp::cluster();
 
-	dpptgg::listener listener("0.0.0.0", 6553, TOPGG_BOT_WEBHOOK_SECRET, TOPGG_SERVER_WEBHOOK_SECRET,
+	dpptgg::listener listener(TOPGG_WEBHOOK_LISTEN_IP, TOPGG_WEBHOOK_LISTEN_PORT, TOPGG_BOT_WEBHOOK_SECRET, TOPGG_SERVER_WEBHOOK_SECRET,
 		[](dpptgg::topgg_request const& request) {
 			send_vote_info(request);
 		},
@@ -82,17 +90,30 @@ int main() {
 			clean_path = clean_path.substr(0, clean_path.find('?'));
 			clean_path = "../resources/" + clean_path;
 			clean_path = to_lower(clean_path);
-			request.request->set_status(404);
+			auto const requested_path = std::filesystem::path(clean_path);
 			for (auto const& x : std::filesystem::recursive_directory_iterator("../resources")) {
 				std::string const curr = to_lower(x.path().string());
-				if (std::filesystem::path(curr) == std::filesystem::path(clean_path)) {
+				if (std::filesystem::path(curr) == requested_path) {
 					if (x.is_directory()) {
-						request.request->set_status(400);
+						std::filesystem::path const redirect_path = x.path() / ".redirect.hfg";
+						if (std::filesystem::is_regular_file(redirect_path)) {
+							try {
+								henifig::config_t const redirect_config(redirect_path.string());
+								request.request->set_response_header(
+									"Location", redirect_config["Location"]
+								).set_status(MOVED_PERMANENTLY);
+							}
+							catch (...) {
+								request.request->set_status(INTERNAL_SERVER_ERROR);
+							}
+							return;
+						}
+						request.request->set_status(NOT_FOUND);
 					}
 					else {
 						request.request->set_response_body(
 							dpp::utility::read_file(x.path().string())
-						).set_status(200);
+						).set_status(OK);
 					}
 					break;
 				}
