@@ -1,10 +1,6 @@
 #include "http_server/topgg_listener.hpp"
 
 dpp::cluster* server_cluster;
-std::string TOPGG_WEBHOOK_LISTEN_IP;
-uint16_t TOPGG_WEBHOOK_LISTEN_PORT;
-std::string TOPGG_BOT_WEBHOOK_SECRET;
-std::string TOPGG_SERVER_WEBHOOK_SECRET;
 dpp::webhook TOPGG_WEBHOOK;
 
 enum response_codes : uint16_t {
@@ -73,15 +69,14 @@ std::string to_lower(std::string str) {
 
 int main() {
 	henifig::config_t const config("../config.hfg");
-	TOPGG_WEBHOOK_LISTEN_IP = config["TOPGG_WEBHOOK_LISTEN_IP"].get <std::string>();
-	TOPGG_WEBHOOK_LISTEN_PORT = config["TOPGG_WEBHOOK_LISTEN_PORT"];
-	TOPGG_BOT_WEBHOOK_SECRET = config["TOPGG_BOT_WEBHOOK_SECRET"].get <std::string>();
-	TOPGG_SERVER_WEBHOOK_SECRET = config["TOPGG_SERVER_WEBHOOK_SECRET"].get <std::string>();
+	std::string_view const TOPGG_WEBHOOK_LISTEN_IP = config["TOPGG_WEBHOOK_LISTEN_IP"];
+	uint16_t const TOPGG_WEBHOOK_LISTEN_PORT = config["TOPGG_WEBHOOK_LISTEN_PORT"];
+	std::map <std::string, std::vector <std::string>> secrets = config["TOPGG_WEBHOOK_SECRETS"];
 	TOPGG_WEBHOOK = dpp::webhook(config["TOPGG_WEBHOOK_LINK"].get <std::string>());
 
 	server_cluster = new dpp::cluster();
 
-	dpptgg::listener listener(TOPGG_WEBHOOK_LISTEN_IP, TOPGG_WEBHOOK_LISTEN_PORT, TOPGG_BOT_WEBHOOK_SECRET, TOPGG_SERVER_WEBHOOK_SECRET,
+	dpptgg::listener listener(TOPGG_WEBHOOK_LISTEN_IP, TOPGG_WEBHOOK_LISTEN_PORT, secrets,
 		[](dpptgg::topgg_request const& request) {
 			send_vote_info(request);
 		},
