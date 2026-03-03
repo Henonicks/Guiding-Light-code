@@ -33,6 +33,8 @@ void cfg::read_config() {
 	BOT_TOKEN = config["BOT_TOKEN"].get <std::string>();
 	BOT_TOKEN_DEV = config["BOT_TOKEN_DEV"].get <std::string>();
 
+	TOPGG_BOT_TOKEN = config["TOPGG_BOT_TOKEN"].get <std::string>();
+
 	MODE_NAME = IS_DEV ? "dev" : "release";
 
 	logs_directory = fmt::format("../logging/{}", IS_CLI ? "cli" : "bot");
@@ -260,10 +262,18 @@ void cfg::pray() {
 }
 
 void cfg::write_down_slashcommands() {
+	slash::global_created.clear();
+	slash::guild_created.clear();
+	if (IS_CLI) {
+		slash::help_embeds.clear();
+	}
 	bot->global_commands_get([](const dpp::confirmation_callback_t& callback) -> void {
 		const auto& map = callback.get <dpp::slashcommand_map>();
 		for (const auto& cmd : map | std::views::values) {
 			slash::global_created[cmd.name] = cmd;
+			if (IS_CLI) {
+				slash::global_vector.push_back(cmd);
+			}
 		}
 		bot->guild_commands_get(MY_PRIVATE_GUILD_ID, [](const dpp::confirmation_callback_t& callback) -> void {
 			if (error_callback(callback)) {

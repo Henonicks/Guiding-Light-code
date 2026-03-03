@@ -9,7 +9,7 @@ set(CMAKE_CXX_STANDARD 20)
 
 find_package(Henifig MODULE)
 find_package(FMT MODULE)
-add_subdirectory(DPPTGG)
+find_package(DPPTGG MODULE)
 
 aux_source_directory("src" coresrc)
 add_executable(${PROJECT_NAME} ${coresrc})
@@ -19,9 +19,11 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC FMT_HEADER_ONLY)
 target_include_directories(${PROJECT_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${HENIFIG_INCLUDE_DIR}
+    ${DPPTGG_INCLUDE_DIR}
     ${libfmt_SOURCE_DIR}/include
 )
 target_link_libraries(${PROJECT_NAME}
     ${HENIFIG_LIBRARIES}
-    dpptgg
+    ${DPPTGG_LIBRARIES}
+    dpp
 )

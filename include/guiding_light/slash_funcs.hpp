@@ -15,6 +15,8 @@ namespace slash {
 	inline std::map <std::string, dpp::slashcommand> global_created, guild_created;
 	inline std::vector <dpp::embed> help_embeds;
 
+	inline dpptgg::slashcommand_array global_vector;
+
 	/**
 	 * @brief set a JTC value - either default or current one.
 	 */

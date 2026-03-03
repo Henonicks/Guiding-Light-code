@@ -30,6 +30,8 @@ namespace cli {
 			"Usage: cdelete [slashcommand]"},
 		{"launch", "Launch the bot with the same mode as the one being used. Stays launched until the CLI has been exited. Switching the mode will NOT shut down the bot.\n"
 			"Usage: launch"},
+		{"topgg_update", "Update stats on top.gg. Supported types: \"slashcommands\"\n"
+			"Usage: topgg_update <type>"},
 		{"list", "Lists what you ask it to - the log files, database tables or slashcommands that can be created. Acceptable values: logs, slashcommands and tables.\n"
 			"Usage: list <type>"},
 	};

@@ -3,6 +3,8 @@
 
 #include "guiding_light/guiding_light.hpp"
 
+#include "dpptgg/topgg_poker.hpp"
+
 namespace logs {
 	inline const std::set <std::string> list =
 		{"guild_logs", "my_logs", "other_logs", "sql_logs"};
