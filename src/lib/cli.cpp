@@ -2,6 +2,8 @@
 
 #include "guiding_light/commands.tpp"
 
+#include "dpptgg/topgg_poker.hpp"
+
 void cli::read_until_provided(std::string& line) {
 	std::vector <std::string> tokens;
 	while (tokens.empty()) {
@@ -321,6 +323,44 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 		}
 		else {
 			std::cout << fmt::format("{} is already running.\n", bot_name());
+		}
+	}},
+	{"topgg_update", [](const std::vector <std::string>& cmd) {
+		std::string type;
+		if (cmd.size() == 1) {
+			read_until_provided(type);
+			if (type.empty()) {
+				return;
+			}
+		}
+		else {
+			type = cmd[1];
+		}
+		if (type == "slashcommands") {
+			std::cout << "Updating the slashcommand list on top.gg.\n";
+			if (slash::global_vector.empty()) {
+				std::cout << "The local slashcommand list is empty. Launch the bot to get a list of those that exist.\n";
+				return;
+			}
+			dpptgg::poker poker(TOPGG_BOT_TOKEN);
+			poker.update_discord_bot_commands(slash::global_vector, [&poker](dpptgg::topgg_request_completion_t const& callback) {
+				poker.shutdown();
+				uint16_t const status = callback.request.status;
+				if (callback.is_error()) {
+					std::cout << "Error! Status: " << status;
+					if (!callback.error.detail.empty()) {
+						std::cout << ", detail: " << callback.error.detail;
+					}
+					std::cout << '\n';
+				}
+				else {
+					std::cout << "Success!\n";
+				}
+			});
+			poker.start();
+		}
+		else {
+			std::cout << "Unsupported type. See help topgg_update for more info.\n";
 		}
 	}},
 	{"list", [](const std::vector <std::string>& cmd) {

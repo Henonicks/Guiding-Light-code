@@ -50,6 +50,7 @@ add_subdirectory(colorize)
 add_subdirectory(cpp-linenoise)
 add_subdirectory(sqlite_modern_cpp)
 add_subdirectory(Henifig)
+add_subdirectory(DPPTGG)
 
 target_compile_options(${BOT_NAME} PRIVATE -Wall -Wextra -Wpedantic -g)
 
@@ -62,6 +63,7 @@ target_link_libraries(${BOT_NAME}
     linenoise
     colorize
     henifig
+    dpptgg
 )
 
 target_compile_definitions(${BOT_NAME} PUBLIC DPP_CORO)
