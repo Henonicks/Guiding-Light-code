@@ -2,6 +2,8 @@
 
 #include <dpp/unicode_emoji.h>
 
+#include "dpptgg/topgg_poker.hpp"
+
 #include "guiding_light/responses.hpp"
 #include "guiding_light/temp_vc_handler.hpp"
 
@@ -244,12 +246,15 @@ void cfg::pray() {
 	std::cout << "Bot ready!\n";
 	log("Bot ready!");
 
-	std::cout << "Setting up the presence updater.\n";
-	log("Setting up the presence updater.");
-	const auto set_presence = []() -> void {
+	std::cout << "Setting up the guild count updater.\n";
+	log("Setting up the guild count updater.");
+	auto* server_count_updater = new dpptgg::poker(TOPGG_BOT_TOKEN, bot);
+	const auto set_presence = [server_count_updater]() -> void {
+		const uint64_t curr_guild_count = dpp::get_guild_count();
 		bot->set_presence(dpp::presence(dpp::ps_idle, dpp::activity(
-			dpp::activity_type::at_watching, "VCs in " + std::to_string(dpp::get_guild_count()) + " guilds", "", ""
+			dpp::activity_type::at_watching, fmt::format("VCs in {} guilds", dpp::get_guild_count()), "", ""
 		)));
+		server_count_updater->post_server_count([](const dpptgg::v0::request_completion_t&) {}, curr_guild_count);
 	};
 	set_presence();
 	bot->start_timer([set_presence](const dpp::timer&) -> void {
@@ -257,8 +262,8 @@ void cfg::pray() {
 	}, 180);
 	// Keep on setting the presence to update the guild count on it.
 
-	std::cout << "Presence updater set up.\n";
-	log("Presence updater set up.");
+	std::cout << "Guild count updater set up.\n";
+	log("Guild count updater set up.");
 }
 
 void cfg::write_down_slashcommands() {

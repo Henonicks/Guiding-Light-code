@@ -343,7 +343,7 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 				return;
 			}
 			dpptgg::poker poker(TOPGG_BOT_TOKEN);
-			poker.update_discord_bot_commands(slash::global_vector, [&poker](dpptgg::topgg_request_completion_t const& callback) {
+			poker.update_discord_bot_commands(slash::global_vector, [&poker](dpptgg::v1::request_completion_t const& callback) {
 				poker.shutdown();
 				uint16_t const status = callback.request.status;
 				if (callback.is_error()) {
