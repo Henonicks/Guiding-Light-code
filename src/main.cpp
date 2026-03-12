@@ -37,7 +37,7 @@ int main(const int argc, char** argv) {
 	if (TO_DUMP) {
 		std::cout << "Dumping and exiting.\n";
 		bot->start(dpp::st_return);
-		dump_data(0);
+		dump_data(f_non_fatal);
 	}
 
 	bot_is_starting = &(!IS_DEV ? bot_release_is_starting : bot_dev_is_starting);
@@ -404,28 +404,28 @@ int main(const int argc, char** argv) {
 		}
 	});
 
-	std::signal(SIGINT, [](const int code) -> void {
+	std::signal(SIGINT, [](const int) -> void {
 		if (!IS_CLI) {
 			log("Ну, все, я пішов спати, бувай, добраніч.");
 			std::cout << "Ну, все, я пішов спати, бувай, добраніч.\n";
 			// Ukrainian for "Well, that's it, I'm going to bed, bye, goodnight."
-			dump_data(code);
+			dump_data(f_non_fatal);
 		}
 	});
 
-	std::signal(SIGTERM, [](const int code) -> void {
+	std::signal(SIGTERM, [](const int) -> void {
 		if (!IS_CLI) {
 			log("I have been told to kill myself, doing it now.");
 			std::cout << "I have been told to kill myself, doing it now.\n";
-			dump_data(code);
+			dump_data(f_fatal);
 		}
 	});
 
-	std::signal(SIGSEGV, [](const int code) -> void {
+	std::signal(SIGSEGV, [](const int) -> void {
 		if (!IS_CLI) {
 			log("I am not entitled to this memory.");
 			std::cout << "I am not entitled to this memory.\n";
-			dump_data(code);
+			dump_data(f_fatal);
 		}
 	});
 

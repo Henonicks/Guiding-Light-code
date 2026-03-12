@@ -42,10 +42,15 @@ std::string bot_name();
 #define get_rest_list() \
 	auto* list = get_restrictions_list(rest_type)
 
+enum fatality : bool {
+	f_non_fatal,
+	f_fatal,
+};
+
 /**
  * @brief Dump the database and the logs in the log channel and quit.
- * @param code The code to quit with.
+ * @param fatal Whether this function was called due to a fatal condition or not. If true, the function will call std::abort().
  */
-void dump_data(int code);
+void dump_data(bool fatal = false);
 
 #endif

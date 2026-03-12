@@ -17,9 +17,14 @@ std::string bot_name() {
 	// See README.md if you wonder why these names.
 }
 
-void dump_data(const int code) {
+void dump_data(const bool fatal) {
 	if (!is_running()) {
-		exit(code);
+		if (fatal) {
+			std::abort();
+		}
+		else {
+			std::exit(0);
+		}
 	}
 	bot->message_create(
 		dpp::message(LOGS_CHANNEL_ID, "Shutting down, dumping.")
@@ -28,7 +33,7 @@ void dump_data(const int code) {
 			.add_file("other_logs.log", dpp::utility::read_file(fmt::format("../logging/bot/{}/other_logs.log", MODE_NAME)))
 			.add_file("guild_logs.log", dpp::utility::read_file(fmt::format("../logging/bot/{}/guild_logs.log", MODE_NAME)))
 			.add_file("sql_logs.log", dpp::utility::read_file(fmt::format("../logging/bot/{}/sql_logs.log", MODE_NAME)))
-	, [code](const dpp::confirmation_callback_t& callback) {
+	, [fatal](const dpp::confirmation_callback_t& callback) {
 		if (error_callback(callback)) {
 			log("Couldn't dump on Discord, backing up instead.");
 			std::cout << "Couldn't dump on Discord, backing up instead.\n";
@@ -40,6 +45,11 @@ void dump_data(const int code) {
 		}
 		log("Goodnight!");
 		std::cout << "Goodnight!\n";
-		exit(code);
+		if (fatal) {
+			std::abort();
+		}
+		else {
+			std::exit(0);
+		}
 	});
 }
