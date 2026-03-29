@@ -8,6 +8,9 @@ dpp::coroutine <> slash::set::current(const dpp::slashcommand_t& event) {
 	get_lang();
 	const dpp::command_interaction cmd = event.command.get_command_interaction();
 	const dpp::user& user = event.command.get_issuing_user();
+
+	std::scoped_lock L(temp_vc_mutex);
+
 	const dpp::snowflake& channel_id = vc_statuses[user.id];
 	log(fmt::format("{0} is trying to edit the voice channel {1}.", user.id, channel_id));
 	const bool user_is_main = !channel_id.empty();
@@ -19,6 +22,7 @@ dpp::coroutine <> slash::set::current(const dpp::slashcommand_t& event) {
 		dpp::channel channel = *dpp::find_channel(channel_id);
 		const std::string old_name = channel.name;
 		if (cmd.options[0].name == "name") {
+			std::scoped_lock L(ratelimit_mutex);
 			const auto argument = std::get <std::string>(cmd.options[0].options[0].value);
 			log(fmt::format("They are trying to change the name from `{0}` to `{1}`.", old_name, argument));
 			if (argument == channel.name) {
@@ -120,6 +124,9 @@ dpp::coroutine <> slash::set::default_values(const dpp::slashcommand_t& event) {
 	const dpp::guild guild = *dpp::find_guild(guild_id);
 	const auto channel_id = std::get <dpp::snowflake>(cmd.options[0].options[0].options[1].value);
 	log(fmt::format("User {0} tried to change a default value of {1}.", user.id, channel_id));
+
+	std::scoped_lock L(jtc_mutex);
+
 	const jtc_defaults defs = jtc_default_values[channel_id];
 	if (defs.channel_id.empty()) {
 		log("But that's not a JTC VC.");
@@ -213,6 +220,7 @@ dpp::coroutine <> slash::setup(const dpp::slashcommand_t& event) {
 	const dpp::command_interaction cmd = event.command.get_command_interaction();
 	const dpp::guild& guild = *dpp::find_guild(guild_id);
 	if (cmd.options[0].name == "jtc") {
+		std::unique_lock L1(jtc_mutex);
 		log("They are trying to set up a JTC VC.");
 		const int8_t limit = ::topgg::jtc::count_allowed_jtcs(guild_id);
 		if (jtc_vc_amount[guild_id] >= limit) {
@@ -221,16 +229,19 @@ dpp::coroutine <> slash::setup(const dpp::slashcommand_t& event) {
 				{std::to_string(limit), (limit < 10 ? response_str(YOU_CAN_GET_MORE_BY_VOTING_THOUGH, lang) : "")}), error_callback);
 			co_return;
 		}
-		const auto max = cast <int8_t>(std::get <long>(cmd.options[0].options[0].value));
+		L1.unlock();
+		log("Trying to create a JTC VC.");
 		dpp::channel channel;
 		channel.set_type(dpp::channel_type::CHANNEL_VOICE);
-		channel.set_name(fmt::format("Join-to-create for {}", max > 0 ? std::to_string(max) : "infinite"));
 		channel.set_parent_id(0);
 		channel.set_guild_id(event.command.guild_id);
 		channel.set_bitrate(64); // The default bitrate on Discord.
 		channel.set_user_limit(1); // For the normal users, only one will be able to create a JTC at the same time.
-		log("Trying to create a JTC VC.");
+		const auto max = cast <int8_t>(std::get <long>(cmd.options[0].options[0].value));
+		channel.set_name(fmt::format("Join-to-create for {}", max > 0 ? std::to_string(max) : "infinite"));
 		const dpp::confirmation_callback_t& callback = co_await bot->co_channel_create(channel);
+
+		std::scoped_lock L2(jtc_mutex);
 		if (error_feedback(callback, event, lang)) {
 			co_return;
 		}
@@ -254,11 +265,13 @@ dpp::coroutine <> slash::setup(const dpp::slashcommand_t& event) {
 		channel.set_guild_id(guild_id);
 		const bool is_jtc = cmd.options[0].options[0].name == "jtc";
 		if (is_jtc) {
+			std::lock_guard L(notification_mutex);
 			log("Specifically, a JTC notification channel.");
 			is_already_set = !temp_vc_notifications[guild_id].empty();
 			channel.set_name("temp-vc-notifications");
 		}
 		else {
+			std::lock_guard L(notification_mutex);
 			log("Specifically, a top.gg notification channel.");
 			is_already_set = !topgg_notifications[guild_id].empty();
 			channel.set_name("topgg-notifications");
@@ -268,6 +281,7 @@ dpp::coroutine <> slash::setup(const dpp::slashcommand_t& event) {
 			const dpp::confirmation_callback_t& callback = co_await bot->co_channel_create(channel);
 			const auto new_channel = callback.get <dpp::channel>();
 			const std::string to_add = std::to_string(new_channel.id) + ' ' + std::to_string(new_channel.guild_id);
+			std::lock_guard L(notification_mutex);
 			db::sql << "INSERT INTO " + cast <std::string>(is_jtc ? "temp_vc_notifications" : "topgg_notifications") + " VALUES (?, ?);" << new_channel.id.str() << new_channel.guild_id.str();
 			(is_jtc ? temp_vc_notifications : topgg_notifications)[new_channel.guild_id] = new_channel.id;
 			log("Success.");
@@ -284,6 +298,9 @@ void slash::list::status(const dpp::slashcommand_t& event, const restrictions_ty
 	get_lang();
 	get_rest_list();
 	const dpp::user& issuer = event.command.usr;
+
+	std::lock_guard L(temp_vc_mutex);
+
 	const dpp::snowflake channel_id = temp_vcs[vc_statuses[issuer.id]].channel_id;
 	log(fmt::format("{0} is checking the restrictions list status of the channel {1} with the list type {2}.", issuer.id, channel_id, cast <int>(rest_type)));
 	if (channel_id.empty()) {
@@ -300,7 +317,9 @@ dpp::coroutine <> slash::list::add(const dpp::slashcommand_t& event, const restr
 	get_lang();
 	get_rest_list();
 	const dpp::user& issuer = event.command.usr;
+	std::unique_lock L(temp_vc_mutex);
 	const temp_vc issuer_vc = temp_vcs[vc_statuses[issuer.id]];
+	L.unlock();
 	const dpp::snowflake requested_id = std::get <dpp::snowflake>(event.get_parameter("user"));
 	log(fmt::format("User {0} is trying to add {1} to the blocklist of the channel {2}.", issuer.id, requested_id, issuer_vc.channel_id));
 	if (issuer_vc.creator_id != issuer.id) {
@@ -333,6 +352,7 @@ dpp::coroutine <> slash::list::add(const dpp::slashcommand_t& event, const restr
 			co_return;
 		}
 		log("Success.");
+		std::unique_lock L(temp_vc_mutex);
 		if (vc_statuses[issuer.id] == vc_statuses[requested_id]) {
 			bot->guild_member_move(0, issuer_vc.guild_id, requested_id);
 		}
@@ -344,7 +364,9 @@ dpp::coroutine <> slash::list::remove(const dpp::slashcommand_t& event, const re
 	get_lang();
 	get_rest_list();
 	const dpp::user& issuer = event.command.usr;
+	std::unique_lock L(temp_vc_mutex);
 	const temp_vc issuer_vc = temp_vcs[vc_statuses[issuer.id]];
+	L.unlock();
 	const dpp::snowflake requested_id = std::get <dpp::snowflake>(event.get_parameter("user"));
 	log(fmt::format("User {0} is trying to remove {1} from the blocklist of the channel {2}.", issuer.id, requested_id, issuer_vc.channel_id));
 	if (issuer_vc.creator_id != issuer.id) {
@@ -362,7 +384,9 @@ dpp::coroutine <> slash::list::remove(const dpp::slashcommand_t& event, const re
 		event.reply(response_emsg(THE_USER_WAS_NOT_IN_THE_BLOCKLIST, lang), error_callback);
 	}
 	else {
+		L.lock();
 		dpp::channel* channel = dpp::find_channel(vc_statuses[issuer.id]);
+		L.unlock();
 		channel->set_permission_overwrite(requested_id, dpp::ot_member, get_restriction_permissions(rest_type), 0);
 		log("Trying to edit the channel...");
 		const dpp::confirmation_callback_t& callback = co_await bot->co_channel_edit(*channel);
@@ -379,6 +403,9 @@ void slash::topgg::guild_get(const dpp::slashcommand_t& event) {
 	get_lang();
 	const dpp::user& user = event.command.usr;
 	log(fmt::format("User {0} is trying to get their guild.", user.id));
+
+	std::lock_guard L(::topgg::mutex);
+
 	const dpp::snowflake guild_id = ::topgg::guild_choices[user.id];
 	const dpp::guild* guild = dpp::find_guild(guild_id);
 	if (guild == nullptr) {
@@ -407,6 +434,9 @@ void slash::topgg::guild_set(const dpp::slashcommand_t& event) {
 	const dpp::user& user = event.command.usr;
 	const dpp::guild& guild = event.command.get_guild();
 	log(fmt::format("User {0} is trying to set {1} as their guild.", user.id, guild.id));
+
+	std::lock_guard L(::topgg::mutex);
+
 	if (::topgg::guild_choices[user.id] == guild.id) {
 		log("But the guild is already that.");
 		event.reply(response_fmtemsg(YOUR_CHOSEN_GUILD_IS_ALREADY, lang, {guild.name}), error_callback);
@@ -435,7 +465,9 @@ void slash::topgg::get_progress(const dpp::slashcommand_t& event) {
 	get_lang();
 	const dpp::snowflake& guild_id = event.command.guild_id;
 	log(fmt::format("User {0} is getting the voting progress of the guild {1}.", event.command.usr.id, guild_id));
+
 	const int8_t limit = ::topgg::jtc::count_allowed_jtcs(guild_id);
+	std::lock_guard L(::topgg::mutex);
 	event.reply(response_fmtemsg(THIS_GUILDS_VOTE_PROGRESS_IS, lang,
 		{std::to_string(::topgg::guild_votes_amount[guild_id]), std::to_string(::topgg::votes_leveling[limit]), std::to_string(limit),
 			limit == 10 ? response_str(THIS_IS_THE_ABSOLUTE_MAXIMUM, lang) : ""}), error_callback);
@@ -445,11 +477,14 @@ dpp::coroutine <> slash::ticket::create(const dpp::slashcommand_t& event) {
 	get_lang();
 	const dpp::snowflake& user_id = event.command.usr.id;
 	log(fmt::format("User {} is trying to create a ticket.", user_id));
+
+	std::unique_lock L1(ticket_mutex);
 	if (!tickets[user_id].empty()) {
 		log(fmt::format("But there's already the channel {}.", tickets[user_id]));
 		event.reply(response_emsg(YOU_ALREADY_HAVE_A_TICKET, lang), error_callback);
 		co_return;
 	}
+	L1.unlock();
 	dpp::channel channel = dpp::channel()
 		.set_name(event.command.usr.username)
 		.set_guild_id(TICKETS_GUILD_ID);
@@ -466,6 +501,7 @@ dpp::coroutine <> slash::ticket::create(const dpp::slashcommand_t& event) {
 		co_return;
 	}
 	co_await bot->co_message_create(dpp::message(channel.id, fmt::format("<@{}> is contacting you.", user_id)));
+	std::unique_lock L2(ticket_mutex);
 	tickets[user_id] = channel.id;
 	ck_tickets[channel.id] = user_id;
 	db::sql << "INSERT INTO tickets VALUES (?, ?);" << user_id.str() << channel.id.str();
@@ -477,6 +513,8 @@ void slash::ticket::close(const dpp::slashcommand_t& event) {
 	get_lang();
 	const dpp::snowflake& user_id = event.command.usr.id;
 	log(fmt::format("User {} is trying to close their ticket.", user_id));
+
+	std::lock_guard L(ticket_mutex);
 	if (tickets[user_id].empty()) {
 		log("But they don't even have one. Like, literally, what are you trying to achieve here?");
 		event.reply(response_emsg(YOU_DONT_HAVE_A_TICKET, lang), error_callback);

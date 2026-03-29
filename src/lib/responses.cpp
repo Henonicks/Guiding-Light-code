@@ -1,4 +1,5 @@
 #include "guiding_light/responses.hpp"
+
 #include "guiding_light/config_values.hpp"
 #include "guiding_light/cfg.hpp"
 #include "guiding_light/cli.hpp"
@@ -6,6 +7,9 @@
 std::string random_response(const dpp::snowflake& user_id) {
 	std::random_device rd;
 	std::mt19937 gen(rd());
+
+	std::lock_guard L(cfg::config_mutex);
+
 	std::uniform_int_distribution <> dist(0, PING_RESPONSES.size() - 1);
 	std::string response = PING_RESPONSES[dist(gen)];
 	size_t pos{};
@@ -21,6 +25,9 @@ std::string random_response(const dpp::snowflake& user_id) {
 
 henifig::value_t response(const responses_enum response_id, const std::string_view lang, const henifig::value_map& localisation) {
 	std::string used_lang = lang.data();
+
+	std::lock_guard L(cfg::config_mutex);
+
 	if (!localisation.contains(lang.data())) {
 		used_lang = "default";
 	}
@@ -63,6 +70,8 @@ dpp::message response_fmtemsg(const responses_enum response_id, const std::strin
 }
 
 henifig::value_map cmd_response(const std::string_view name, const std::string_view lang, const henifig::value_map& commands) {
+	std::lock_guard L(cfg::config_mutex);
+
 	std::string used_lang = lang.data();
 	if (!commands.contains(lang.data())) {
 		used_lang = "default";
@@ -81,6 +90,8 @@ henifig::value_map cmd_response(const std::string_view name, const std::string_v
 }
 
 std::string error_response(const uint32_t error_code, const std::string_view lang, const henifig::value_map& error_descriptions) {
+	std::lock_guard L(cfg::config_mutex);
+
 	std::string used_lang = lang.data();
 	if (!error_descriptions.contains(used_lang)) {
 		used_lang = "default";
@@ -98,7 +109,6 @@ std::string error_response(const uint32_t error_code, const std::string_view lan
 		return "";
 	}
 }
-
 
 fmt::dynamic_format_arg_store <fmt::format_context> vec_to_fmt(const std::vector <std::string>& vec) {
 	fmt::dynamic_format_arg_store <fmt::format_context> fmt;

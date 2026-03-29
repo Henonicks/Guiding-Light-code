@@ -12,8 +12,8 @@ namespace db {
 	using BIGINT = unsigned long long;
 	// SQL types that I use
 
-	inline std::string_view LOCATION = "../database";
-	inline std::string_view SELECT_LOCATION = "../database/select";
+	inline constexpr char LOCATION[] = "../database";
+	inline constexpr char SELECT_LOCATION[] = "../database/select";
 	inline const std::set <std::string> table_names =
 		{"jtc_vcs", "temp_vc_notifications", "jtc_default_values", "no_temp_ping", "topgg_guild_choices", "topgg_guild_votes_amount", "no_noguild_reminder", "topgg_notifications", "tickets", "temp_vcs", "channel_name_edit_timers"};
 
@@ -41,7 +41,8 @@ namespace db {
 
 	// A map with true/false values representing the existence of potential
 	// pending errors, caught during an SQL query in functions.
-	inline std::map <std::string, bool> errors_pending;
+	inline std::unordered_map <std::string, bool> errors_pending;
+	inline std::mutex mutex;
 
 	std::string line_comment(std::string_view comment);
 

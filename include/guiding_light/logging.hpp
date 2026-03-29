@@ -5,10 +5,14 @@
 #include "guiding_light/database.hpp"
 #include "guiding_light/cfg.hpp"
 
-inline uint64_t last_error_message = -10;
+inline std::atomic <uint64_t> last_error_message = -10;
+
+// Max size of the log files before they get auto-backed up, in bytes
 inline constexpr int LOGS_MAX_SIZE = 8'000'000;
-inline std::map <std::ofstream*, std::string> logfile_paths;
-inline std::map <std::ofstream*, std::string> logfile_names;
+
+inline std::unordered_map <std::ofstream*, std::string> logfile_paths;
+inline std::unordered_map <std::ofstream*, std::string> logfile_names;
+inline std::recursive_mutex logfile_mutex;
 
 /**
  * @brief Autodump a log file if it's about to be too big for upload on Discord.
@@ -30,10 +34,10 @@ void dump_logfile(std::ofstream* logfile);
 
 /**
  * @brief Locally back up a log file.
- * @param logfile The log file to back up.
+ * @param logfile_name The name of the log file to back up.
  * @param logfile_content The content to write to the backup file.
  */
-void backup_logfile(std::ofstream* logfile, std::string_view logfile_content);
+void backup_logfile(std::string_view logfile_name, std::string_view logfile_content);
 
 /**
  * @brief Logs a message along with other logs from Discord.

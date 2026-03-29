@@ -8,12 +8,15 @@
  * @brief Every function that's used directly in the slashcommand handler.
  */
 namespace slash {
-	inline bool enabled = false;
+	inline std::atomic <bool> enabled = false;
 
-	inline std::map <std::string, std::map <dpp::snowflake, bool>> in_progress; // finished states of commands
+	inline std::unordered_map <std::string, std::unordered_set <dpp::snowflake>> in_progress = {
+		{"setup", {}},
+		{"ticket", {}}
+	}; // finished states of commands
+	inline std::shared_mutex in_progress_mutex;
 
-	inline std::map <std::string, dpp::slashcommand> global_created, guild_created;
-	inline std::vector <dpp::embed> help_embeds;
+	inline std::unordered_map <std::string, dpp::slashcommand> global_created, guild_created;
 
 	inline dpptgg::v1::slashcommand_array global_vector;
 

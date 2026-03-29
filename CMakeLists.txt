@@ -52,9 +52,13 @@ add_subdirectory(sqlite_modern_cpp)
 add_subdirectory(Henifig)
 add_subdirectory(DPPTGG)
 
+set(SANMAKE_ASAN OFF)
+add_subdirectory(sanmake)
+
 target_compile_options(${BOT_NAME} PRIVATE -Wall -Wextra -Wpedantic -g)
 
 target_link_libraries(${BOT_NAME}
+#    tsan
     dl
     ${CMAKE_THREAD_LIBS_INIT}
     ${OPENSSL_CRYPTO_LIBRARY}

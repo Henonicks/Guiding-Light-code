@@ -94,6 +94,7 @@ void slashcommands::init() {
 	dpp::slashcommand ticket(localise_slashcommand(make_default("ticket")));
 	dpp::slashcommand select(localise_slashcommand(make_default("select")));
 	dpp::slashcommand reload(localise_slashcommand(make_default("reload")));
+	dpp::slashcommand dumpq(localise_slashcommand(make_default("dumpq")));
 
 	setup.add_option(
 		localise_command_options(
@@ -212,7 +213,7 @@ void slashcommands::init() {
 	blocklist.add_option(
 		localise_command_options(
 			make_default(dpp::co_sub_command, blocklist, "add").add_option(
-				make_default(dpp::co_user, blocklist, "add/user")
+				make_default(dpp::co_user, blocklist, "add/user", true)
 			)
 		, blocklist, "add")
 	);
@@ -220,7 +221,7 @@ void slashcommands::init() {
 	blocklist.add_option(
 		localise_command_options(
 			make_default(dpp::co_sub_command, blocklist, "remove").add_option(
-				make_default(dpp::co_user, blocklist, "remove/user")
+				make_default(dpp::co_user, blocklist, "remove/user", true)
 			)
 		, blocklist, "remove")
 	);
@@ -228,7 +229,7 @@ void slashcommands::init() {
 	blocklist.add_option(
 		localise_command_options(
 			make_default(dpp::co_sub_command, blocklist, "status").add_option(
-				make_default(dpp::co_user, blocklist, "status/user")
+				make_default(dpp::co_user, blocklist, "status/user", true)
 			)
 		, blocklist, "status")
 	);
@@ -236,7 +237,7 @@ void slashcommands::init() {
 	mutelist.add_option(
 		localise_command_options(
 			make_default(dpp::co_sub_command, mutelist, "add").add_option(
-				make_default(dpp::co_user, mutelist, "add/user")
+				make_default(dpp::co_user, mutelist, "add/user", true)
 			)
 		, mutelist, "add")
 	);
@@ -244,7 +245,7 @@ void slashcommands::init() {
 	mutelist.add_option(
 		localise_command_options(
 			make_default(dpp::co_sub_command, mutelist, "remove").add_option(
-				make_default(dpp::co_user, mutelist, "remove/user")
+				make_default(dpp::co_user, mutelist, "remove/user", true)
 			)
 		, mutelist, "remove")
 	);
@@ -252,7 +253,7 @@ void slashcommands::init() {
 	mutelist.add_option(
 		localise_command_options(
 			make_default(dpp::co_sub_command, mutelist, "status").add_option(
-				make_default(dpp::co_user, mutelist, "status/user")
+				make_default(dpp::co_user, mutelist, "status/user", true)
 			)
 		, mutelist, "status")
 	);
@@ -280,7 +281,7 @@ void slashcommands::init() {
 	reload.set_default_permissions(dpp::permissions::p_administrator);
 
 	list_global = { {"help", help}, {"setup", setup}, {"set", set}, {"guild", guild}, {"get", get}, {"vote", vote}, {"blocklist", blocklist}, {"mutelist", mutelist}, {"ticket", ticket} };
-	list_guild = { {"logs", logs}, {"select", select}, {"reload", reload} };
+	list_guild = { {"logs", logs}, {"select", select}, {"reload", reload} , {"dumpq", dumpq}};
 }
 
 std::string slash::get_mention(const std::string_view command) {
@@ -291,8 +292,8 @@ std::string slash::get_mention(const std::string_view command) {
 		// We're going to insert a slash on our own.
 	}
 	const std::string slashcommand_name = cli::tokenise(name)[0];
-	const bool	is_global{global_created.contains(slashcommand_name)},
-				exists{is_global || guild_created.contains(slashcommand_name)};
+	const bool is_global{global_created.contains(slashcommand_name)},
+	           exists{is_global || guild_created.contains(slashcommand_name)};
 	const std::string mention = fmt::format("</{0}:{1}>", name,
 		is_global ? global_created[slashcommand_name].id.str() :
 		exists ? guild_created[slashcommand_name].id.str() :
@@ -300,7 +301,7 @@ std::string slash::get_mention(const std::string_view command) {
 	return mention;
 }
 
-std::vector <std::string> slash::get_mention(const std::vector <std::string>& command) {
+std::vector <std::string> slash::get_mentions(const std::vector <std::string>& command) {
 	std::vector <std::string> res;
 	for (const std::string_view x : command) {
 		res.push_back(get_mention(x));

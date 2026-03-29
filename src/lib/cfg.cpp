@@ -7,6 +7,20 @@
 #include "guiding_light/responses.hpp"
 #include "guiding_light/temp_vc_handler.hpp"
 
+std::string format_if_filled(const std::string_view base, const std::vector <std::string>& values) {
+	if (values.empty()) {
+		return base.data();
+	}
+	return fmt::vformat(base, vec_to_fmt(values));
+}
+
+dpp::emoji build_emoji(const henifig::value_map& config) {
+	const std::string_view name = config.at("name");
+	const auto id = config.contains("id") ? cast <dpp::snowflake>(config.at("id")) : dpp::snowflake();
+	const bool is_animated = config.contains("animated") ? cast <bool>(config.at("animated")) : false;
+	return {name, id, cast <uint8_t>(dpp::e_animated * is_animated)};
+}
+
 void cfg::check_sqlite3() {
 	if (!command_exists("sqlite3")) {
 		std::cerr << fmt::format("{} The sqlite3 executable hasn't been found. Please install sqlite3.\n", color::rize("ERROR:", "Red"));
@@ -16,19 +30,23 @@ void cfg::check_sqlite3() {
 }
 
 void cfg::read_config() {
+	std::scoped_lock L(config_mutex, cfg_values_mutex);
+
 	config.open("../Guiding_Light_Config/config.hfg");
 	responses.open("../additional/responses.hfg");
 	slashcommands.open("../additional/slashcommands.hfg");
 
-	BOT_DM_LOGS = config["BOT_DM_LOGS_ID"];
-	MY_ID = config["MY_ID"];
-	MY_GUILD_ID = config["MY_GUILD_ID"];
-	MY_PRIVATE_GUILD_ID = config["MY_PRIVATE_GUILD_ID"];
-	TICKETS_GUILD_ID = config["TICKETS_GUILD_ID"];
-	LOGS_CHANNEL_ID = config["LOGS_CHANNEL_ID"];
+	BOT_DM_LOGS = config["BOT_DM_LOGS_ID"].get <unsigned long long>();
+	MY_ID = config["MY_ID"].get <unsigned long long>();
+	MY_GUILD_ID = config["MY_GUILD_ID"].get <unsigned long long>();
+	MY_PRIVATE_GUILD_ID = config["MY_PRIVATE_GUILD_ID"].get <unsigned long long>();
+	TICKETS_GUILD_ID = config["TICKETS_GUILD_ID"].get <unsigned long long>();
+	LOGS_CHANNEL_ID = config["LOGS_CHANNEL_ID"].get <unsigned long long>();
+
+	PING_EMOJI = build_emoji(config["PING_EMOJI"]);
 
 	try {
-		TOPGG_WEBHOOK_CHANNEL_ID = config["TOPGG_WEBHOOK_CHANNEL_ID"];
+		TOPGG_WEBHOOK_CHANNEL_ID = config["TOPGG_WEBHOOK_CHANNEL_ID"].get <unsigned long long>();
 	}
 	catch (const henifig::retrieval_exception&) {}
 
@@ -45,6 +63,7 @@ void cfg::read_config() {
 }
 
 void cfg::init_logs() {
+	std::lock_guard L(logfile_mutex);
 	const std::filesystem::path path_release{fmt::format("{}/release", logs_directory)};
 	const std::filesystem::path path_dev{fmt::format("{}/dev", logs_directory)};
 	if (!std::filesystem::exists(path_release)) {
@@ -77,7 +96,10 @@ void cfg::init_logs() {
 }
 
 void cfg::pray() {
+	std::scoped_lock L(jtc_mutex, notification_mutex, topgg::mutex, ticket_mutex, temp_vc_mutex, ratelimit_mutex, server_mutex);
+
 	// I'll pray that when this function starts executing we have all the cache because Discord doesn't let me know whether all the cache I've received at a certain point is everything or there's more and there's no better way to do this I promise
+	// TODO: this still causes data loss somehow
 	slash::enabled = false;
 
 	jtc_vcs.clear();
@@ -203,7 +225,7 @@ void cfg::pray() {
 		const dpp::channel* channel = dpp::find_channel(channel_id);
 		if (channel != nullptr) {
 			++temp_vc_amount[guild_id];
-			temp_vcs[channel_id] = {channel_id, guild_id, creator_id, parent_id};
+			temp_vcs[channel_id] = {create_temp_vc_id(), channel_id, guild_id, creator_id, parent_id};
 			for (const dpp::permission_overwrite& x : channel->permission_overwrites) {
 				if (!temp_vc_is_accessible(x)) {
 					banned[channel->id].insert(x.id);
@@ -267,13 +289,17 @@ void cfg::pray() {
 }
 
 void cfg::write_down_slashcommands() {
+	std::lock_guard L(slashcommands::list_mutex);
+
 	slash::global_created.clear();
 	slash::guild_created.clear();
-	if (IS_CLI) {
-		slash::help_embeds.clear();
-	}
 	bot->global_commands_get([](const dpp::confirmation_callback_t& callback) -> void {
+		if (error_callback(callback)) {
+			return;
+		}
 		const auto& map = callback.get <dpp::slashcommand_map>();
+
+		std::lock_guard L(slashcommands::list_mutex);
 		for (const auto& cmd : map | std::views::values) {
 			slash::global_created[cmd.name] = cmd;
 			if (IS_CLI) {
@@ -285,6 +311,8 @@ void cfg::write_down_slashcommands() {
 				return;
 			}
 			const auto& map = callback.get <dpp::slashcommand_map>();
+
+			std::lock_guard L(slashcommands::list_mutex);
 			for (const auto& cmd : map | std::views::values) {
 				slash::guild_created[cmd.name] = cmd;
 			}
@@ -293,18 +321,19 @@ void cfg::write_down_slashcommands() {
 }
 
 dpp::message cfg::help_message(const std::string_view lang, const uint8_t page) {
+	std::lock_guard L(config_mutex);
 	const henifig::value_map& help_components = responses["LOCALISATION"]["HELP_EMBEDS"];
 	const henifig::value_t& rp = response(DESCRIPTIONS, lang, help_components);
 	if (!rp.is <henifig::array_t>()) {
 		return dpp::message(rp.get <std::string>()).set_flags(dpp::m_ephemeral);
 	}
-	const std::vector <std::string> descriptions = get_arr <std::string>(rp);
+	const std::vector <std::string> descriptions = rp;
 	const henifig::value_array& help_cmd_mentions = responses["HELP_COMMAND_MENTIONS"];
 	dpp::message res;
 	res.add_embed(
 		dpp::embed()
 		.set_color(dpp::colors::sti_blue)
-		.set_description(format_if_filled(descriptions[page], {slash::get_mention(get_arr <std::string>(help_cmd_mentions[page]))}))
+		.set_description(format_if_filled(descriptions[page], {slash::get_mentions(help_cmd_mentions[page])}))
 	);
 	res.embeds[0].set_author(response(AUTHOR, lang, help_components), bot->me.get_url(), bot->me.get_avatar_url());
 	res.embeds[0].set_footer(dpp::embed_footer()
@@ -329,11 +358,4 @@ dpp::message cfg::help_message(const std::string_view lang, const uint8_t page) 
 		buttons.components[1].set_disabled(true);
 	}
 	return res.add_component(buttons).set_flags(dpp::m_ephemeral);
-}
-
-std::string format_if_filled(const std::string_view base, const std::vector <std::string>& values) {
-	if (values.empty()) {
-		return base.data();
-	}
-	return fmt::vformat(base, vec_to_fmt(values));
 }

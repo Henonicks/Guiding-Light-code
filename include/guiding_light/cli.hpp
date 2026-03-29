@@ -6,9 +6,9 @@
 #include "color.hpp"
 
 namespace cli {
-	inline const char* HISTORY_PATH = "cli/history.txt";
+	inline constexpr char HISTORY_PATH[] = "cli/history.txt";
 
-	extern const std::map <std::string, std::function <void(std::vector <std::string>)>> commands;
+	extern const std::unordered_map <std::string, std::function <void(std::vector <std::string>)>> commands;
 	inline const std::map <std::string, std::string> manual = {
 		{"help", "Shows this message.\n"
 			"Usage: \"help [cmd1] [cmd2]... [cmdN]\" or \"help ...\""},
@@ -36,7 +36,7 @@ namespace cli {
 			"Usage: list <type>"},
 	};
 
-	inline std::map <std::string, std::vector <std::string>> completions;
+	inline std::unordered_map <std::string, std::vector <std::string>> completions;
 
 	/**
 	 * @brief Reads a line until a valid candidate for a command is provided.

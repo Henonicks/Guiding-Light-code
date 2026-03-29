@@ -307,6 +307,10 @@
     $"reload" | {
       $"NAME" | "reload",
       $"DESCRIPTION" | "Reload the configs and the database."
+    },
+    $"dumpq" | {
+      $"NAME" | "dumpq",
+      $"DESCRIPTION" | "Dump the temp vc queue."
     }
   },
   $"uk" | {

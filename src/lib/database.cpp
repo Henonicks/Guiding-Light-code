@@ -33,6 +33,7 @@ sqlite::database_binder db::wrapper::operator <<(sqlite::str_ref _query) {
 		// if there's a comment, see where we came from
 		std::string function;
 		if (pos != std::string::npos) {
+			std::lock_guard L(mutex);
 			function = _query.substr(pos + 3).data();
 			if (errors_pending[function]) {
 				std::cerr << fmt::format(
@@ -47,7 +48,7 @@ sqlite::database_binder db::wrapper::operator <<(sqlite::str_ref _query) {
 	}
 }
 
-std::string db::line_comment(std::string_view comment) {
+std::string db::line_comment(const std::string_view comment) {
 	return fmt::format(" -- {}", comment);
 }
 

@@ -3,6 +3,8 @@
 #include "guiding_light/database.hpp"
 
 void add_channel_edit(const dpp::snowflake channel_id, const channel_edit_type edit_type) {
+	std::lock_guard L(ratelimit_mutex);
+
 	channel_edits[edit_type][channel_id] = true;
 	channel_edit_timers[edit_type][channel_id] = dpp::utility::time_f() + CHANNEL_RENAME_RATELIMIT_SECONDS;
 	db::sql << "INSERT INTO channel_name_edit_timers VALUES (?, ?);" << channel_id.str() << channel_edit_timers[edit_type][channel_id];
@@ -13,6 +15,8 @@ void add_channel_edit(const dpp::snowflake channel_id, const channel_edit_type e
 }
 
 void remove_channel_edit(const dpp::snowflake channel_id, const channel_edit_type edit_type) {
+	std::lock_guard L(ratelimit_mutex);
+
 	db::sql << "DELETE FROM channel_name_edit_timers WHERE channel_id=?;" << channel_id.str();
 	channel_edits[edit_type].erase(channel_id);
 	channel_edit_timers[edit_type].erase(channel_id);

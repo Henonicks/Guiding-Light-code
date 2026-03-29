@@ -1,0 +1,18 @@
+{
+    "code" : 503,
+    "errors" : {
+        "json" : {
+            "0" : {
+                "body" : {
+                    "_errors" : [
+                        {
+                            "code": "JSON_PARSE",
+                            "message" : "upstream connect error or disconnect/reset before headers. reset reason: remote connection failure, transport failure reason: immediate connect error: No such file or directory"
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    "message" : "[json.exception.parse_error.101] parse error at line 1, column 1: syntax error while parsing value - invalid literal; last read: 'u'"
+}

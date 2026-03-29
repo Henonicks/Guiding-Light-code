@@ -1,13 +1,13 @@
 #include "guiding_light/logging.hpp"
 #include "guiding_light/responses.hpp"
 
-void autodump(std::ofstream* logfile)  {
+void autodump(std::ofstream* const logfile) {
 	if (logfile->tellp() >= LOGS_MAX_SIZE) {
 		open_logfile(logfile);
 	}
 }
 
-void open_logfile(std::ofstream* logfile)  {
+void open_logfile(std::ofstream* const logfile) {
 	dump_logfile(logfile);
 	if (logfile->is_open()) {
 		logfile->close();
@@ -17,19 +17,21 @@ void open_logfile(std::ofstream* logfile)  {
 }
 
 void dump_logfile(std::ofstream* logfile) {
+	std::lock_guard L(logfile_mutex);
+
 	const std::string logfile_content = dpp::utility::read_file(logfile_paths[logfile]);
 	bot->message_create(dpp::message(LOGS_CHANNEL_ID, "Autodumping.")
 		.add_file(logfile_names[logfile], logfile_content)
 	, [logfile_content, logfile](const dpp::confirmation_callback_t& callback) {
 		if (callback.is_error()) {
-			backup_logfile(logfile, logfile_content);
+			backup_logfile(logfile_names[logfile], logfile_content);
 		}
 	});
 }
 
-void backup_logfile(std::ofstream* logfile, const std::string_view logfile_content) {
+void backup_logfile(const std::string_view logfile_name, const std::string_view logfile_content) {
 	for (int i = 0; true; i++) {
-		const std::string backup_path = logfile_paths[logfile] + ".backup" + std::to_string(i);
+		const std::string backup_path = std::string(logfile_name) + ".backup" + std::to_string(i);
 		if (!std::filesystem::exists(backup_path)) {
 			std::ofstream backup_file;
 			backup_file.open(backup_path);
@@ -41,8 +43,11 @@ void backup_logfile(std::ofstream* logfile, const std::string_view logfile_conte
 }
 
 void bot_log(const dpp::log_t& _log) {
+	std::lock_guard L(logfile_mutex);
+
 	std::ofstream* other_logs = &(IS_DEV ? other_logs_dev : other_logs_release);
 	*other_logs << fmt::format("[{0}]: {1}", dpp::utility::current_date_time(), _log.message) << std::endl;
+	autodump(other_logs);
 	if (_log.message == "Shards started.") {
 		if (IS_CLI) {
 			return;
@@ -81,6 +86,7 @@ void bot_log(const dpp::log_t& _log) {
 }
 
 void log(const std::string_view message) {
+	std::lock_guard L(logfile_mutex);
 	std::ofstream* my_logs = &(IS_DEV ? my_logs_dev : my_logs_release);
 	*my_logs << fmt::format("[{0}]: {1}", dpp::utility::current_date_time(), message) << std::endl;
 	autodump(my_logs);
@@ -93,28 +99,36 @@ void error_log(const std::string_view message, const std::string_view human_read
 	if (current_time >= last_error_message + 10) {
 		bot->message_create(dpp::message(LOGS_CHANNEL_ID, fmt::format("ERROR! <@{0}> Go check **your** logs! Current message: `{1}`",
 			MY_ID, !human_readable.empty() ? human_readable : message))
-		.set_allowed_mentions(true), error_callback);
+		.set_allowed_mentions( true), error_callback);
 		last_error_message = current_time;
 	}
 	log(message);
 }
 
 void guild_log(const std::string_view message) {
+	std::lock_guard L(logfile_mutex);
+
 	std::ofstream* guild_logs = &(IS_DEV ? guild_logs_dev : guild_logs_release);
 	*guild_logs << fmt::format("[{0}]: {1}", dpp::utility::current_date_time(), message) << std::endl;
+	autodump(guild_logs);
 	// i hope you know the drill by now
 }
 
 void sql_log(const sqlite::sqlite_exception& e, const std::string_view function) {
+	std::lock_guard L(logfile_mutex);
+
 	std::ofstream* sql_logs = &(IS_DEV? sql_logs_dev : sql_logs_release);
 	*sql_logs << fmt::format(
 		"[{0}]:{1} Error code: {2}, error: {3}, query: {4}",
 		dpp::utility::current_date_time(), !function.empty() ? fmt::format(" In {}:", function) : "", e.get_code(), e.what(), e.get_sql()
 	) << std::endl;
+	autodump(sql_logs);
 	// this ain't a drill, this is the way that I dream of goin' out
 }
 
 bool error_callback(const dpp::confirmation_callback_t& callback) {
+	std::lock_guard L(logfile_mutex);
+
 	if (callback.is_error()) {
 		std::string error = "ERROR! ";
 		if (!callback.get_error().errors.empty()) {
@@ -142,6 +156,8 @@ bool error_callback(const dpp::confirmation_callback_t& callback) {
 }
 
 bool error_pingback(const dpp::confirmation_callback_t& callback, const channel_snowflake& channel_id, const user_snowflake& user_id, const std::string_view error_intro) {
+	std::lock_guard L(logfile_mutex);
+
 	if (callback.is_error()) {
 		std::string error = "ERROR! ";
 		if (!callback.get_error().errors.empty()) {
@@ -173,6 +189,8 @@ bool error_pingback(const dpp::confirmation_callback_t& callback, const channel_
 }
 
 bool error_feedback(const dpp::confirmation_callback_t& callback, const dpp::interaction_create_t& event, const std::string_view lang, const std::string_view error_intro) {
+	std::lock_guard L(logfile_mutex);
+
 	if (callback.is_error()) {
 		std::string error = "ERROR! ";
 		if (!callback.get_error().errors.empty()) {
@@ -201,6 +219,8 @@ bool error_feedback(const dpp::confirmation_callback_t& callback, const dpp::int
 }
 
 bool error_feedback(const dpp::confirmation_callback_t& callback, const dpp::message_create_t& event, std::string_view error_intro) {
+	std::lock_guard L(logfile_mutex);
+
 	if (callback.is_error()) {
 		std::string error = "ERROR! ";
 		if (!callback.get_error().errors.empty()) {
