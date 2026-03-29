@@ -98,8 +98,8 @@ void error_log(const std::string_view message, const std::string_view human_read
 	const uint64_t current_time = bot->uptime().to_secs();
 	if (current_time >= last_error_message + 10) {
 		bot->message_create(dpp::message(LOGS_CHANNEL_ID, fmt::format("ERROR! <@{0}> Go check **your** logs! Current message: `{1}`",
-			MY_ID, !human_readable.empty() ? human_readable : message))
-		.set_allowed_mentions( true), error_callback);
+			MY_ID.load(), !human_readable.empty() ? human_readable : message))
+		.set_allowed_mentions(true), error_callback);
 		last_error_message = current_time;
 	}
 	log(message);
