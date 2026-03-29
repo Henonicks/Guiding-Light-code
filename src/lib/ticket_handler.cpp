@@ -15,6 +15,7 @@ dpp::message preserve_attachments(const dpp::message& msg) {
 void handle_dm_in(const dpp::message_create_t& event) {
 	const dpp::snowflake& user_id = event.msg.author.id;
 	log(fmt::format("Received a DM from the user {}.", user_id));
+	std::lock_guard L(ticket_mutex);
 	if (!slash::enabled) {
 		log("Do they have a ticket? Who knows.");
 		bot->direct_message_create(user_id, dpp::message("Some data is still being loaded, please wait."), error_callback);
@@ -42,6 +43,7 @@ void handle_dm_in(const dpp::message_create_t& event) {
 void handle_dm_out(const dpp::message_create_t& event) {
 	dpp::message msg = event.msg;
 	const dpp::snowflake& channel_id = msg.channel_id;
+	std::lock_guard L(ticket_mutex);
 	const dpp::snowflake& user_id = ck_tickets[channel_id];
 	log(fmt::format("Sending a DM to the user {}.", user_id));
 	if (!slash::enabled) {

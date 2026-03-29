@@ -11,8 +11,9 @@ enum channel_edit_type : uint8_t {
 	cet_size,
 };
 
-inline std::map <channel_snowflake, bool> channel_edits[cet_size];
-inline std::map <channel_snowflake, time_t> channel_edit_timers[cet_size];
+inline std::unordered_map <channel_snowflake, bool> channel_edits[cet_size];
+inline std::unordered_map <channel_snowflake, time_t> channel_edit_timers[cet_size];
+inline std::recursive_mutex ratelimit_mutex;
 
 void add_channel_edit(dpp::snowflake channel_id, channel_edit_type edit_type);
 void remove_channel_edit(dpp::snowflake channel_id, channel_edit_type edit_type);

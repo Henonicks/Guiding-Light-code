@@ -13,3 +13,6 @@
 [submodule "DPPTGG"]
 	path = DPPTGG
 	url = https://github.com/Henonicks/DPPTGG
+[submodule "sanmake"]
+	path = sanmake
+	url = https://gitlab.com/niansa/sanmake.git

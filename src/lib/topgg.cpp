@@ -6,6 +6,7 @@
 bool topgg::vote(const dpp::snowflake& user_id, const int8_t weight) {
 	log(fmt::format("User {} just voted, hell yeah!", user_id));
 	bool failure = false;
+	std::scoped_lock L(mutex, notification_mutex);
 	const dpp::snowflake& guild_id = guild_choices[user_id];
 	if (dpp::find_guild(guild_id) == nullptr) {
 		log("But they haven't selected a guild!");
@@ -35,6 +36,7 @@ bool topgg::vote(const dpp::snowflake& user_id, const int8_t weight) {
 }
 
 int8_t topgg::jtc::count_allowed_jtcs(const dpp::snowflake& guild_id) {
+	std::lock_guard L(mutex);
 	const int votes = guild_votes_amount[guild_id];
 	int8_t i = 1;
 	for (;i < cast <int8_t>(votes_leveling.size()); i++) {
@@ -49,4 +51,3 @@ int topgg::jtc::get_next_lvl_req(const dpp::snowflake& guild_id) {
 	const int8_t allowed_jtcs = count_allowed_jtcs(guild_id);
 	return allowed_jtcs >= cast <int8_t>(votes_leveling.size()) ? 0 : votes_leveling[allowed_jtcs];
 }
-

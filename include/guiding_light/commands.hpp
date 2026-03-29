@@ -25,12 +25,13 @@ namespace slash {
 	 */
 	std::string get_mention(std::string_view command);
 
-	std::vector <std::string> get_mention(const std::vector <std::string>& command);
+	std::vector <std::string> get_mentions(const std::vector <std::string>& command);
 }
 
 namespace slashcommands {
 	inline std::map <std::string, dpp::slashcommand> list_global;
 	inline std::map <std::string, dpp::slashcommand> list_guild;
+	inline std::recursive_mutex list_mutex;
 
 	/**
 	 * @brief Builds a slashcommand based on the name of it.

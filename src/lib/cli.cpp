@@ -37,7 +37,7 @@ bool cli::confirmation(std::string_view line) {
 	}
 }
 
-const std::map <std::string, std::function <void(std::vector <std::string>)>> cli::commands = {
+const std::unordered_map <std::string, std::function <void(std::vector <std::string>)>> cli::commands = {
 	{"help", [](const std::vector <std::string>& cmd) {
 		if (cmd.size() == 1) {
 			std::cout << "Usage: <command> [subcommand]\nTry help <command> to see how to use one of the commands or "
@@ -91,6 +91,8 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 		else {
 			requested_mode = cmd[1];
 		}
+
+		std::lock_guard L(cfg_values_mutex);
 		if (requested_mode != "release" && requested_mode != "dev") {
 			std::cout << fmt::format("{} is not an acceptable mode.\n", requested_mode);
 			return;
@@ -109,6 +111,8 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 		}
 	}},
 	{"init_db", [](const std::vector <std::string>&) {
+		std::lock_guard L(db::mutex);
+
 		db::errors_pending["init_db"] = true;
 		const std::string comment = db::line_comment("init_db");
 		db::sql << "CREATE TABLE jtc_vcs (channel_id BIGINT PRIMARY KEY, guild_id BIGINT);" + comment;
@@ -124,6 +128,8 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 		db::sql << "CREATE TABLE channel_name_edit_timers (channel_id BIGINT PRIMARY KEY, timer BIGINT);" + comment;
 	}},
 	{"conv_db", [](const std::vector <std::string>&) {
+		std::lock_guard L(cfg_values_mutex);
+
 		bool is_error{};
 		for (const std::string& x : db::table_names) {
 			std::ifstream file(fmt::format("../src/{0}/{1}.txt", MODE_NAME, x));
@@ -138,7 +144,7 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 				try {
 					db::sql << "INSERT INTO " + x + " VALUES (" + line + ");";
 				}
-				catch ([[maybe_unused]] const sqlite::sqlite_exception& e) {
+				catch (const sqlite::sqlite_exception&) {
 					is_error = true;
 				}
 			}
@@ -178,6 +184,8 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 		else {
 			table_name = cmd[1];
 		}
+
+		std::lock_guard L(cfg_values_mutex);
 		if (db::table_names.contains(table_name)) {
 			const int code = system(fmt::format(R"(sqlite3 '../database/{0}.db' '.mode markdown' ".output ../database/select/{0}/{1}.md" "SELECT * FROM {1}";)", MODE_NAME, table_name).c_str());
 			std::cout << (code == 0 ? fmt::format("Generated a .md file in database/select/{0}/{1}.md\n", MODE_NAME, table_name) : "An error occurred. Could not generate the .md file.\n");
@@ -337,6 +345,7 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 			type = cmd[1];
 		}
 		if (type == "slashcommands") {
+			std::lock_guard L(slashcommands::list_mutex);
 			std::cout << "Updating the slashcommand list on top.gg.\n";
 			if (slash::global_vector.empty()) {
 				std::cout << "The local slashcommand list is empty. Launch the bot to get a list of those that exist.\n";
@@ -375,6 +384,7 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 			type = cmd[1];
 		}
 		if (type == "logs") {
+			std::lock_guard L(cfg_values_mutex);
 			std::cout << fmt::format("Log files are located in logging/<interface>/{}/<file_name>.log\n<interface> is either bot or cli. Here are the possible values for <file_name>:\n", MODE_NAME);
 			for (const std::string& x : logs::list) {
 				std::cout << x;
@@ -385,8 +395,9 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 			std::cout << '\n';
 		}
 		else if (type == "slashcommands") {
-			std::cout << fmt::format("Slashcommands are defined in src/lib/commands.cpp.\nHere is a list of them:\n");
+			std::cout << "Slashcommands are defined in src/lib/commands.cpp.\nHere is a list of them:\n";
 			std::cout << "Global slashcommands: ";
+			std::lock_guard L(slashcommands::list_mutex);
 			for (const auto& x : slashcommands::list_global) {
 				std::cout << x.first;
 				if (x != *slashcommands::list_global.rbegin()) {
@@ -404,7 +415,7 @@ const std::map <std::string, std::function <void(std::vector <std::string>)>> cl
 			std::cout << '\n';
 		}
 		else if (type == "tables") {
-			std::cout << fmt::format("SQL tables are defined in src/lib/database.cpp.\nHere is a list of them:\n");
+			std::cout << "SQL tables are defined in src/lib/database.cpp.\nHere is a list of them:\n";
 			for (const std::string& x : db::table_names) {
 				std::cout << x;
 				if (x != *db::table_names.rbegin()) {
@@ -466,6 +477,7 @@ void cli::init() {
 		{"guildcreate", concat_vectors <std::string>( {{"..."}, map_keys_to_vector(slashcommands::list_guild)} )},
 		{"cdelete", concat_vectors <std::string>( {map_keys_to_vector(slashcommands::list_global), map_keys_to_vector(slashcommands::list_global)} )},
 		{"launch", {}},
+		{"topgg_update", {}},
 		{"list", {"logs", "slashcommands", "tables"}},
 	};
 	linenoise::SetCompletionCallback([](const char* edit_buffer, std::vector <std::string>& completion) {

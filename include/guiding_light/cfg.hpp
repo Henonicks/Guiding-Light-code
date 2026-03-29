@@ -16,21 +16,6 @@
 #include "henifig/henifig.hpp"
 
 /**
- * @brief Converts a henifig::value_array to an std::vector with a single type.
- * @tparam T The type in the std::vector.
- * @param arr The value_t vector to convert.
- * @return A converted-to std::vector <T> from the argument.
- */
-template <typename T>
-std::vector <T> get_arr(const henifig::value_array& arr) {
-	std::vector <T> res;
-	for (const henifig::value_t& x : arr) {
-		res.emplace_back(x.get <T>());
-	}
-	return res;
-}
-
-/**
  * @brief Formats a string using fmt::vformat with the to-be substituted values being stored in an std::vector <std::string>.
  * @param base The base formatted string.
  * @param values The std::vector <std::string> with the substituted values.
@@ -38,12 +23,22 @@ std::vector <T> get_arr(const henifig::value_array& arr) {
  */
 std::string format_if_filled(std::string_view base, const std::vector <std::string>& values);
 
+/**
+ * @brief Builds a dpp::emoji from a henifig::value_map.
+ * @param config The henifig::value_map to build from.
+ * @return A dpp::emoji built from the henifig::value_map.
+ */
+dpp::emoji build_emoji(const henifig::value_map& config);
+
 namespace cfg {
 	inline henifig::config_t config, responses, slashcommands;
+	inline std::recursive_mutex config_mutex;
+
 	/**
 	 * @brief Checks if sqlite3 is installed. If it's not, the program crashes.
 	 */
 	void check_sqlite3();
+
 	/**
 	 * @brief Reads the config and writes down the values.
 	 */

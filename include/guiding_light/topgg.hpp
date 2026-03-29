@@ -6,11 +6,12 @@
 std::string cleanup_request_path(std::string_view path);
 
 namespace topgg {
-	inline std::map <user_snowflake, guild_snowflake> guild_choices;
-	inline std::map <guild_snowflake, int> guild_votes_amount;
-	inline constexpr std::array <int, 10> votes_leveling =
+	inline std::unordered_map <user_snowflake, guild_snowflake> guild_choices;
+	inline std::unordered_map <guild_snowflake, int> guild_votes_amount;
+	inline constexpr std::array votes_leveling =
 		{0, 225, 450, 800, 1300, 2000, 2750, 3350, 4350, 5000};
-	inline std::map <user_snowflake, bool> no_noguild_reminder;
+	inline std::unordered_map <user_snowflake, bool> no_noguild_reminder;
+	inline std::recursive_mutex mutex;
 
 	void handle_request_if_topgg(dpp::http_server_request* request);
 

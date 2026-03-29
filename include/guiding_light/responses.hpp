@@ -85,7 +85,7 @@ enum responses_enum {
 	CREATE_A_TICKET
 };
 
-inline const char* responses_keys[] = {
+inline constexpr std::array responses_keys = {
 	"RESPONSE_NOT_FOUND",
 	"YOU_ARE_NOT_IN_A_VC_YOU_CAN_EDIT",
 	"THE_NAME_OF_THE_VC_IS_ALREADY",

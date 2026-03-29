@@ -6,7 +6,7 @@
 inline const std::set <std::string> command_options_list =
 	{"--dev", "--cli", "--killall", "--dump"};
 
-inline bool IS_DEV, IS_CLI, TO_KILLALL, TO_DUMP;
+inline std::atomic <bool> IS_DEV, IS_CLI, TO_KILLALL, TO_DUMP;
 
 /**
  * @brief Handles a launch option.
