@@ -46,7 +46,7 @@ If you wish to use a non-default compiler, you can specify it while running cmak
 
 Create a config.hfg in `Guiding_Light_Config`, located above the `build` directory (I have a private GitHub repository containing only the config file called `Guiding_Light_Config`, probably not the best way to do this but that's irrelevant):
 
-```henifig
+```hfg
 /BOT_TOKEN\ | "Bot token here",
 /BOT_TOKEN_DEV\ | "Test bot token here (use --dev when starting to test new changes without affecting anything used in production)",
 /BOT_DM_LOGS_ID\ | "(integer) The ID of the channel for DM logs",
@@ -55,8 +55,14 @@ Create a config.hfg in `Guiding_Light_Config`, located above the `build` directo
 /MY_PRIVATE_GUILD_ID\ | "(integer) The ID of your guild. Used to create commands only administrators (which I know can only be me) can use",
 /TICKETS_GUILD_ID\ | "(integer) The ID of your guild which contains tickets. Can be the same as MY_PRIVATE_GUILD_ID if you like"
 /LOGS_CHANNEL_ID\ | "(integer) The ID of the channel where the bot alerts you about errors when they occur.
-# The value below doesn't need to be included if you don't expect top.gg votes
+/PING_EMOJI{
+  $"name" | "The name of the emoji to be put on the temp VC creator button",
+  $"id" | "(integer) The ID of the emoji.",
+  $"is_animated" | "(boolean) Whether the emoji is animated or not."
+}\
+# The values below don't need to be included if you don't expect top.gg votes
 /TOPGG_WEBHOOK_CHANNEL_ID\ | "(integer) The ID of the channel for top.gg vote webhook messages"
+/TOPGG_BOT_TOKEN\ | "Your bot's token on top.gg."
 ```
 
 ## Setup

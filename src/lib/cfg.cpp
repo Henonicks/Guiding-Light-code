@@ -47,13 +47,12 @@ void cfg::read_config() {
 
 	try {
 		TOPGG_WEBHOOK_CHANNEL_ID = config["TOPGG_WEBHOOK_CHANNEL_ID"].get <unsigned long long>();
+		TOPGG_BOT_TOKEN = config["TOPGG_BOT_TOKEN"].get <std::string>();
 	}
 	catch (const henifig::retrieval_exception&) {}
 
 	BOT_TOKEN = config["BOT_TOKEN"].get <std::string>();
 	BOT_TOKEN_DEV = config["BOT_TOKEN_DEV"].get <std::string>();
-
-	TOPGG_BOT_TOKEN = config["TOPGG_BOT_TOKEN"].get <std::string>();
 
 	MODE_NAME = IS_DEV ? "dev" : "release";
 
@@ -96,7 +95,7 @@ void cfg::init_logs() {
 }
 
 void cfg::pray() {
-	std::scoped_lock L(jtc_mutex, notification_mutex, topgg::mutex, ticket_mutex, temp_vc_mutex, ratelimit_mutex, server_mutex);
+	std::scoped_lock L(jtc_mutex, notification_mutex, topgg::mutex, ticket_mutex, temp_vc_mutex, ratelimit_mutex, server_mutex, cfg_values_mutex);
 
 	// I'll pray that when this function starts executing we have all the cache because Discord doesn't let me know whether all the cache I've received at a certain point is everything or there's more and there's no better way to do this I promise
 	// TODO: this still causes data loss somehow
@@ -270,13 +269,19 @@ void cfg::pray() {
 
 	std::cout << "Setting up the guild count updater.\n";
 	log("Setting up the guild count updater.");
-	auto* server_count_updater = new dpptgg::poker(TOPGG_BOT_TOKEN, bot);
+
+	dpptgg::poker* server_count_updater{};
+	if (!TOPGG_BOT_TOKEN.empty()) {
+		server_count_updater = new dpptgg::poker(TOPGG_BOT_TOKEN, bot);
+	}
 	const auto set_presence = [server_count_updater]() -> void {
 		const uint64_t curr_guild_count = dpp::get_guild_count();
 		bot->set_presence(dpp::presence(dpp::ps_idle, dpp::activity(
 			dpp::activity_type::at_watching, fmt::format("VCs in {} guilds", dpp::get_guild_count()), "", ""
 		)));
-		server_count_updater->post_server_count([](const dpptgg::v0::request_completion_t&) {}, curr_guild_count);
+		if (!TOPGG_BOT_TOKEN.empty()) {
+			server_count_updater->post_server_count([](const dpptgg::v0::request_completion_t&) {}, curr_guild_count);
+		}
 	};
 	set_presence();
 	bot->start_timer([set_presence](const dpp::timer&) -> void {

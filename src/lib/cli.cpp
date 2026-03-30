@@ -345,7 +345,11 @@ const std::unordered_map <std::string, std::function <void(std::vector <std::str
 			type = cmd[1];
 		}
 		if (type == "slashcommands") {
-			std::lock_guard L(slashcommands::list_mutex);
+			std::scoped_lock L(slashcommands::list_mutex, cfg_values_mutex);
+			if (TOPGG_BOT_TOKEN.empty()) {
+				std::cout << "No top.gg token was provided in the config!\n";
+				return;
+			}
 			std::cout << "Updating the slashcommand list on top.gg.\n";
 			if (slash::global_vector.empty()) {
 				std::cout << "The local slashcommand list is empty. Launch the bot to get a list of those that exist.\n";
@@ -477,7 +481,7 @@ void cli::init() {
 		{"guildcreate", concat_vectors <std::string>( {{"..."}, map_keys_to_vector(slashcommands::list_guild)} )},
 		{"cdelete", concat_vectors <std::string>( {map_keys_to_vector(slashcommands::list_global), map_keys_to_vector(slashcommands::list_global)} )},
 		{"launch", {}},
-		{"topgg_update", {}},
+		{"topgg_update", {"slashcommands"}},
 		{"list", {"logs", "slashcommands", "tables"}},
 	};
 	linenoise::SetCompletionCallback([](const char* edit_buffer, std::vector <std::string>& completion) {

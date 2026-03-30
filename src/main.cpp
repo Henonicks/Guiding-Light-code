@@ -6,8 +6,6 @@
 #include "guiding_light/signal.hpp"
 
 int main(const int argc, char** argv) {
-	std::cout << "Launching the bot.\n";
-	log("Launching the bot.");
 	cfg::check_sqlite3();
 	// Check if we have sqlite3 installed
 	if (!exec_subcommands(argc, argv)) {
@@ -458,6 +456,8 @@ int main(const int argc, char** argv) {
 	});
 
 	if (!TO_DUMP) {
+		std::cout << "Launching the bot.\n";
+		log("Launching the bot.");
 		bot->start();
 	}
 	else {
