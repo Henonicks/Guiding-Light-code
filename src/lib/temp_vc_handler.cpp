@@ -226,6 +226,7 @@ void temp_vc_create(const dpp::voice_state_update_t& event) {
 			std::unique_lock L4(temp_vc_mutex);
 			log("A callback has arrived!");
 			if (error_pingback(channel_callback, current.id, user.id)) {
+				delete_temp_vc_request();
 				log("It happens to be erroneous.");
 				return;
 			}
