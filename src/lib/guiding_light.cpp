@@ -3,6 +3,7 @@
 #include "guiding_light/logging.hpp"
 #include "guiding_light/responses.hpp"
 #include "guiding_light/temp_vc_handler.hpp"
+#include "guiding_light/slash_funcs.hpp"
 
 dpp::cluster* get_bot() {
 	return !IS_DEV ? bot_release : bot_dev;

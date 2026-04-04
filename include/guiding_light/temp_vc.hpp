@@ -21,7 +21,7 @@ struct temp_vc_query {
 
 inline std::unordered_map <channel_snowflake, temp_vc> temp_vcs;
 inline std::unordered_map <user_snowflake, uint64_t> join_time;
-inline std::unordered_map <user_snowflake, channel_snowflake> vc_statuses; // TODO: support multiple VCs at the same time
+inline std::unordered_map <user_snowflake, std::unordered_map <guild_snowflake, channel_snowflake>> vc_statuses; // TODO: support multiple VCs at the same time
 inline std::unordered_map <user_snowflake, bool> no_temp_ping;
 inline std::unordered_map <guild_snowflake, int> temp_vc_amount;
 inline std::recursive_mutex temp_vc_mutex;

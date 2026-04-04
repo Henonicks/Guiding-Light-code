@@ -1,8 +1,9 @@
 #include "guiding_light/cli.hpp"
 
-#include "guiding_light/commands.tpp"
-
 #include "dpptgg/topgg_poker.hpp"
+
+#include "guiding_light/commands.tpp"
+#include "guiding_light/slash_funcs.hpp"
 
 void cli::read_until_provided(std::string& line) {
 	std::vector <std::string> tokens;

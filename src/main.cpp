@@ -3,6 +3,7 @@
 #include "guiding_light/temp_vc_handler.hpp"
 #include "guiding_light/cli.hpp"
 #include "guiding_light/responses.hpp"
+#include "guiding_light/slash_funcs.hpp"
 #include "guiding_light/signal.hpp"
 
 int main(const int argc, char** argv) {
@@ -55,7 +56,7 @@ int main(const int argc, char** argv) {
 		cli::enter();
 	}
 
-	bot->on_button_click([](const dpp::button_click_t& event) -> void {
+	bot->on_button_click([](const dpp::button_click_t& event) {
 		if (IS_CLI) {
 			return;
 		}
@@ -87,10 +88,47 @@ int main(const int argc, char** argv) {
 				.set_channel_id(event.command.channel_id), error_callback);
 		}
 		else if (button_id.starts_with("help")) {
-			event.reply(dpp::ir_update_message, cfg::help_message(lang, button_id[4] - '0'), error_callback);
+			if (isdigit(button_id[4])) {
+				event.reply(dpp::ir_update_message, cfg::help_message(lang, button_id[4] - '0'), error_callback);
+			}
+			else {
+				const dpp::message& msg = event.command.msg;
+				const uint8_t curr_page = msg.components[0].components[2].custom_id[4] - '1';
+				// TODO: localise
+				dpp::interaction_modal_response search_modal("help_search_modal", response(SELECT_THE_HELP_PAGE_YOU_WANT_TO_VISIT, lang));
+				const std::vector <std::string> pages = get_help_command_page_names(lang);
+				dpp::component search_select_menu = dpp::component()
+					.set_label(response(SELECT_A_HELP_PAGE, lang))
+					.set_placeholder(response(HELP_PAGE, lang))
+					.set_id("help_search_modal_number")
+					.set_type(dpp::cot_selectmenu);
+				for (uint8_t i = 0; i < pages.size(); i++) {
+					if (curr_page != i) {
+						search_select_menu.add_select_option(
+							dpp::select_option()
+								.set_label(fmt::format("{0}. {1}", i + 1, pages[i]))
+								.set_value(fmt::format("help{}", i))
+						);
+					}
+				}
+				search_modal.add_component(search_select_menu);
+				event.dialog(search_modal);
+			}
 		}
 		else {
 			event.reply(response_emsg(UNDEFINED_COMMAND, lang), error_callback);
+		}
+	});
+
+	bot->on_form_submit([](const dpp::form_submit_t& event) {
+		get_lang();
+		if (event.custom_id == "help_search_modal") {
+			event.reply();
+			event.edit_original_response(
+				cfg::help_message(lang,
+					std::get <std::string>(event.components[0].value)[4] - '0'),
+				error_callback
+			);
 		}
 	});
 
@@ -223,7 +261,7 @@ int main(const int argc, char** argv) {
 			return;
 		}
 		guild_log(fmt::format("I have joined a guild. These are its stats:\n"
-			"Name: `{0}`\nID: `{1}`\nMembers count: `{2}`"
+			"Name: `{0}`\nID: `{1}`\nMember count: `{2}`"
 			, event.created.name, event.created.id, event.created.member_count
 		));
 	});
@@ -232,7 +270,7 @@ int main(const int argc, char** argv) {
 			return;
 		}
 		guild_log(fmt::format("I have left a guild. These are its stats:\n"
-			"Name: `{0}`\nID: `{1}`\nMembers count: `{2}`"
+			"Name: `{0}`\nID: `{1}`\nMember count: `{2}`"
 			, event.deleted.name, event.deleted.id, event.deleted.member_count
 		));
 	});
@@ -241,9 +279,10 @@ int main(const int argc, char** argv) {
 		if (IS_CLI) {
 			co_return;
 		}
-		const dpp::snowflake& user_id = event.state.user_id;
+		const dpp::snowflake user_id = event.state.user_id;
+		const dpp::snowflake guild_id = event.state.guild_id;
 		std::unique_lock temp_lock(temp_vc_mutex);
-		dpp::snowflake channel_id = vc_statuses[user_id];
+		dpp::snowflake channel_id = vc_statuses[user_id][guild_id];
 		const temp_vc curr_temp_vc = temp_vcs[channel_id];
 		if (curr_temp_vc.exists()) {
 			if (dpp::find_channel(channel_id)->get_voice_members().empty()) {
@@ -258,10 +297,10 @@ int main(const int argc, char** argv) {
 			temp_vcs.erase(channel_id);
 		}
 		if (!event.state.channel_id.empty()) {
-			vc_statuses[user_id] = event.state.channel_id;
+			vc_statuses[user_id][guild_id] = event.state.channel_id;
 		}
 		else {
-			vc_statuses.erase(user_id);
+			vc_statuses[user_id].erase(guild_id);
 		}
 		temp_lock.unlock();
 		channel_id = event.state.channel_id;
@@ -338,13 +377,32 @@ int main(const int argc, char** argv) {
 		else if (cmd_name == "get") {
 			slash::topgg::get_progress(event);
 		}
+		else if (cmd_name == "tempvc") {
+			if (cmd.options[0].name == "set") {
+				co_await slash::tempvc::set(event);
+			}
+			else if (cmd.options[0].name == "blocklist" || cmd.options[0].name == "mutelist") {
+				const std::string_view suboption = cmd.options[0].options[0].name;
+				restrictions_types rest_type;
+				if (cmd_name == "blocklist") {
+					rest_type = RRT_BLOCKLIST;
+				}
+				else {
+					rest_type = RRT_MUTELIST;
+				}
+				if (suboption == "add") {
+					co_await slash::tempvc::list::add(event, rest_type);
+				}
+				if (suboption == "remove") {
+					co_await slash::tempvc::list::remove(event, rest_type);
+				}
+				if (suboption == "status") {
+					slash::tempvc::list::status(event, rest_type);
+				}
+			}
+		}
 		else if (cmd_name == "set") {
-			if (cmd.options[0].name == "default") {
-				co_await slash::set::default_values(event);
-			}
-			else {
-				co_await slash::set::current(event);
-			}
+			co_await slash::set::default_values(event);
 		}
 		else if (cmd_name == "setup") {
 			std::shared_lock L1(slash::in_progress_mutex);
@@ -360,24 +418,6 @@ int main(const int argc, char** argv) {
 			co_await slash::setup(event);
 			std::lock_guard L3(slash::in_progress_mutex);
 			slash::in_progress[cmd_name].erase(guild_id);
-		}
-		else if (cmd_name == "blocklist" || cmd_name == "mutelist") {
-			restrictions_types rest_type;
-			if (cmd_name == "blocklist") {
-				rest_type = RRT_BLOCKLIST;
-			}
-			else {
-				rest_type = RRT_MUTELIST;
-			}
-			if (cmd.options[0].name == "add") {
-				co_await slash::list::add(event, rest_type);
-			}
-			if (cmd.options[0].name == "remove") {
-				co_await slash::list::remove(event, rest_type);
-			}
-			if (cmd.options[0].name == "status") {
-				slash::list::status(event, rest_type);
-			}
 		}
 		else if (cmd_name == "ticket") {
 			std::shared_lock L1(slash::in_progress_mutex);

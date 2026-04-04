@@ -42,6 +42,8 @@ bool temp_vc_is_accessible(const dpp::permission& overwrite);
 bool temp_vc_is_accessible(const dpp::permission_overwrite& overwrite);
 bool temp_vc_is_speakable(const dpp::permission& overwrite);
 bool temp_vc_is_speakable(const dpp::permission_overwrite& overwrite);
+dpp::role get_highest_role(dpp::snowflake user_id, dpp::snowflake guild_id);
+dpp::coroutine <> re_unmute_member(dpp::guild_member member, const dpp::channel& channel);
 bool blocklist_updated(const dpp::channel& channel);
 bool mutelist_updated(const dpp::channel& channel);
 

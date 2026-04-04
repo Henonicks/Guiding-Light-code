@@ -6,7 +6,6 @@
 #include "guiding_light/jtc_vc.hpp"
 #include "guiding_light/jtc_defaults.hpp"
 #include "guiding_light/logging.hpp"
-#include "guiding_light/slash_funcs.hpp"
 #include "guiding_light/topgg.hpp"
 #include "guiding_light/ticket.hpp"
 #include "guiding_light/ratelimit.hpp"

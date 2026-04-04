@@ -84,13 +84,12 @@ dpp::command_option make_default(const dpp::command_option_type cot, const dpp::
 void slashcommands::init() {
 	dpp::slashcommand help(localise_slashcommand(make_default("help")));
 	dpp::slashcommand setup(localise_slashcommand(make_default("setup")));
+	dpp::slashcommand tempvc(localise_slashcommand(make_default("tempvc")));
 	dpp::slashcommand set(localise_slashcommand(make_default("set")));
 	dpp::slashcommand guild(localise_slashcommand(make_default("guild")));
 	dpp::slashcommand get(localise_slashcommand(make_default("get")));
 	dpp::slashcommand vote(localise_slashcommand(make_default("vote")));
 	dpp::slashcommand logs(localise_slashcommand(make_default("logs")));
-	dpp::slashcommand blocklist(localise_slashcommand(make_default("blocklist")));
-	dpp::slashcommand mutelist(localise_slashcommand(make_default("mutelist")));
 	dpp::slashcommand ticket(localise_slashcommand(make_default("ticket")));
 	dpp::slashcommand select(localise_slashcommand(make_default("select")));
 	dpp::slashcommand reload(localise_slashcommand(make_default("reload")));
@@ -117,25 +116,70 @@ void slashcommands::init() {
 	);
 	setup.set_default_permissions(dpp::permissions::p_manage_channels);
 
-	set.add_option(
-		localise_command_options(
-			make_default(dpp::co_sub_command, set, "name").add_option(
-			make_default(dpp::co_string, set, "name/name", true).set_max_length(100))
-		, set, "name")
+	dpp::command_option sub_cmd_group_tempvc_set(
+		make_default(dpp::co_sub_command_group, tempvc, "set")
 	);
-	set.add_option(
-		localise_command_options(
-			make_default(dpp::co_sub_command, set, "limit").add_option(
-			make_default(dpp::co_integer, set, "limit/limit", true).set_min_value(-99).set_max_value(99))
-		, set, "limit")
+	dpp::command_option tempvc_name_sub_cmd(
+		make_default(dpp::co_sub_command, tempvc, "set/name")
 	);
-	set.add_option(
-		localise_command_options(
-			make_default(dpp::co_sub_command, set, "bitrate").add_option(
-				make_default(dpp::co_integer, set, "bitrate/bitrate", true).set_max_value(384)
-			)
-		, set, "bitrate")
+	tempvc_name_sub_cmd.add_option(
+		make_default(dpp::co_string, tempvc, "set/name/name", true).set_max_length(100)
 	);
+	sub_cmd_group_tempvc_set.add_option(tempvc_name_sub_cmd);
+	dpp::command_option tempvc_limit_sub_cmd(
+		make_default(dpp::co_sub_command, tempvc, "set/limit")
+	);
+	tempvc_limit_sub_cmd.add_option(
+		make_default(dpp::co_integer, tempvc, "set/limit/limit", true).set_max_value(99)
+	);
+	sub_cmd_group_tempvc_set.add_option(tempvc_limit_sub_cmd);
+	dpp::command_option tempvc_bitrate_sub_cmd(
+		make_default(dpp::co_sub_command, tempvc, "set/bitrate")
+	);
+	tempvc_bitrate_sub_cmd.add_option(
+		make_default(dpp::co_integer, tempvc, "set/bitrate/bitrate", true).set_max_value(384)
+	);
+	sub_cmd_group_tempvc_set.add_option(tempvc_bitrate_sub_cmd);
+	tempvc.add_option(localise_command_options(sub_cmd_group_tempvc_set, tempvc, "set"));
+	dpp::command_option sub_cmd_group_tempvc_blocklist(
+		make_default(dpp::co_sub_command_group, tempvc, "blocklist")
+	);
+	sub_cmd_group_tempvc_blocklist.add_option(
+		make_default(dpp::co_sub_command, tempvc, "blocklist/add").add_option(
+			make_default(dpp::co_user, tempvc, "blocklist/add/user", true)
+		)
+	);
+	sub_cmd_group_tempvc_blocklist.add_option(
+		make_default(dpp::co_sub_command, tempvc, "blocklist/remove").add_option(
+			make_default(dpp::co_user, tempvc, "blocklist/remove/user", true)
+		)
+	);
+	sub_cmd_group_tempvc_blocklist.add_option(
+		make_default(dpp::co_sub_command, tempvc, "blocklist/status").add_option(
+			make_default(dpp::co_user, tempvc, "blocklist/status/user", true)
+		)
+	);
+	tempvc.add_option(localise_command_options(sub_cmd_group_tempvc_blocklist, tempvc, "blocklist"));
+	dpp::command_option sub_cmd_group_tempvc_mutelist(
+		make_default(dpp::co_sub_command_group, tempvc, "mutelist")
+	);
+	sub_cmd_group_tempvc_mutelist.add_option(
+		make_default(dpp::co_sub_command, tempvc, "mutelist/add").add_option(
+			make_default(dpp::co_user, tempvc, "mutelist/add/user", true)
+		)
+	);
+	sub_cmd_group_tempvc_mutelist.add_option(
+		make_default(dpp::co_sub_command, tempvc, "mutelist/remove").add_option(
+			make_default(dpp::co_user, tempvc, "mutelist/remove/user", true)
+		)
+	);
+	sub_cmd_group_tempvc_mutelist.add_option(
+		make_default(dpp::co_sub_command, tempvc, "mutelist/status").add_option(
+			make_default(dpp::co_user, tempvc, "mutelist/status/user", true)
+		)
+	);
+	tempvc.add_option(localise_command_options(sub_cmd_group_tempvc_mutelist, tempvc, "mutelist"));
+
 	dpp::command_option sub_cmd_group_default(
 		make_default(dpp::co_sub_command_group, set, "default")
 	);
@@ -210,54 +254,6 @@ void slashcommands::init() {
 	);
 	logs.set_default_permissions(dpp::permissions::p_administrator);
 
-	blocklist.add_option(
-		localise_command_options(
-			make_default(dpp::co_sub_command, blocklist, "add").add_option(
-				make_default(dpp::co_user, blocklist, "add/user", true)
-			)
-		, blocklist, "add")
-	);
-
-	blocklist.add_option(
-		localise_command_options(
-			make_default(dpp::co_sub_command, blocklist, "remove").add_option(
-				make_default(dpp::co_user, blocklist, "remove/user", true)
-			)
-		, blocklist, "remove")
-	);
-
-	blocklist.add_option(
-		localise_command_options(
-			make_default(dpp::co_sub_command, blocklist, "status").add_option(
-				make_default(dpp::co_user, blocklist, "status/user", true)
-			)
-		, blocklist, "status")
-	);
-
-	mutelist.add_option(
-		localise_command_options(
-			make_default(dpp::co_sub_command, mutelist, "add").add_option(
-				make_default(dpp::co_user, mutelist, "add/user", true)
-			)
-		, mutelist, "add")
-	);
-
-	mutelist.add_option(
-		localise_command_options(
-			make_default(dpp::co_sub_command, mutelist, "remove").add_option(
-				make_default(dpp::co_user, mutelist, "remove/user", true)
-			)
-		, mutelist, "remove")
-	);
-
-	mutelist.add_option(
-		localise_command_options(
-			make_default(dpp::co_sub_command, mutelist, "status").add_option(
-				make_default(dpp::co_user, mutelist, "status/user", true)
-			)
-		, mutelist, "status")
-	);
-
 	ticket.add_option(
 		localise_command_options(
 			make_default(dpp::co_sub_command, ticket, "create")
@@ -280,7 +276,7 @@ void slashcommands::init() {
 
 	reload.set_default_permissions(dpp::permissions::p_administrator);
 
-	list_global = { {"help", help}, {"setup", setup}, {"set", set}, {"guild", guild}, {"get", get}, {"vote", vote}, {"blocklist", blocklist}, {"mutelist", mutelist}, {"ticket", ticket} };
+	list_global = { {"help", help}, {"setup", setup}, {"tempvc", tempvc}, {"set", set}, {"guild", guild}, {"get", get}, {"vote", vote}, {"ticket", ticket} };
 	list_guild = { {"logs", logs}, {"select", select}, {"reload", reload} , {"dumpq", dumpq}};
 }
 

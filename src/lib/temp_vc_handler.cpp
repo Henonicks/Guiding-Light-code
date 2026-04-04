@@ -193,14 +193,9 @@ void temp_vc_create(const dpp::voice_state_update_t& event) {
 		new_channel.set_name(new_name);
 		new_channel.set_guild_id(guild_id);
 		new_channel.set_bitrate(defs.bitrate);
-		const dpp::channel current = *dpp::find_channel(jtc_channel_id);
-		new_channel.set_parent_id(current.parent_id);
+		const dpp::channel current_channel = *dpp::find_channel(jtc_channel_id);
+		new_channel.set_parent_id(current_channel.parent_id);
 		new_channel.set_user_limit(limit);
-		for (const dpp::permission_overwrite& x : current.permission_overwrites) {
-			if (x.deny.can(dpp::p_view_channel) && x.id != bot->me.id) {
-				new_channel.add_permission_overwrite(x.id, cast <dpp::overwrite_type>(x.type), 0, x.deny);
-			}
-		}
 		std::mutex curr_query_mutex;
 		std::unique_lock curr_query_lock(curr_query_mutex);
 		log(fmt::format("Waiting for {}'s turn to have a temporary VC created for them.", user.id));
@@ -221,11 +216,22 @@ void temp_vc_create(const dpp::voice_state_update_t& event) {
 			return;
 		}
 		L3.unlock();
+		const dpp::guild guild = *dpp::find_guild(guild_id);
+		if (guild.permission_overwrites(dpp::find_guild_member(guild_id, user.id), current_channel).can(dpp::p_manage_roles)) {
+			const dpp::role self_highest_role = get_highest_role(bot->me.id, guild_id);
+			for (const dpp::permission_overwrite& x : current_channel.permission_overwrites) {
+				if (x.deny.can(dpp::p_view_channel) && x.id != bot->me.id) {
+					new_channel.add_permission_overwrite(x.id, cast <dpp::overwrite_type>(x.type), 0, dpp::p_view_channel);
+				}
+			}
+			new_channel.add_permission_overwrite(bot->me.id, dpp::ot_member, dpp::p_view_channel, 0);
+			new_channel.add_permission_overwrite(user.id, dpp::ot_member, dpp::p_view_channel, 0);
+		}
 		log(fmt::format("Creating a temporary VC for {}", get_oldest_temp_vc_request().user_id));
-		bot->channel_create(new_channel, [user, current, guild_id, jtc_channel_id](const dpp::confirmation_callback_t& channel_callback) -> void {
+		bot->channel_create(new_channel, [user, current_channel, guild_id, jtc_channel_id](const dpp::confirmation_callback_t& channel_callback) -> void {
 			std::unique_lock L4(temp_vc_mutex);
 			log("A callback has arrived!");
-			if (error_pingback(channel_callback, current.id, user.id)) {
+			if (error_pingback(channel_callback, current_channel.id, user.id)) {
 				delete_temp_vc_request();
 				log("It happens to be erroneous.");
 				return;
@@ -272,6 +278,36 @@ bool temp_vc_is_speakable(const dpp::permission& overwrite) {
 
 bool temp_vc_is_speakable(const dpp::permission_overwrite& overwrite) {
 	return !overwrite.deny.can(dpp::p_speak);
+}
+
+dpp::role get_highest_role(const dpp::snowflake user_id, const dpp::snowflake guild_id) {
+	std::vector <dpp::role> own_roles;
+	std::ranges::transform(dpp::find_guild_member(guild_id, user_id).get_roles(), std::back_inserter(own_roles), [](const dpp::snowflake role_id) -> dpp::role {
+		return *dpp::find_role(role_id);
+	});
+	return *std::max_element(own_roles.begin(), own_roles.end());
+}
+
+dpp::coroutine <> re_unmute_member(dpp::guild_member member, const dpp::channel& channel) {
+	const dpp::guild_member bot_member = dpp::find_guild_member(member.guild_id, bot->me.id);
+	const dpp::permission own_perms = dpp::find_guild(member.guild_id)->permission_overwrites(bot_member, channel);
+	if (!member.is_muted() && own_perms.can(dpp::p_mute_members, dpp::p_deafen_members)) {
+		log("Trying to re-unmute the member...");
+		member.set_mute(true);
+		const dpp::confirmation_callback_t mute_callback = co_await bot->co_guild_edit_member(member);
+		if (error_callback(mute_callback)) {
+			log("Failed to mute.");
+			co_return;
+		}
+		member = dpp::find_guild_member(member.guild_id, member.user_id);
+		member.set_mute(false);
+		const dpp::confirmation_callback_t unmute_callback = co_await bot->co_guild_edit_member(member);
+		if (error_callback(unmute_callback)) {
+			log("Failed to unmute.");
+			co_return;
+		}
+		log("Success.");
+	}
 }
 
 bool blocklist_updated(const dpp::channel& channel) {
