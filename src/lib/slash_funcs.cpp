@@ -4,14 +4,28 @@
 #include "guiding_light/responses.hpp"
 #include "guiding_light/temp_vc_handler.hpp"
 
-dpp::coroutine <> slash::set::current(const dpp::slashcommand_t& event) {
+henifig::value_t get_help_command_page_names(const std::string_view lang, const henifig::value_map& commands) {
+	std::string used_lang = lang.data();
+
+	std::lock_guard L(cfg::config_mutex);
+
+	if (!commands.contains(lang.data())) {
+		used_lang = "default";
+	}
+	return commands.at(used_lang);
+}
+
+dpp::coroutine <> slash::tempvc::set(const dpp::slashcommand_t& event) {
 	get_lang();
 	const dpp::command_interaction cmd = event.command.get_command_interaction();
+	const std::string_view suboption = cmd.options[0].options[0].name;
 	const dpp::user& user = event.command.get_issuing_user();
+	const dpp::snowflake guild_id = event.command.guild_id;
 
 	std::scoped_lock L(temp_vc_mutex);
 
-	const dpp::snowflake& channel_id = vc_statuses[user.id];
+	const dpp::guild guild = event.command.get_guild();
+	const dpp::snowflake channel_id = vc_statuses[user.id][guild.id];
 	log(fmt::format("{0} is trying to edit the voice channel {1}.", user.id, channel_id));
 	const bool user_is_main = !channel_id.empty();
 	if (!user_is_main) {
@@ -21,7 +35,7 @@ dpp::coroutine <> slash::set::current(const dpp::slashcommand_t& event) {
 	else {
 		dpp::channel channel = *dpp::find_channel(channel_id);
 		const std::string old_name = channel.name;
-		if (cmd.options[0].name == "name") {
+		if (suboption == "name") {
 			std::scoped_lock L(ratelimit_mutex);
 			const auto argument = std::get <std::string>(cmd.options[0].options[0].value);
 			log(fmt::format("They are trying to change the name from `{0}` to `{1}`.", old_name, argument));
@@ -47,19 +61,14 @@ dpp::coroutine <> slash::set::current(const dpp::slashcommand_t& event) {
 				});
 			}
 		}
-		else if (cmd.options[0].name == "bitrate") {
+		else if (suboption == "bitrate") {
 			const auto argument = std::get <long>(cmd.options[0].options[0].value);
 			log(fmt::format("They are trying to change the bitrate from {0} to {1}.", channel.bitrate, argument));
-			const dpp::guild* guild = dpp::find_guild(channel.guild_id);
-			if (guild == nullptr) {
-				event.reply(response_emsg(GUILD_COULD_NOT_BE_FOUND, lang), error_callback);
-				co_return;
-			}
 			dpp::message to_reply = dpp::message().set_flags(dpp::m_ephemeral);
 			std::string content;
-			const int max_bitrate = ((guild->premium_tier == 0) ?
-			                   96 : (guild->premium_tier == 1) ?
-			                        128 : (guild->premium_tier == 2) ?
+			const int max_bitrate = ((guild.premium_tier == 0) ?
+			                   96 : (guild.premium_tier == 1) ?
+			                        128 : (guild.premium_tier == 2) ?
 			                             256 : 384);
 			if (channel.bitrate == argument) {
 				content = response_fmt(THE_BITRATE_IS_ALREADY, lang, {std::to_string(argument)});
@@ -82,7 +91,7 @@ dpp::coroutine <> slash::set::current(const dpp::slashcommand_t& event) {
 			to_reply.set_content(content);
 			event.reply(to_reply, error_callback);
 		}
-		else if (cmd.options[0].name == "limit") {
+		else if (suboption == "limit") {
 			const auto argument = std::get <long>(cmd.options[0].options[0].value);
 			log(fmt::format("They are trying to change the limit from {0} to {1}.", channel.user_limit, argument));
 			if (argument > 99) {
@@ -92,7 +101,7 @@ dpp::coroutine <> slash::set::current(const dpp::slashcommand_t& event) {
 			else if (argument < 0) {
 				log("lmao");
 				event.reply(response_emsg(WELL_NOW_WERE_JUST_BEING_SILLY_ARENT_WE, lang), error_callback);
-				bot->guild_member_move(0, temp_vcs[vc_statuses[user.id]].guild_id, user.id, error_callback);
+				bot->guild_member_move(0, guild_id, user.id, error_callback);
 				// easter egg
 			}
 			else {
@@ -294,18 +303,19 @@ dpp::coroutine <> slash::setup(const dpp::slashcommand_t& event) {
 	}
 }
 
-void slash::list::status(const dpp::slashcommand_t& event, const restrictions_types rest_type) {
+void slash::tempvc::list::status(const dpp::slashcommand_t& event, const restrictions_types rest_type) {
 	get_lang();
 	get_rest_list();
 	const dpp::user& issuer = event.command.usr;
 
 	std::lock_guard L(temp_vc_mutex);
 
-	const dpp::snowflake channel_id = temp_vcs[vc_statuses[issuer.id]].channel_id;
+	const dpp::snowflake guild_id = event.command.guild_id;
+	const dpp::snowflake channel_id = temp_vcs[vc_statuses[issuer.id][guild_id]].channel_id;
 	log(fmt::format("{0} is checking the restrictions list status of the channel {1} with the list type {2}.", issuer.id, channel_id, cast <int>(rest_type)));
 	if (channel_id.empty()) {
 		log("They're not in a channel though.");
-		event.reply(response_emsg(YOURE_NOT_IN_A_TEMP_VC, lang), error_callback);
+		event.reply(response_emsg(CHANNEL_COULD_NOT_BE_FOUND, lang), error_callback);
 		return;
 	}
 	const dpp::snowflake st_user_id = std::get <dpp::snowflake>(event.get_parameter("user"));
@@ -313,18 +323,19 @@ void slash::list::status(const dpp::slashcommand_t& event, const restrictions_ty
 	event.reply(response_fmtemsg(THE_USER_IS_NOTORIN_THE_LIST, lang, {(*list)[channel_id].contains(st_user_id) ? "" : response_str(NOT, lang)}), error_callback);
 }
 
-dpp::coroutine <> slash::list::add(const dpp::slashcommand_t& event, const restrictions_types rest_type) {
+dpp::coroutine <> slash::tempvc::list::add(const dpp::slashcommand_t& event, const restrictions_types rest_type) {
 	get_lang();
 	get_rest_list();
 	const dpp::user& issuer = event.command.usr;
+	const dpp::snowflake guild_id = event.command.guild_id;
 	std::unique_lock L(temp_vc_mutex);
-	const temp_vc issuer_vc = temp_vcs[vc_statuses[issuer.id]];
+	const temp_vc issuer_vc = temp_vcs[vc_statuses[issuer.id][guild_id]];
 	L.unlock();
 	const dpp::snowflake requested_id = std::get <dpp::snowflake>(event.get_parameter("user"));
 	log(fmt::format("User {0} is trying to add {1} to the blocklist of the channel {2}.", issuer.id, requested_id, issuer_vc.channel_id));
 	if (issuer_vc.creator_id != issuer.id) {
 		log("But the channel does not belong to them.");
-		event.reply(response_emsg(THE_CHANNEL_YOURE_IN_DOES_NOT_BELONG_TO_YOU, lang), error_callback);
+		event.reply(response_emsg(YOU_ARE_NOT_IN_A_VC_YOU_CAN_EDIT, lang), error_callback);
 		co_return;
 	}
 	const dpp::user* requested = dpp::find_user(requested_id);
@@ -343,12 +354,15 @@ dpp::coroutine <> slash::list::add(const dpp::slashcommand_t& event, const restr
 		log("But the requested user is already in the blocklist.");
 		event.reply(response_emsg(THE_USER_IS_ALREADY_IN_THE_BLOCKLIST, lang), error_callback);
 	}
+	else if (requested->id == bot->me.id) {
+		log("But I'm the requested user.");
+		event.reply(response_emsg(HEY_THATS_ME_NOT_NICE, lang), error_callback);
+	}
 	else {
 		channel->set_permission_overwrite(requested_id, dpp::ot_member, 0, get_restriction_permissions(rest_type));
 		log("Trying to edit the channel...");
 		const dpp::confirmation_callback_t& callback = co_await bot->co_channel_edit(*channel);
-		if (callback.is_error()) {
-			error_feedback(callback, event, lang);
+		if (error_feedback(callback, event, lang)) {
 			co_return;
 		}
 		log("Success.");
@@ -356,22 +370,31 @@ dpp::coroutine <> slash::list::add(const dpp::slashcommand_t& event, const restr
 		if (vc_statuses[issuer.id] == vc_statuses[requested_id]) {
 			bot->guild_member_move(0, issuer_vc.guild_id, requested_id);
 		}
-		event.reply(response_emsg(THE_USER_WAS_ADDED_TO_THE_BLOCKLIST, lang), error_callback);
+		event.reply(response_fmtemsg(
+			THE_USER_WAS_ADDED_TO_THE_RESTLIST, lang, {
+				response_str(
+					rest_type == RRT_BLOCKLIST ? BLOCKLIST_OF_CHANNEL :
+					                             MUTELIST_OF_CHANNEL,
+					lang
+				)
+			}),
+		error_callback);
 	}
 }
 
-dpp::coroutine <> slash::list::remove(const dpp::slashcommand_t& event, const restrictions_types rest_type) {
+dpp::coroutine <> slash::tempvc::list::remove(const dpp::slashcommand_t& event, const restrictions_types rest_type) {
 	get_lang();
 	get_rest_list();
 	const dpp::user& issuer = event.command.usr;
+	const dpp::snowflake guild_id = event.command.guild_id;
 	std::unique_lock L(temp_vc_mutex);
-	const temp_vc issuer_vc = temp_vcs[vc_statuses[issuer.id]];
+	const temp_vc issuer_vc = temp_vcs[vc_statuses[issuer.id][guild_id]];
 	L.unlock();
 	const dpp::snowflake requested_id = std::get <dpp::snowflake>(event.get_parameter("user"));
 	log(fmt::format("User {0} is trying to remove {1} from the blocklist of the channel {2}.", issuer.id, requested_id, issuer_vc.channel_id));
 	if (issuer_vc.creator_id != issuer.id) {
 		log("But the channel does not belong to them.");
-		event.reply(response_emsg(THE_CHANNEL_YOURE_IN_DOES_NOT_BELONG_TO_YOU, lang), error_callback);
+		event.reply(response_emsg(YOU_ARE_NOT_IN_A_VC_YOU_CAN_EDIT, lang), error_callback);
 		co_return;
 	}
 	const dpp::user* requested = dpp::find_user(requested_id);
@@ -385,17 +408,20 @@ dpp::coroutine <> slash::list::remove(const dpp::slashcommand_t& event, const re
 	}
 	else {
 		L.lock();
-		dpp::channel* channel = dpp::find_channel(vc_statuses[issuer.id]);
+		dpp::channel channel = *dpp::find_channel(vc_statuses[issuer.id][guild_id]);
 		L.unlock();
-		channel->set_permission_overwrite(requested_id, dpp::ot_member, get_restriction_permissions(rest_type), 0);
+		channel.set_permission_overwrite(requested_id, dpp::ot_member, get_restriction_permissions(rest_type), 0);
 		log("Trying to edit the channel...");
-		const dpp::confirmation_callback_t& callback = co_await bot->co_channel_edit(*channel);
-		if (callback.is_error()) {
-			error_feedback(callback, event, lang);
+		const dpp::confirmation_callback_t callback = co_await bot->co_channel_edit(channel);
+		if (error_feedback(callback, event, lang)) {
 			co_return;
 		}
 		log("Success.");
 		event.reply(response_emsg(THE_USER_WAS_REMOVED_FROM_THE_BLOCKLIST, lang), error_callback);
+		if (vc_statuses[requested_id][guild_id] == issuer_vc.channel_id) {
+			const dpp::guild_member requested_member = dpp::find_guild_member(event.command.get_guild().id, requested_id);
+			co_await re_unmute_member(requested_member, channel);
+		}
 	}
 }
 

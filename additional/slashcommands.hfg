@@ -34,9 +34,123 @@
         }
       }
     },
+    $"tempvc" | {
+      $"NAME" | "tempvc",
+      $"DESCRIPTION" | "Perform an action against the temp VC you are in.",
+      $"OPTIONS" | {
+        $"set" | {
+          $"NAME" | "set",
+          $"DESCRIPTION" | "Set an attribute of the temp VC you are in.",
+          $"OPTIONS" | {
+            $"name" | {
+              $"NAME" | "name",
+              $"DESCRIPTION" | "Change the VC name.",
+              $"OPTIONS" | {
+                $"name" | {
+                  $"NAME" | "name",
+                  $"DESCRIPTION" | "The name you want the VC to have."
+                }
+              }
+            },
+            $"limit" | {
+              $"NAME" | "limit",
+              $"DESCRIPTION" | "Change the member count limit",
+              $"OPTIONS" | {
+                $"limit" | {
+                  $"NAME" | "limit",
+                  $"DESCRIPTION" | "The limit you want the VC to have."
+                }
+              }
+            },
+            $"bitrate" | {
+              $"NAME" | "bitrate",
+              $"DESCRIPTION" | "Change the bitrate of the VC.",
+              $"OPTIONS" | {
+                $"bitrate" | {
+                  $"NAME" | "bitrate",
+                  $"DESCRIPTION" | "The bitrate you want the VC to have"
+                }
+              }
+            }
+          }
+        },
+        $"blocklist" | {
+          $"NAME" | "blocklist",
+          $"DESCRIPTION" | "Add/Remove a user from your channel's blocklist.",
+          $"OPTIONS" | {
+            $"add" | {
+              $"NAME" | "add",
+              $"DESCRIPTION" | "Add a user to the blocklist.",
+              $"OPTIONS" | {
+                $"user" | {
+                  $"NAME" | "user",
+                  $"DESCRIPTION" | "The user to be added to the blocklist."
+                }
+              }
+            },
+            $"remove" | {
+              $"NAME" | "remove",
+              $"DESCRIPTION" | "Remove a user from the blocklist.",
+              $"OPTIONS" | {
+                $"user" | {
+                  $"NAME" | "user",
+                  $"DESCRIPTION" | "The user to be removed from the blocklist."
+                }
+              }
+            },
+            $"status" | {
+              $"NAME" | "status",
+              $"DESCRIPTION" | "See the status of a user according to the blocklist.",
+              $"OPTIONS" | {
+                $"user" | {
+                  $"NAME" | "user",
+                  $"DESCRIPTION" | "The user to check the status of."
+                }
+              }
+            }
+          }
+        },
+        $"mutelist" | {
+          $"NAME" | "mutelist",
+          $"DESCRIPTION" | "Add/Remove a user from your channel's mutelist.",
+          $"OPTIONS" | {
+            $"add" | {
+              $"NAME" | "add",
+              $"DESCRIPTION" | "Add a user to the mutelist.",
+              $"OPTIONS" | {
+                $"user" | {
+                  $"NAME" | "user",
+                  $"DESCRIPTION" | "The user to be added to the mutelist."
+                }
+              }
+            },
+            $"remove" | {
+              $"NAME" | "remove",
+              $"DESCRIPTION" | "Remove a user from the mutelist.",
+              $"OPTIONS" | {
+                $"user" | {
+                  $"NAME" | "user",
+                  $"DESCRIPTION" | "The user to be removed from the mutelist."
+                }
+              }
+            },
+            $"status" | {
+              $"NAME" | "status",
+              $"DESCRIPTION" | "See the status of a user according to the mutelist.",
+              $"OPTIONS" | {
+                $"user" | {
+                  $"NAME" | "user",
+                  $"DESCRIPTION" | "The user to check the status of."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     $"set" | {
       $"NAME" | "set",
-      $"DESCRIPTION" | "Edit an attribute of the temp VC you are in (or of a JTC).",
+      $"DESCRIPTION" | "Edit a default attribute of the temp VCs created from a selected JTC.",
       $"OPTIONS" | {
         $"default" | {
           $"NAME" | "default",
@@ -83,36 +197,6 @@
                   $"DESCRIPTION" | "The default value of this JTC will be changed."
                 }
               }
-            }
-          }
-        },
-        $"name" | {
-          $"NAME" | "name",
-          $"DESCRIPTION" | "Change the VC name.",
-          $"OPTIONS" | {
-            $"name" | {
-              $"NAME" | "name",
-              $"DESCRIPTION" | "The name you want the VC to have."
-            }
-          }
-        },
-        $"limit" | {
-          $"NAME" | "limit",
-          $"DESCRIPTION" | "Change the member count limit",
-          $"OPTIONS" | {
-            $"limit" | {
-              $"NAME" | "limit",
-              $"DESCRIPTION" | "The limit you want the VC to have."
-            }
-          }
-        },
-        $"bitrate" | {
-          $"NAME" | "bitrate",
-          $"DESCRIPTION" | "Change the bitrate of the VC.",
-          $"OPTIONS" | {
-            $"bitrate" | {
-              $"NAME" | "bitrate",
-              $"DESCRIPTION" | "The bitrate you want the VC to have"
             }
           }
         }
@@ -165,78 +249,6 @@
         $"sqlite" | {
           $"NAME" | "sqlite",
           $"DESCRIPTION" | "Sqlite3 logs."
-        }
-      }
-    },
-    $"blocklist" | {
-      $"NAME" | "blocklist",
-      $"DESCRIPTION" | "Add/Remove a user from your channel's blocklist.",
-      $"OPTIONS" | {
-        $"add" | {
-          $"NAME" | "add",
-          $"DESCRIPTION" | "Add a user to the blocklist.",
-          $"OPTIONS" | {
-            $"user" | {
-              $"NAME" | "user",
-              $"DESCRIPTION" | "The user to be added to the blocklist."
-            }
-          }
-        },
-        $"remove" | {
-          $"NAME" | "remove",
-          $"DESCRIPTION" | "Remove a user from the blocklist.",
-          $"OPTIONS" | {
-            $"user" | {
-              $"NAME" | "user",
-              $"DESCRIPTION" | "The user to be removed from the blocklist."
-            }
-          }
-        },
-        $"status" | {
-          $"NAME" | "status",
-          $"DESCRIPTION" | "See the status of a user according to the blocklist.",
-          $"OPTIONS" | {
-            $"user" | {
-              $"NAME" | "user",
-              $"DESCRIPTION" | "The user to check the status of."
-            }
-          }
-        }
-      }
-    },
-    $"mutelist" | {
-      $"NAME" | "mutelist",
-      $"DESCRIPTION" | "Add/Remove a user from your channel's mutelist.",
-      $"OPTIONS" | {
-        $"add" | {
-          $"NAME" | "add",
-          $"DESCRIPTION" | "Add a user to the mutelist.",
-          $"OPTIONS" | {
-            $"user" | {
-              $"NAME" | "user",
-              $"DESCRIPTION" | "The user to be added to the mutelist."
-            }
-          }
-        },
-        $"remove" | {
-          $"NAME" | "remove",
-          $"DESCRIPTION" | "Remove a user from the mutelist.",
-          $"OPTIONS" | {
-            $"user" | {
-              $"NAME" | "user",
-              $"DESCRIPTION" | "The user to be removed from the mutelist."
-            }
-          }
-        },
-        $"status" | {
-          $"NAME" | "status",
-          $"DESCRIPTION" | "See the status of a user according to the mutelist.",
-          $"OPTIONS" | {
-            $"user" | {
-              $"NAME" | "user",
-              $"DESCRIPTION" | "The user to check the status of."
-            }
-          }
         }
       }
     },
@@ -348,9 +360,123 @@
         }
       }
     },
+    $"tempvc" | {
+      $"NAME" | "тимч-гк",
+      $"DESCRIPTION" | "Внести зміну у Ваш ГК, в якому Ви знаходитеся.",
+      $"OPTIONS" | {
+        $"set" | {
+          $"NAME" | "встановити",
+          $"DESCRIPTION" | "Змінити атрибут Вашого ГК.",
+          $"OPTIONS" | {
+            $"name" | {
+              $"NAME" | "назву",
+              $"DESCRIPTION" | "Змінити назву ГК.",
+              $"OPTIONS" | {
+                $"name" | {
+                  $"NAME" | "назва",
+                  $"DESCRIPTION" | "Назва, яку Ви хочете дати голосовому каналу."
+                }
+              }
+            },
+            $"limit" | {
+              $"NAME" | "ліміт",
+              $"DESCRIPTION" | "Змінити ліміт користувачів у ГК.",
+              $"OPTIONS" | {
+                $"limit" | {
+                  $"NAME" | "ліміт",
+                  $"DESCRIPTION" | "Ліміт, який Ви хочете дати голосовому каналу."
+                }
+              }
+            },
+            $"bitrate" | {
+              $"NAME" | "бітрейт",
+              $"DESCRIPTION" | "Змінити бітрейт ГК.",
+              $"OPTIONS" | {
+                $"bitrate" | {
+                  $"NAME" | "бітрейт",
+                  $"DESCRIPTION" | "Бітрейт, який Ви хочете дати голосовому каналу."
+                }
+              }
+            }
+          }
+        },
+        $"blocklist" | {
+          $"NAME" | "чорний-список",
+          $"DESCRIPTION" | "Додати/видалити користувача з чорного списку Вашого каналу.",
+          $"OPTIONS" | {
+            $"add" | {
+              $"NAME" | "додати",
+              $"DESCRIPTION" | "Додати користувача до чорного списку.",
+              $"OPTIONS" | {
+                $"user" | {
+                  $"NAME" | "користувач",
+                  $"DESCRIPTION" | "Користувач, якого потрібно додати до чорного списку."
+                }
+              }
+            },
+            $"remove" | {
+              $"NAME" | "видалити",
+              $"DESCRIPTION" | "Видалити користувача з чорного списку.",
+              $"OPTIONS" | {
+                $"user" | {
+                  $"NAME" | "користувач",
+                  $"DESCRIPTION" | "Користувач, якого потрібно видалити з чорного списку."
+                }
+              }
+            },
+            $"status" | {
+              $"NAME" | "статус",
+              $"DESCRIPTION" | "Отримати статус користувача в чорному списку.",
+              $"OPTIONS" | {
+                $"user" | {
+                  $"NAME" | "користувач",
+                  $"DESCRIPTION" | "Користувач, статус якого потрібно перевірити."
+                }
+              }
+            }
+          }
+        },
+        $"mutelist" | {
+          $"NAME" | "список-мутів",
+          $"DESCRIPTION" | "Додати/видалити користувача зі списку мутів Вашого каналу.",
+          $"OPTIONS" | {
+            $"add" | {
+              $"NAME" | "додати",
+              $"DESCRIPTION" | "Додати користувача до списку мутів.",
+              $"OPTIONS" | {
+                $"user" | {
+                  $"NAME" | "користувач",
+                  $"DESCRIPTION" | "Користувач, якого потрібно додати до списку мутів."
+                }
+              }
+            },
+            $"remove" | {
+              $"NAME" | "видалити",
+              $"DESCRIPTION" | "Видалити користувача зі списку мутів.",
+              $"OPTIONS" | {
+                $"user" | {
+                  $"NAME" | "користувач",
+                  $"DESCRIPTION" | "Користувач, якого потрібно видалити зі списку мутів."
+                }
+              }
+            },
+            $"status" | {
+              $"NAME" | "статус",
+              $"DESCRIPTION" | "Отримати статус користувача в списку мутів.",
+              $"OPTIONS" | {
+                $"user" | {
+                  $"NAME" | "користувач",
+                  $"DESCRIPTION" | "Користувач, статус якого потрібно перевірити."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     $"set" | {
       $"NAME" | "встановити",
-      $"DESCRIPTION" | "Змінити атрибут ГК, в якому Ви знаходитеся (або головного).",
+      $"DESCRIPTION" | "Змінити атрибут ГК-ів, створених із певного ПДС, за замовчуванням.",
       $"OPTIONS" | {
         $"default" | {
           $"NAME" | "за-замовчуванням",
@@ -399,36 +525,6 @@
               }
             }
           }
-        },
-        $"name" | {
-          $"NAME" | "назву",
-          $"DESCRIPTION" | "Змінити назву ГК.",
-          $"OPTIONS" | {
-            $"name" | {
-              $"NAME" | "назва",
-              $"DESCRIPTION" | "Назва, яку Ви хочете дати голосовому каналу."
-            }
-          }
-        },
-        $"limit" | {
-          $"NAME" | "ліміт",
-          $"DESCRIPTION" | "Змінити ліміт користувачів у ГК.",
-          $"OPTIONS" | {
-            $"limit" | {
-              $"NAME" | "ліміт",
-              $"DESCRIPTION" | "Ліміт, який Ви хочете дати голосовому каналу."
-            }
-          }
-        },
-        $"bitrate" | {
-          $"NAME" | "бітрейт",
-          $"DESCRIPTION" | "Змінити бітрейт ГК.",
-          $"OPTIONS" | {
-            $"bitrate" | {
-              $"NAME" | "бітрейт",
-              $"DESCRIPTION" | "Бітрейт, який Ви хочете дати голосовому каналу."
-            }
-          }
         }
       }
     },
@@ -459,78 +555,6 @@
     $"vote" | {
       $"NAME" | "проголосувати",
       $"DESCRIPTION" | "Показати покликання, за яким можна проголосувати за бота."
-    },
-    $"blocklist" | {
-      $"NAME" | "чорний-список",
-      $"DESCRIPTION" | "Додати/видалити користувача з чорного списку Вашого каналу.",
-      $"OPTIONS" | {
-        $"add" | {
-          $"NAME" | "додати",
-          $"DESCRIPTION" | "Додати користувача до чорного списку.",
-          $"OPTIONS" | {
-            $"user" | {
-              $"NAME" | "користувач",
-              $"DESCRIPTION" | "Користувач, якого потрібно додати до чорного списку."
-            }
-          }
-        },
-        $"remove" | {
-          $"NAME" | "видалити",
-          $"DESCRIPTION" | "Видалити користувача з чорного списку.",
-          $"OPTIONS" | {
-            $"user" | {
-              $"NAME" | "користувач",
-              $"DESCRIPTION" | "Користувач, якого потрібно видалити з чорного списку."
-            }
-          }
-        },
-        $"status" | {
-          $"NAME" | "статус",
-          $"DESCRIPTION" | "Отримати статус користувача в чорному списку.",
-          $"OPTIONS" | {
-            $"user" | {
-              $"NAME" | "користувач",
-              $"DESCRIPTION" | "Користувач, статус якого потрібно перевірити."
-            }
-          }
-        }
-      }
-    },
-    $"mutelist" | {
-      $"NAME" | "список-мутів",
-      $"DESCRIPTION" | "Додати/видалити користувача зі списку мутів Вашого каналу.",
-      $"OPTIONS" | {
-        $"add" | {
-          $"NAME" | "додати",
-          $"DESCRIPTION" | "Додати користувача до списку мутів.",
-          $"OPTIONS" | {
-            $"user" | {
-              $"NAME" | "користувач",
-              $"DESCRIPTION" | "Користувач, якого потрібно додати до списку мутів."
-            }
-          }
-        },
-        $"remove" | {
-          $"NAME" | "видалити",
-          $"DESCRIPTION" | "Видалити користувача зі списку мутів.",
-          $"OPTIONS" | {
-            $"user" | {
-              $"NAME" | "користувач",
-              $"DESCRIPTION" | "Користувач, якого потрібно видалити зі списку мутів."
-            }
-          }
-        },
-        $"status" | {
-          $"NAME" | "статус",
-          $"DESCRIPTION" | "Отримати статус користувача в списку мутів.",
-          $"OPTIONS" | {
-            $"user" | {
-              $"NAME" | "користувач",
-              $"DESCRIPTION" | "Користувач, статус якого потрібно перевірити."
-            }
-          }
-        }
-      }
     },
     $"ticket" | {
       $"NAME" | "тікет",

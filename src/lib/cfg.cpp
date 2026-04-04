@@ -6,6 +6,7 @@
 
 #include "guiding_light/responses.hpp"
 #include "guiding_light/temp_vc_handler.hpp"
+#include "guiding_light/slash_funcs.hpp"
 
 std::string format_if_filled(const std::string_view base, const std::vector <std::string>& values) {
 	if (values.empty()) {
@@ -334,11 +335,26 @@ dpp::message cfg::help_message(const std::string_view lang, const uint8_t page) 
 	}
 	const std::vector <std::string> descriptions = rp;
 	const henifig::value_array& help_cmd_mentions = responses["HELP_COMMAND_MENTIONS"];
+	const std::vector <std::string> help_cmd_page_names = get_help_command_page_names(lang);
+	std::string pagination_string;
+	for (uint8_t i = 0; i < help_cmd_mentions.size(); i++) {
+		if (i == page) {
+			pagination_string += fmt::format("**{0}**. **{1}**\n", i + 1, help_cmd_page_names[i]);
+		}
+		else {
+			pagination_string += fmt::format("{0}. {1}\n", i + 1, help_cmd_page_names[i]);
+		}
+	}
+
 	dpp::message res;
 	res.add_embed(
 		dpp::embed()
 		.set_color(dpp::colors::sti_blue)
-		.set_description(format_if_filled(descriptions[page], {slash::get_mentions(help_cmd_mentions[page])}))
+		.set_description(fmt::format("{0}{1}{2}",
+			pagination_string,
+			fmt::format("# {}\n", help_cmd_page_names[page]),
+			format_if_filled(descriptions[page], {slash::get_mentions(help_cmd_mentions[page])}))
+		)
 	);
 	res.embeds[0].set_author(response(AUTHOR, lang, help_components), bot->me.get_url(), bot->me.get_avatar_url());
 	res.embeds[0].set_footer(dpp::embed_footer()
@@ -356,11 +372,16 @@ dpp::message cfg::help_message(const std::string_view lang, const uint8_t page) 
 	}
 	buttons.add_component(dpp::component()
 		.set_type(dpp::cot_button)
+		.set_id("help_search")
+		.set_label(dpp::unicode_emoji::mag)
+	);
+	buttons.add_component(dpp::component()
+		.set_type(dpp::cot_button)
 		.set_id(fmt::format("help{}", page + 1))
 		.set_label(dpp::unicode_emoji::arrow_right)
 	);
 	if (page == descriptions.size() - 1) {
-		buttons.components[1].set_disabled(true);
+		buttons.components[2].set_disabled(true);
 	}
 	return res.add_component(buttons).set_flags(dpp::m_ephemeral);
 }

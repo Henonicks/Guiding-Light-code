@@ -57,15 +57,15 @@ std::string response_str(const responses_enum response_id, const std::string_vie
 	return response(response_id, lang, localisation);
 }
 
-std::string response_fmt(const responses_enum response_id, const std::string_view lang, const std::vector<std::string>& values, const henifig::value_map& localisation) {
+std::string response_fmt(const responses_enum response_id, const std::string_view lang, const std::vector <std::string>& values, const henifig::value_map& localisation) {
 	return format_if_filled(response(response_id, lang, localisation), values);
 }
 
-dpp::message response_fmtmsg(const responses_enum response_id, const std::string_view lang, const std::vector<std::string>& values, const henifig::value_map& localisation) {
+dpp::message response_fmtmsg(const responses_enum response_id, const std::string_view lang, const std::vector <std::string>& values, const henifig::value_map& localisation) {
 	return dpp::message(response_fmt(response_id, lang, values, localisation));
 }
 
-dpp::message response_fmtemsg(const responses_enum response_id, const std::string_view lang, const std::vector<std::string>& values, const henifig::value_map& localisation) {
+dpp::message response_fmtemsg(const responses_enum response_id, const std::string_view lang, const std::vector <std::string>& values, const henifig::value_map& localisation) {
 	return dpp::message(response_fmt(response_id, lang, values, localisation)).set_flags(dpp::m_ephemeral);
 }
 
@@ -99,11 +99,11 @@ std::string error_response(const uint32_t error_code, const std::string_view lan
 	const henifig::value_map& responses = error_descriptions.at(used_lang);
 	const std::string code_str = std::to_string(error_code);
 	if (responses.contains(code_str)) {
-		return responses.at(code_str);
+		return {responses.at(code_str)};
 	}
 	else if (const henifig::value_map& fallback_responses = error_descriptions.at("default");
 	fallback_responses.contains(code_str)) {
-		return fallback_responses.at(code_str);
+		return {fallback_responses.at(code_str)};
 	}
 	else {
 		return "";

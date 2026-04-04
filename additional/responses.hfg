@@ -84,26 +84,46 @@
 
 /HELP_COMMAND_MENTIONS[
   [
-  "help",
-  "setup jtc",
-  "setup notification jtc",
-  "setup notification topgg",
-  "blocklist add",
-  "blocklist remove",
-  "blocklist status",
-  "mutelist add",
-  "mutelist remove",
-  "mutelist status"
-  ], [
-  "vote",
-  "guild set",
-  "guild get"
-  ], [
-  "ticket create",
-  "ticket close"
+    "setup jtc",
+    "setup notifications jtc",
+    "setup notifications topgg"
+  ],
+  [
+    "tempvc blocklist add",
+    "tempvc blocklist remove",
+    "tempvc blocklist status",
+    "tempvc mutelist add",
+    "tempvc mutelist remove",
+    "tempvc mutelist status"
+  ],
+  [
+    "vote",
+    "guild set",
+    "guild get"
+  ],
+  [
+    "ticket create",
+    "ticket close"
   ],
   []
 ]\
+
+/HELP_COMMAND_PAGE_NAMES{
+  $"default" | [
+    "JTC-related - setup",
+    "JTC-related - customisation",
+    "top.gg-related",
+    "Ticket-related",
+    "Notes worth being aware of"
+  ],
+  $"uk" | [
+    "Пов'язане з ПДС-каналами - налаштування",
+    "Пов'язане з ПДС-каналами - кастомізація",
+    "Пов'язане з top.gg",
+    "Пов'язане з тікетами",
+    "Попередження, що варто пам'ятати"
+  ]
+}\
 
 /LOCALISATION{
   $"HELP_EMBEDS" | {
@@ -111,130 +131,127 @@
       $"AUTHOR" | "Here is what I can do!\n",
       $"DESCRIPTIONS" |
       [
-      "## {0}\n"
-      "I guess you\'ve just issued this command!\n"
-      "# JTC-related\n"
+        "A Join-To-Create Voice Channel, or, as referred to, a JTC VC (or simply a JTC), "
+        "is a voice channel which you can join to have a temporary one created. "
+        "When you do so, you\'re moved to a newly created temporary channel which you can edit "
+        "with the `/tempvc` command. A moderator can also edit the default settings of the "
+        "temporary channels, created with a certain JTC by running the `/set` command with "
+        "a sub-command of `default`.\n"
+        "When everyone leaves a temporary channel, it gets automatically deleted, hence the "
+        "\"temporary\" in the name. Then there are notification channels. Every time "
+        "a temporary channel is created/deleted, a message about this is sent in such channel. "
+        "Notification channels are text-only; if the guild they\'re set up in has "
+        "community enabled, the channel will be an announcement channel, otherwise "
+        "it\'s a normal text channel with sending messages disabled for the `@everyone` role.\n"
 
-      "A Join-To-Create Voice Channel, or, as referred to, a JTC VC (or simply a JTC), "
-      "is a voice channel which you can join so that a temporary voice is created. "
-      "When you do so, you\'re moved to a newly created temporary channel which you can edit "
-      "with the `/set` command. A moderator can also edit the default settings of the "
-      "temporary channels, created with a certain JTC by running the `/set` command with "
-      "a sub-command of `default`. "
-      "When everyone leaves a temporary channel, it gets automatically deleted, hence the "
-      "\"temporary\" in the name. Then there are notification channels. Every time "
-      "a temporary channel is created/deleted, a message about this is sent in such channel. "
-      "Notification channels are text-only; if the guild they\'re set up in has "
-      "community enabled, the channel will be an announcement channel, otherwise "
-      "it\'s a normal text channel with sending messages disabled for the `@everyone` role.\n"
+        "## /setup\n"
 
-      "## /setup\n"
+        "Create a JTC VC ({0}) or a notification channel (for temporary VCs/top.gg votes "
+        "in the guild's favour) ({1}/{2}). If the limit hasn't been hit.\n"
 
-      "Create a JTC VC ({1}) or a notification channel (for temporary VCs/top.gg votes "
-      "in the guild's favour) ({2}/{3}). If the limit wasn't hit.\n"
+        "## /set\n"
 
-      "## /set\n"
+        "This command has one subcommand - default.\n"
 
-      "This command has two types of subcommands: set current and set default.\n"
+        "__**set default**__ sets a default value (currently supports the channel "
+        "name/limit/bitrate) to a user-defined one. Some limitations apply. "
+        "You cannot use this if you don\'t have the permissions to edit a channel.\n",
 
-      "__**set current**__ sets a current value (currently supports the channel "
-      "name/limit/bitrate) to a user-defined one. Some limitations apply. "
-      "You cannot change the values of a channel that doesn\'t belong to you "
-      "(was requested by someone else)\n"
+        "## /tempvc\n"
 
-      "__**set default**__ sets a default value (currently supports the channel "
-      "name/limit/bitrate) to a user-defined one. Some limitations apply. "
-      "You cannot use this if you don\'t have the permissions to edit a channel.\n"
+        "This command has three subcommands: set, blocklist and mutelist. "
+        "They include every single action you can perform on your temp VC (using the bot).\n"
 
-      "## /blocklist\n"
+        "__**set**__ sets a current attribute (currently supports the channel "
+        "name/limit/bitrate) to a user-defined one. Some limitations apply. "
+        "You cannot change the values of a channel that doesn\'t belong to you "
+        "(was requested by someone else)\n"
 
-      "### Note: this command is in beta. If something goes wrong, please report it by creating a ticket.\n"
+        "__**blocklist**__\n"
 
-      "A blocklist is a list of users who aren\'t allowed to join your voice channel.\n"
+        "A blocklist is a list of users who aren\'t allowed to join your voice channel.\n"
 
-      "__**{4}**__ adds a user to the blocklist of the channel if one is provided as the parameter.\n"
+        "***Note: this subcommand is experimental. If something goes wrong, please report it by creating a ticket.***\n"
 
-      "__**{5}**__ removes a user from the blocklist of the channel if one is provided "
-      "as the parameter.\n"
+        "__**{0}**__ adds a user to the blocklist of the channel.\n"
 
-      "__**{6}**__ tells you whether the requested user is in the blocklist or not.\n"
+        "__**{1}**__ removes a user from the blocklist of the channel.\n"
 
+        "__**{2}**__ tells you whether the requested user is in the blocklist or not.\n"
 
-      "## /mutelist\n"
+        "__**mutelist**__\n"
 
-      "### Note: this command is in beta. If something goes wrong, please report it by creating a ticket.\n"
+        "A mutelist is a list of users who are muted in your voice channel.\n"
 
-      "A mutelist is a list of users who are muted in your voice channel.\n"
+        "***Note: this subcommand is experimental. If something goes wrong, please report it by creating a ticket.***\n"
 
-      "__**{7}**__ adds a user to the mutelist of the channel if one is provided as the parameter.\n"
+        "__**{3}**__ adds a user to the mutelist of the channel and kicks them. If they weren't originally in the blocklist, "
+        "they can still join the channel.\n"
 
-      "__**{8}**__ removes a user from the blocklist of the channel if one is provided "
-      "as the parameter.\n"
+        "__**{4}**__ removes a user from the mutelist of the channel and automatically unmutes them. **If the bot doesn't have "
+        "the server permission to do so, the user will have to re-join the channel!**\n"
 
-      "__**{9}**__ tells you whether the requested user is in the mutelist or not.",
-
-      "# top.gg-related\n"
-
-      "Voting for the bot is done on the top.gg website. Your vote counts as two "
-      "if you vote on a weekend, and therefore you get more points. "
-      "You can only get points from voting if you\'ve selected a guild with {1}. "
-      "Voting for the bot while a guild `X` is selected will be referred to as "
-      "\"Voting in favour of the guild `X`\". "
-      "Voting in favour of a guild will get it points which add up from all of its members. "
-      "Points are not subtracted when a member leaves, not even if they've voted. "
-      "When a guild reaches a certain level, a new JTC is unlocked. "
-      "There can be up to 10 JTCs while on the 1st level there\'s only 1.\n"
-
-      "## {0}\n"
-
-      "Issuing this command will show the link to the page where you can vote for me. "
-      "Voting in favour of a certain guild a certain amount of times lets there be more JTCs "
-      "and therefore more different default settings at once.\n"
-
-      "## /guild\n"
-
-      "This command\'s purpose is to set/get the guild you want to vote in favour of, "
-      "`set` if you know which guild you want to vote in favour of and `get` "
-      "if you forgot which one you were voting in favour of before.\n"
-
-      "__**{1}**__ sets the guild you\'re issuing the command in. This means that "
-      "if you issue this sub-command in the guild `X`, "
-      "your next vote will be made in favour of this guild unless you change the guild to `Y`. "
-      "Then the vote will be made in favour of `Y`.\n"
-
-      "__**{2}**__ gets the guild you\'re currently voting in favour of. "
-      "If you\'ve issued the `set` sub-command in the guild `X`, that\'ll be the guild returned.",
+        "__**{5}**__ tells you whether the requested user is in the mutelist or not.\n",
 
 
-      "# Ticket-related\n"
+        "Voting for the bot is done on the top.gg website. Your vote counts as two "
+        "if you vote on a weekend, and therefore you get more points. "
+        "You can only get points from voting if you\'ve selected a guild with {0}. "
+        "Voting for the bot while a guild `X` is selected will be referred to as "
+        "\"Voting in favour of the guild `X`\". "
+        "Voting in favour of a guild will get it points which add up from all of its members. "
+        "Points are not subtracted when a member leaves, not even if they've voted. "
+        "When a guild reaches a certain level, a new JTC is unlocked. "
+        "There can be up to 10 JTCs while on the 1st level there\'s only 1.\n"
 
-      "Whenever you find something that works incorrectly (at least, in your opinion), "
-      "you can contact the creator of the bot by DMing it. "
-      "But first, you need to open a ticket.\n"
+        "## {0}\n"
 
-      "## /ticket\n"
+        "Issuing this command will show the link to the page where you can vote for me. "
+        "Voting in favour of a certain guild a certain amount of times lets there be more JTCs "
+        "and therefore more different default settings at once.\n"
 
-      "### Note: this command is in beta. If something goes wrong... well, this is the "
-      "tickets command, so you\'re on your own. Unless you're in the Discord server.\n"
+        "## /guild\n"
 
-      "__**{0}**__ allows the creator of the bot to talk to you through the bot's DMs.\n"
-      "__**{1}**__ closes a ticket, ending any conversation between the creator of the bot and you.",
+        "This command\'s purpose is to set/get the guild you want to vote in favour of, "
+        "`set` if you know which guild you want to vote in favour of and `get` "
+        "if you forgot which one you were voting in favour of before.\n"
+
+        "__**{1}**__ sets the guild you\'re issuing the command in. This means that "
+        "if you issue this sub-command in the guild `X`, "
+        "your next vote will be made in favour of this guild unless you change the guild to `Y`. "
+        "Then the vote will be made in favour of `Y`.\n"
+
+        "__**{2}**__ gets the guild you\'re currently voting in favour of. "
+        "If you\'ve issued the `set` sub-command in the guild `X`, that\'ll be the guild returned.",
 
 
-      "__***TIP:***__ when setting the default name for a JTC, you can put \"{username}\" "
-      "(without the quotes) so it can be replaced with the username of the person requesting "
-      "a channel. For example, if the default name is \"VC for {username}\" and a person "
-      "with the username \"henonicks\" requests a channel, the name of the temporary VC "
-      "will be set to \"VC for henonicks\".\n"
+        "Whenever you find something that works incorrectly (at least, in your opinion), "
+        "you can contact the creator of the bot by DMing it. "
+        "But first, you need to open a ticket.\n"
 
-      "\n"
+        "## /ticket\n"
 
-      "__***NOTE:***__ When the bot reboots, it won\'t know that you (as well as anyone else) "
-      "are/is in a channel. A temporary VC needs to be \"touched\" to be auto-deleted. "
-      "So to delete your previously owned channel you need to re-join it and then leave it. "
-      "Although if you decide to keep it, you can!\n"
-      "If you vote but don\'t have a guild set to vote in favour of, the point is wasted. "
-      "The first time you do that, you get a direct message from the bot if your DMs are open."
+        "### Note: this command is in beta. If something goes wrong... well, this is the "
+        "tickets command, so you\'re on your own. Unless you're in the Discord server.\n"
+
+        "__**{0}**__ allows the creator of the bot to talk to you through the bot's DMs.\n"
+        "__**{1}**__ closes a ticket, ending any conversation between the creator of the bot and you.",
+
+
+        "__***TIP:***__ when setting the default name for a JTC, you can put \"{username}\" "
+        "(without the quotes) so it can be replaced with the username of the person requesting "
+        "a channel. For example, if the default name is \"VC for {username}\" and a person "
+        "with the username \"henonicks\" requests a channel, the name of the temporary VC "
+        "will be set to \"VC for henonicks\".\n"
+
+        "\n"
+
+        "__***NOTE:***__ When the bot reboots, it won\'t know that you (as well as anyone else) "
+        "are/is in a channel. A temporary VC needs to be \"touched\" to be auto-deleted. "
+        "So to delete your previously owned channel you need to re-join it and then leave it. "
+        "Although if you decide to keep it, you can!\n"
+        "If you vote but don\'t have a guild set to vote in favour of, the point is wasted. "
+        "The first time you do that, you get a direct message from the bot if your DMs are open."
       ],
       $"FOOTER" | "You can always ask the creator of the bot a question in the "
             "direct messages or the support server! A link to the latter is in the bio of the bot."
@@ -243,130 +260,129 @@
       $"AUTHOR" | "Ось, що я вмію!\n",
       $"DESCRIPTIONS" |
       [
-      "## {0}\n"
-      "Ви щойно ввели цю команду!\n"
-      "# Пов'язані з ПДС-каналами\n"
+        "Головний канал (далі названий \"ПДС\", Приєднання-Для-Створення) - це голосовий канал, до якого Ви можете приєднатися, щоби було створено "
+        "тимчасовий голосовий канал. Коли це стається, цей бот Вас переносить у той новий канал, "
+        "який Ви можете редагувати, використовуючи команду `/тимч-гк`. Модератор також може "
+        "редагувати налаштування тимчасових каналів за замовчуванням, використовуючи під-команду "
+        "`за-замовчуванням` команди `/встановити`.\n"
+        "Коли всі залишають тимчасовий канал, він автоматично видаляється, з якої причини "
+        "він і називається \"тимчасовим\". Далі, є канали сповіщень. Кожного разу як "
+        "створюється/видаляється тимчасовий канал, в каналі сповіщень відправляється "
+        "повідомлення про це. Канали сповіщень є текстовими. Якщо сервер, у якому вони "
+        "налаштовуються, має ввімкнену спільноту, цей канал буде каналом сповіщень. "
+        "Інакше, він буде звичайним текстовим каналом із відправленням повідомлень вимкненим "
+        "для ролі `@everyone`.\n"
 
-      "Головний канал (далі названий \"ПДС\", Приєднання-Для-Створення) - це голосовий канал, до якого Ви можете приєднатися, щоби було створено "
-      "тимчасовий голосовий канал. Коли це стається, цей бот Вас переносить у той новий канал, "
-      "який Ви можете редагувати, використовуючи команду `/встановити`. Модератор також може "
-      "редагувати налаштування тимчасових каналів за замовчуванням, використовуючи під-команду "
-      "`за-замовчуванням` команди `/встановити`. "
-      "Коли всі залишають тимчасовий канал, він автоматично видаляється, з якої причини "
-      "він і називається \"тимчасовим\". Далі, є канали сповіщень. Кожного разу як "
-      "створюється/видаляється тимчасовий канал, в каналі сповіщень відправляється "
-      "повідомлення про це. Канали сповіщень є текстовими. Якщо сервер, у якому вони "
-      "налаштовуються, має ввімкнену спільноту, цей канал буде каналом сповіщень. "
-      "Інакше, він буде звичайним текстовим каналом із відправленням повідомлень вимкненим "
-      "для ролі `@everyone`.\n"
+        "## /налаштувати\n"
 
-      "## /налаштувати\n"
+        "Створити ПДС-канал ({0}) або канал сповіщень (для тимчасових каналів/голосів "
+        "на користь серверу) ({1}/{2}). Якщо ліміт не було досягнено.\n"
 
-      "Створити ПДС-канал ({1}) або канал сповіщень (для тимчасових каналів/голосів "
-      "на користь серверу) ({2}/{3}). Якщо ліміт не було досягнено.\n"
+        "## /встановити\n"
 
-      "## /встановити\n"
+        "Ця команда має одну під-команду: за-замовчуванням.\n"
 
-      "Ця команда має два типи під-команд: встановити поточне та встановити за-замовчуванням.\n"
-
-      "__**встановити поточне**__ встановлює значення (наразі підтримує назву/ліміт/бітрейт "
-      "каналу) на значення, визначене користувачем. Є певні обмеження. "
-      "Ви не можете змінити значення каналу, що вам не належить (був запитаний кимось "
-      "іншим).\n"
-
-      "__**встановити за-замовчуванням**__ встановлює значення (наразі підтримує "
-      "назву/ліміт/бітрейт каналу) за замовчуванням на значення, визначене користувачем. "
-      "Є певні обмеження. Ви не можете використовувати цю команду, якщо у Вас немає "
-      "дозволу редагувати будь-який канал.\n"
-
-      "## /чорний-список\n"
-
-      "### Попередження: ця команда в беті. Якщо щось іде не так, будь ласка, зробіть на це "
-      "скаргу, створивши тікет.\n"
-
-      "Чорний список - це список користувачів, яким заборонено приєднуватися до Вашого каналу.\n"
-
-      "__**{4}**__ додає користувача до чорного списку каналу, якщо його було вказано як параметр.\n"
-
-      "__**{5}**__ видаляє користувача з чорного списку каналу, якщо його було вказано як параметр\n"
-
-      "__**{6}**__ повідомляє Вас, чи був запитаний користувач у чорному списку.\n"
-
-      "## /список-мутів\n"
-
-      "### Попередження: ця команда в беті. Якщо щось іде не так, будь ласка, зробіть на це "
-      "скаргу, створивши тікет.\n"
-
-      "Список мутів - це список німих користувачів Вашого каналу.\n"
-
-      "__**{4}**__ додає користувача до списку мутів каналу, якщо його було вказано як параметр.\n"
-
-      "__**{5}**__ видаляє користувача зі списку мутів каналу, якщо його було вказано як параметр\n"
-
-      "__**{6}**__ повідомляє Вас, чи був запитаний користувач у списку мутів.",
+        "__**встановити за-замовчуванням**__ встановлює значення (наразі підтримує "
+        "назву/ліміт/бітрейт каналу) за замовчуванням на значення, визначене користувачем. "
+        "Є певні обмеження. Ви не можете використовувати цю команду, якщо у Вас немає "
+        "дозволу редагувати будь-який канал.\n",
 
 
-      "# Пов'язані з top.gg\n"
+        "## /тимч-гк\n"
 
-      "Голосування за бота проводиться на сайті `top.gg`. Ваш голос рахується двічі, "
-      "якщо Ви голосуєте у вихідний, отож Вам дається більше очок. "
-      "Ви можете отримати очки з голосів лише якщо Ви вибрали сервер, використовючи {1}. "
-      "Про голосування за бота, поки вибраний сервер `X`, далі буде говоритися як "
-      "\"Голосування на користь серверу `X`\". "
-      "Голосування на користь серверу дасть йому очки, що додаються від кожного його члена. "
-      "Очки не віднімаються коли член залишає сервер, навіть якщо він голосував. "
-      "Коли сервер доходить до певного рівня, розблоковується новий ПДС-канал. "
-      "У певному сервері може бути до 10 ПДС-каналів, поки на першому рівні є лиш 1.\n"
+        "Ця команда має три під-команди: встановити, чорний-список та список-мутів. "
+        "Вони включають кожну дію, яку Ви можете зробити над Вашим тимчасовим каналом (через бота).\n"
 
-      "## {0}\n"
+        "__**встановити**__ встановлює поточний атрибут (наразі підтримує назву/ліміт/бітрейт "
+        "каналу) на значення, визначене користувачем. Є певні обмеження. "
+        "Ви не можете змінити значення каналу, що Вам не належить (був запитаний кимось іншим).\n"
 
-      "Використання цієї команди покаже покликання на сторінку, де Ви можете за мене проголосувати. "
-      "Голосування на користь певному серверу, певну кількість разів, дозволить у ньому бути "
-      "більшій кількості ПДС-каналів, тож і більшій кількості налаштувань за замовчуванням за раз.\n"
+        "__**чорний-список**__\n"
 
-      "## /сервер\n"
+        "Чорний список - це список користувачів, яким заборонено приєднуватися до Вашого каналу.\n"
 
-      "Призначенням цієї команди є встановлення/отримання сервера, на користь якому Ви хочете "
-      "голосувати, `встановити` якщо Ви знаєте, на користь якому серверу Ви хочете голосувати, "
-      "та `отримати`, якщо Ви забули, на користь якому Ви голосували до цього.\n"
+        "***Попередження: ця команда експериментальна. Якщо щось іде не так, будь ласка, зробіть на це "
+        "скаргу, створивши тікет.***\n"
 
-      "__**{1}**__ встановлює сервер, у якому Ви використовуєте цю під-команду. Це означає, що "
-      "якщо Ви введете її в сервері `X`, Ваш наступний голос буде зроблений на користь цьому "
-      "серверу, якщо Ви не зміните цей сервер на певний `Y`. Тоді наступний голос буде "
-      "зроблений на користь серверу `Y`.\n"
+        "__**{0}**__ додає користувача до чорного списку каналу.\n"
 
-      "__**{2}**__ отримує сервер, на користь якому Ви наразі голосуєте. "
-      "Якщо Ви ввели під-команду `встановити` у сервері `X`, то буде повернений сервер.",
+        "__**{1}**__ видаляє користувача з чорного списку каналу.\n"
+
+        "__**{2}**__ повідомляє Вас, чи був запитаний користувач у чорному списку.\n"
+
+        "__**список-мутів**__\n"
+
+        "***Попередження: ця команда експериментальна. Якщо щось іде не так, будь ласка, зробіть на це "
+        "скаргу, створивши тікет.***\n"
+
+        "Список мутів - це список користувачів Вашого каналу з мутом.\n"
+
+        "__**{3}**__ додає користувача до списку мутів каналу.\n"
+
+        "__**{4}**__ видаляє користувача зі списку мутів каналу.\n"
+
+        "__**{5}**__ повідомляє Вас, чи був запитаний користувач у списку мутів.",
 
 
-      "# Пов'язані з тікетами\n"
+        "Голосування за бота проводиться на сайті `top.gg`. Ваш голос рахується двічі, "
+        "якщо Ви голосуєте у вихідний, отож Вам дається більше очок. "
+        "Ви можете отримати очки з голосів лише якщо Ви вибрали сервер, використовючи {1}. "
+        "Про голосування за бота, поки вибраний сервер `X`, далі буде говоритися як "
+        "\"Голосування на користь серверу `X`\". "
+        "Голосування на користь серверу дасть йому очки, що додаються від кожного його члена. "
+        "Очки не віднімаються коли член залишає сервер, навіть якщо він голосував. "
+        "Коли сервер доходить до певного рівня, розблоковується новий ПДС-канал. "
+        "У певному сервері може бути до 10 ПДС-каналів, поки на першому рівні є лиш 1.\n"
 
-      "Коли Ви знаходите щось, що працює неправильно (принаймні, на Вашу думку), Ви можете "
-      "вступити в контакт із розробником бота, написавши боту ПП. "
-      "Але спочатку, Ви повинні відкрити тікет.\n"
+        "## {0}\n"
 
-      "## /тікет\n"
+        "Використання цієї команди покаже покликання на сторінку, де Ви можете за мене проголосувати. "
+        "Голосування на користь певному серверу, певну кількість разів, дозволить у ньому бути "
+        "більшій кількості ПДС-каналів, тож і більшій кількості налаштувань за замовчуванням за раз.\n"
 
-      "### Попередження: ця команда в беті. Якщо щось іде не так... Що ж, це - команда для "
-      "тікетів, отже Ви тут самі. Хіба, що Ви в Діскорд сервері підтримки.\n"
+        "## /сервер\n"
 
-      "__**{0}**__ дозволяє розробнику бота з Вами говорити через ПП бота.\n"
-      "__**{1}**__ закриває тікет, закінчуючи будь-яку розмову між розробником бота та Вами.",
+        "Призначенням цієї команди є встановлення/отримання сервера, на користь якому Ви хочете "
+        "голосувати, `встановити` якщо Ви знаєте, на користь якому серверу Ви хочете голосувати, "
+        "та `отримати`, якщо Ви забули, на користь якому Ви голосували до цього.\n"
 
-      "__***ПОРАДА:***__ коли Ви встановлюєте назву каналу за замовчуванням, Ви можете написати "
-      "\"{username}\" (без лапок), щоби він був замінений на ім'я користувача, що запитує канал. "
-      "Наприклад, якщо назвою за замовчуванням є \"ГК для {username}\" і людина з ім'ям "
-      "\"henonicks\" запитує канал, назва тимчасового каналу буде \"ГК для henonicks\".\n"
+        "__**{1}**__ встановлює сервер, у якому Ви використовуєте цю під-команду. Це означає, що "
+        "якщо Ви введете її в сервері `X`, Ваш наступний голос буде зроблений на користь цьому "
+        "серверу, якщо Ви не зміните цей сервер на певний `Y`. Тоді наступний голос буде "
+        "зроблений на користь серверу `Y`.\n"
 
-      "\n"
+        "__**{2}**__ отримує сервер, на користь якому Ви наразі голосуєте. "
+        "Якщо Ви ввели під-команду `встановити` у сервері `X`, то буде повернений сервер.",
 
-      "__***ЗВЕРНІТЬ УВАГУ:***__ Коли бот перезапускається, він не знатиме, що Ви (і, власне, "
-      "ніхто інший) є в голосовому каналі. Щоби тимчасовий канал було видалено, його потрібно "
-      "\"торкнутися\". Отже, щоби видалити тимчасовий канал, Ви повинні пере-під'єднатися до "
-      "нього і залишити його. Щоправда, якщо Ви вирішуєте його залишити, Ви можете це зробити!\n"
-      "Якщо Ви голосуєте, але у вас не вибраний сервер, на користь якому Ви робите голос, "
-      "очки втрачаються. Вперше, як Ви це робите, Ви отримуєте про це ПП від бота, якщо ваші "
-      "особисті відчинені."
+
+        "# Пов'язані з тікетами\n"
+
+        "Коли Ви знаходите щось, що працює неправильно (принаймні, на Вашу думку), Ви можете "
+        "вступити в контакт із розробником бота, написавши боту ПП. "
+        "Але спочатку, Ви повинні відкрити тікет.\n"
+
+        "## /тікет\n"
+
+        "### Попередження: ця команда в беті. Якщо щось іде не так... Що ж, це - команда для "
+        "тікетів, отже Ви тут самі. Хіба, що Ви в Діскорд сервері підтримки.\n"
+
+        "__**{0}**__ дозволяє розробнику бота з Вами говорити через ПП бота.\n"
+        "__**{1}**__ закриває тікет, закінчуючи будь-яку розмову між розробником бота та Вами.",
+
+        "__***ПОРАДА:***__ коли Ви встановлюєте назву каналу за замовчуванням, Ви можете написати "
+        "\"{username}\" (без лапок), щоби він був замінений на ім'я користувача, що запитує канал. "
+        "Наприклад, якщо назвою за замовчуванням є \"ГК для {username}\" і користувач із ім'ям "
+        "\"henonicks\" запитує канал, назва тимчасового каналу буде \"ГК для henonicks\".\n"
+
+        "\n"
+
+        "__***ЗВЕРНІТЬ УВАГУ:***__ Коли бот перезапускається, він не знатиме, що Ви (і, власне, "
+        "ніхто інший) є в голосовому каналі. Щоби тимчасовий канал було видалено, його потрібно "
+        "\"торкнутися\". Отже, щоби видалити тимчасовий канал, Ви повинні пере-під'єднатися до "
+        "нього і залишити його. Щоправда, якщо Ви вирішуєте його залишити, Ви можете це зробити!\n"
+        "Якщо Ви голосуєте, але у вас не вибраний сервер, на користь якому Ви робите голос, "
+        "очки втрачаються. Вперше, як Ви це робите, Ви отримуєте про це ПП від бота, якщо ваші "
+        "особисті відчинені."
       ],
       $"FOOTER" | "Ви завжди можете щось спитати розробника в ПП або сервері підтримки! "
             "Покликання на нього є в біографії бота."
@@ -439,22 +455,24 @@
       "The channel has been set up!",
     $"ITS_ALREADY_BEEN_SET_UP" |
       "It's already been set up. No more than one per guild!",
-    $"YOURE_NOT_IN_A_TEMP_VC" |
-      "You're not in a temporary voice channel! Unless you are, in which case simply rejoin.",
     $"THE_USER_IS_NOTORIN_THE_LIST" |
       "The user is {}in the list of the channel.",
     $"NOT" |
       "not ",
-    $"THE_CHANNEL_YOURE_IN_DOES_NOT_BELONG_TO_YOU" |
-      "The channel you're in does not belong to you! Unless it does, in which case simply rejoin.",
     $"REQUESTED_USER_NOT_FOUND" |
       "Requested user not found. Please, try again.",
     $"THE_USER_HAS_ADMIN_ACCESS_TO_THIS_CHANNEL" |
       "The user has administrator access to this channel!",
     $"THE_USER_IS_ALREADY_IN_THE_BLOCKLIST" |
       "The user is already in the blocklist!",
-    $"THE_USER_WAS_ADDED_TO_THE_BLOCKLIST" |
-      "The user has been added to the blocklist of the current channel.",
+    $"HEY_THATS_ME_NOT_NICE" |
+      "Hey, that's me! Not nice!",
+    $"THE_USER_WAS_ADDED_TO_THE_RESTLIST" |
+      "The user has been added to the {} of the current channel.",
+    $"BLOCKLIST_OF_CHANNEL" |
+      "blocklist",
+    $"MUTELIST_OF_CHANNEL" |
+      "mutelist",
     $"THE_USER_WAS_NOT_IN_THE_BLOCKLIST" |
       "The user was not in the blocklist!",
     $"THE_USER_WAS_REMOVED_FROM_THE_BLOCKLIST" |
@@ -511,6 +529,12 @@
       "Couldn't send you a DM. Make sure they are open.",
     $"CREATE_A_TICKET" |
       "Please, create a ticket if you need help resolving this issue.",
+    $"SELECT_THE_HELP_PAGE_YOU_WANT_TO_VISIT" |
+      "Select the page you want to visit.",
+    $"SELECT_A_HELP_PAGE" |
+      "Select a help page.",
+    $"HELP_PAGE" |
+      "Help page",
     $"UNDEFINED_COMMAND" |
       "Undefined command, can't handle."
   },
@@ -571,22 +595,24 @@
       "Було налаштовано ПДС-канал!",
     $"ITS_ALREADY_BEEN_SET_UP" |
       "Його вже було налаштовано. Не більше ніж один за сервер!",
-    $"YOURE_NOT_IN_A_TEMP_VC" |
-      "Ви не в тимчасовому голосовому каналі! Хіба що це не так, у якому разі просто перезайдіть.",
     $"THE_USER_IS_NOTORIN_THE_LIST" |
       "Користувач {}у списку цього каналу.",
     $"NOT" |
       "не ",
-    $"THE_CHANNEL_YOURE_IN_DOES_NOT_BELONG_TO_YOU" |
-      "Канал, у якому Ви є Вам не належить! Хіба що, це не так, у якому разі просто перезайдіть.",
     $"REQUESTED_USER_NOT_FOUND" |
       "Не знайдено запитаного користувача. Будь ласка, спробуйте ще раз.",
     $"THE_USER_HAS_ADMIN_ACCESS_TO_THIS_CHANNEL" |
       "Користувач має доступ адміністратора до цього каналу!",
     $"THE_USER_IS_ALREADY_IN_THE_BLOCKLIST" |
       "Користувач уже в чорному списку!",
-    $"THE_USER_WAS_ADDED_TO_THE_BLOCKLIST" |
-      "Користувача було додано в чорний список поточного каналу.",
+    $"HEY_THATS_ME_NOT_NICE" |
+      "Агов, це я! Так негарно!",
+    $"THE_USER_WAS_ADDED_TO_THE_RESTLIST" |
+      "Користувача було додано до {} поточного каналу.",
+    $"BLOCKLIST_OF_CHANNEL" |
+      "чорного списку",
+    $"MUTELIST_OF_CHANNEL" |
+      "списку мутів",
     $"THE_USER_WAS_NOT_IN_THE_BLOCKLIST" |
       "Користувач не в чорному списку!",
     $"THE_USER_WAS_REMOVED_FROM_THE_BLOCKLIST" |
@@ -643,6 +669,12 @@
       "Не вдалося надіслати Вам приватне повідомлення. Переконайтеся, що вони відкриті.",
     $"CREATE_A_TICKET" |
       "Будь ласка, створіть тікет якщо вам потрібна допомога в розв'язанні цієї проблеми.",
+    $"SELECT_THE_HELP_PAGE_YOU_WANT_TO_VISIT" |
+      "Виберіть сторінку довідки, яку хочете відвідати.",
+    $"SELECT_A_HELP_PAGE" |
+      "Виберіть сторінку довідки.",
+    $"HELP_PAGE" |
+      "Сторінка довідки",
     $"UNDEFINED_COMMAND" |
       "Команда не визначена, не можу обробити."
   }
