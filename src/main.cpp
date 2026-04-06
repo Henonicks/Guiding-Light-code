@@ -94,7 +94,6 @@ int main(const int argc, char** argv) {
 			else {
 				const dpp::message& msg = event.command.msg;
 				const uint8_t curr_page = msg.components[0].components[2].custom_id[4] - '1';
-				// TODO: localise
 				dpp::interaction_modal_response search_modal("help_search_modal", response(SELECT_THE_HELP_PAGE_YOU_WANT_TO_VISIT, lang));
 				const std::vector <std::string> pages = get_help_command_page_names(lang);
 				dpp::component search_select_menu = dpp::component()

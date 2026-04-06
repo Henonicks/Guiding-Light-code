@@ -367,7 +367,7 @@ dpp::coroutine <> slash::tempvc::list::add(const dpp::slashcommand_t& event, con
 		}
 		log("Success.");
 		std::unique_lock L(temp_vc_mutex);
-		if (vc_statuses[issuer.id] == vc_statuses[requested_id]) {
+		if (vc_statuses[issuer.id][guild_id] == vc_statuses[requested_id][guild_id]) {
 			bot->guild_member_move(0, issuer_vc.guild_id, requested_id);
 		}
 		event.reply(response_fmtemsg(
