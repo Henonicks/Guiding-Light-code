@@ -49,10 +49,22 @@ namespace cfg {
 	void init_logs();
 
 	/**
-	 * @brief Writes down the database values into a map.
-	 * When this function is executed, we pray that we have received all the cache.
+	 * @brief Reads the database to initialise the guild channel side of it, cleaning up whatever
+	 * entries don't exist on Discord anymore.
+	 * @param guild_id The ID of the guild that the channels belong to.
+	 * @param channels The channels sent by Discord.
 	 */
-	void pray();
+	void init_guild_channels(dpp::snowflake guild_id, const std::vector <dpp::snowflake>& channels);
+
+	/**
+	 * @brief Reads the database to initialise whatever doesn't depend on channels (like JTC VCs)
+	 */
+	void init_db_data();
+
+	/**
+	 * @brief Connect to the database and initialise a bunch of bot-specific stuff.
+	 */
+	void init_bot();
 
 	/**
 	 * @brief Writes down slashcommands in certain maps to

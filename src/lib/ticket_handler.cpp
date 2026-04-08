@@ -13,14 +13,10 @@ dpp::message preserve_attachments(const dpp::message& msg) {
 }
 
 void handle_dm_in(const dpp::message_create_t& event) {
-	const dpp::snowflake& user_id = event.msg.author.id;
+	const dpp::snowflake user_id = event.msg.author.id;
 	log(fmt::format("Received a DM from the user {}.", user_id));
 	std::lock_guard L(ticket_mutex);
-	if (!slash::enabled) {
-		log("Do they have a ticket? Who knows.");
-		bot->direct_message_create(user_id, dpp::message("Some data is still being loaded, please wait."), error_callback);
-	}
-	else if (tickets[user_id].empty()) {
+	if (tickets[user_id].empty()) {
 		log("But they don't have a ticket.");
 		bot->direct_message_create(user_id, dpp::message(
 			fmt::format("To contact the creator of this bot you need to create a ticket. Issue {0} to allow your messages in this "
@@ -42,15 +38,11 @@ void handle_dm_in(const dpp::message_create_t& event) {
 
 void handle_dm_out(const dpp::message_create_t& event) {
 	dpp::message msg = event.msg;
-	const dpp::snowflake& channel_id = msg.channel_id;
+	const dpp::snowflake channel_id = msg.channel_id;
 	std::lock_guard L(ticket_mutex);
-	const dpp::snowflake& user_id = ck_tickets[channel_id];
+	const dpp::snowflake user_id = ck_tickets[channel_id];
 	log(fmt::format("Sending a DM to the user {}.", user_id));
-	if (!slash::enabled) {
-		log("Do they have a ticket? Who knows.");
-		event.reply("the bluetooth device is NOT ready to pair", true, error_callback);
-	}
-	else if (user_id.empty()) {
+	if (user_id.empty()) {
 		error_log("But their ticket is closed. Are you going to delete the channel at some point?");
 		bot->message_add_reaction(event.msg, dpp::unicode_emoji::x, error_callback);
 		return;

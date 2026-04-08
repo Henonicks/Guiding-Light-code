@@ -26,12 +26,12 @@ void handle_dm_out(const dpp::message_create_t& event);
  * @brief Creates a ticket.
  * @param user_id The ID of the user creating the ticket.
  */
-void ticket_create(const dpp::snowflake& user_id);
+void ticket_create(dpp::snowflake user_id);
 
 /**
  * @brief Deletes a ticket.
  * @param user_id The ID of the user deleting the ticket.
  */
-void ticket_delete(const dpp::snowflake& user_id);
+void ticket_delete(dpp::snowflake user_id);
 
 #endif

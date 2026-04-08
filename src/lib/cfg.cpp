@@ -95,178 +95,38 @@ void cfg::init_logs() {
 	}
 }
 
-void cfg::pray() {
-	std::scoped_lock L(jtc_mutex, notification_mutex, topgg::mutex, ticket_mutex, temp_vc_mutex, ratelimit_mutex, server_mutex, cfg_values_mutex);
+void cfg::init_db_data() {
+	std::scoped_lock L(temp_vc_mutex, topgg::mutex);
 
-	// I'll pray that when this function starts executing we have all the cache because Discord doesn't let me know whether all the cache I've received at a certain point is everything or there's more and there's no better way to do this I promise
-	// TODO: this still causes data loss somehow
-	slash::enabled = false;
-
-	jtc_vcs.clear();
-	jtc_vc_amount.clear();
-	temp_vc_notifications.clear();
-	jtc_default_values.clear();
 	no_temp_ping.clear();
 	topgg::guild_choices.clear();
 	topgg::guild_votes_amount.clear();
 	topgg::no_noguild_reminder.clear();
-	topgg_notifications.clear();
-	tickets.clear();
-	ck_tickets.clear();
-	temp_vc_amount.clear();
-	temp_vcs.clear();
-	for (uint8_t i = 0; i < cet_size; i++) {
-		channel_edits[i].clear();
-		channel_edit_timers[i].clear();
-	}
-
-	db::sql << "SELECT * FROM jtc_vcs;" + db::line_comment("pray::jtc_vcs") >> [](const db::BIGINT channel_id, const db::BIGINT guild_id) {
-		const dpp::channel* channel = dpp::find_channel(channel_id);
-		if (channel != nullptr) {
-			jtc_vcs[channel_id] = guild_id;
-			++jtc_vc_amount[guild_id];
-		}
-		else {
-			db::sql << "DELETE FROM jtc_vcs WHERE channel_id=?;" << channel_id;
-			error_log(fmt::format("Couldn't find the JTC VC {0} in the guild {1}. Deleting.", channel_id, guild_id));
-		}
-	};
-	db::sql << "SELECT * FROM temp_vc_notifications;" + db::line_comment("pray::temp_vc_notifications") >> [](const db::BIGINT channel_id, const db::BIGINT guild_id) {
-		const dpp::channel* channel = dpp::find_channel(channel_id);
-		if (channel != nullptr) {
-			temp_vc_notifications[guild_id] = channel_id;
-		}
-		else {
-			db::sql << "DELETE FROM temp_vc_notifications WHERE guild_id=?;" << guild_id;
-			error_log(fmt::format("Couldn't find the temp notification VC {0} in the guild {1}. Deleting.", channel_id, guild_id));
-		}
-	};
-
-	db::sql << "SELECT * FROM jtc_default_values;" + db::line_comment("pray::jtc_default_values") >> [](const db::BIGINT channel_id, const std::string& name, const db::TINYINT limit, const db::MEDIUMINT bitrate) {
-		const dpp::channel* channel = dpp::find_channel(channel_id);
-		if (channel != nullptr) {
-			jtc_default_values[channel_id] = {channel_id, name, cast <int8_t>(limit), cast <int16_t>(bitrate)};
-		}
-		else {
-			db::sql << "DELETE FROM jtc_default_values WHERE channel_id=?;" << channel_id;
-			error_log(fmt::format("Couldn't find the default values for the JTC VC {0}, with the name `{1}`, limit {2}, bitrate {3}. Deleting.", channel_id, name, limit, bitrate));
-		}
-	};
 
 	db::sql << "SELECT * FROM no_temp_ping;" + db::line_comment("pray::no_temp_ping") >> [](const db::BIGINT user_id) {
-		const dpp::user* user = dpp::find_user(user_id);
-		if (user != nullptr) {
-			no_temp_ping[user_id] = true;
-		}
-		else {
-			db::sql << "DELETE FROM no_temp_ping WHERE user_id=?;" << user_id;
-			error_log(fmt::format("While searching for temp ping blockers: couldn't find the user {}. Deleting.", user_id));
-		}
+		no_temp_ping[user_id] = true;
 	};
 
 	db::sql << "SELECT * FROM topgg_guild_choices;" + db::line_comment("pray::jtc_vcs") >> [](const db::BIGINT user_id, const db::BIGINT guild_id) {
-		const dpp::user* user = dpp::find_user(user_id);
-		if (user != nullptr) {
-			topgg::guild_choices[user_id] = guild_id;
-		}
-		else {
-			db::sql << "DELETE FROM topgg_guild_choices WHERE user_id=?;" << user_id;
-			error_log(fmt::format("Couldn't find the user {0} to get the top.gg choice {1} from. Deleting.", user_id, guild_id));
-		}
+		topgg::guild_choices[user_id] = guild_id;
 	};
 
 	db::sql << "SELECT * FROM topgg_guild_votes_amount;" + db::line_comment("pray::guild_votes_amount") >> [](const db::BIGINT guild_id, const int votes) {
-		const dpp::guild* guild = dpp::find_guild(guild_id);
-		if (guild != nullptr) {
-			topgg::guild_votes_amount[guild_id] = votes;
-		}
-		else {
-			db::sql << "DELETE FROM topgg_guild_votes_amount WHERE guild_id=?;" << guild_id;
-			error_log(fmt::format("Couldn't find the guild {0} to get {1} votes from. Deleting.", guild_id, votes));
-		}
+		topgg::guild_votes_amount[guild_id] = votes;
 	};
 
 	db::sql << "SELECT * FROM no_noguild_reminder;" + db::line_comment("pray::no_noguild_reminder") >> [](const db::BIGINT user_id) {
-		const dpp::user* user = dpp::find_user(user_id);
-		if (user != nullptr) {
-			topgg::no_noguild_reminder[user_id] = true;
-		}
-		else {
-			db::sql << "DELETE FROM no_noguild_reminder WHERE user_id=?;" << user_id;
-			error_log(fmt::format("While searching for no guild reminder blockers: couldn't find the user {}. Deleting.", user_id));
-		}
+		topgg::no_noguild_reminder[user_id] = true;
 	};
+}
 
-	db::sql << "SELECT * FROM topgg_notifications;" + db::line_comment("pray::topgg_notifications") >> [](const db::BIGINT channel_id, const db::BIGINT guild_id) {
-		const dpp::channel* channel = dpp::find_channel(channel_id);
-		if (channel != nullptr) {
-			topgg_notifications[guild_id] = channel_id;
-		}
-		else {
-			db::sql << "DELETE FROM topgg_notifications WHERE guild_id=?;" << guild_id;
-			error_log(fmt::format("Couldn't find the top.gg notifications channel {0} in the guild {1}. Deleting.", channel_id, guild_id));
-		}
-	};
-
-	db::sql << "SELECT * FROM tickets;" + db::line_comment("pray::tickets") >> [](const db::BIGINT user_id, const db::BIGINT channel_id) {
-		const dpp::user* user = dpp::find_user(user_id);
-		const dpp::channel* channel = dpp::find_channel(channel_id);
-		if (user != nullptr && channel != nullptr) {
-			tickets[user_id] = channel_id;
-			ck_tickets[channel_id] = user_id;
-		}
-		else {
-			db::sql << "DELETE FROM tickets WHERE user_id=?;" << user_id;
-			error_log(fmt::format("Couldn't find the user {0} with the ticket channel {1}. Deleting.", user_id, channel_id));
-		}
-	};
-
-	db::sql << "SELECT * FROM temp_vcs;" + db::line_comment("pray::temp_vcs") >> [](const db::BIGINT channel_id, const db::BIGINT guild_id, const db::BIGINT& creator_id, const db::BIGINT parent_id) {
-		const dpp::channel* channel = dpp::find_channel(channel_id);
-		if (channel != nullptr) {
-			++temp_vc_amount[guild_id];
-			temp_vcs[channel_id] = {create_temp_vc_id(), channel_id, guild_id, creator_id, parent_id};
-			for (const dpp::permission_overwrite& x : channel->permission_overwrites) {
-				if (!temp_vc_is_accessible(x)) {
-					banned[channel->id].insert(x.id);
-				}
-			}
-		}
-		else {
-			db::sql << "DELETE FROM temp_vcs WHERE channel_id=?;" << channel_id;
-			error_log(fmt::format("Couldn't find the temp VC {0} in the guild {1} whose creator is {2} with the parent being {3}. Deleting.", channel_id, guild_id, creator_id, parent_id));
-		}
-	};
-
-	db::sql << "SELECT * FROM channel_name_edit_timers;" + db::line_comment("pray::name_edit_timers") >> [](const db::BIGINT channel_id, const time_t timer) {
-		const dpp::channel* channel = dpp::find_channel(channel_id);
-		if (channel != nullptr) {
-			const auto current_time = cast <time_t>(dpp::utility::time_f());
-			if (current_time < timer) {
-				channel_edits[cet_name][channel_id] = true;
-				channel_edit_timers[cet_name][channel_id] = timer;
-				remove_channel_edit(channel_id, cet_name, timer - current_time);
-			}
-			else {
-				db::sql << "DELETE FROM channel_name_edit_timers WHERE channel_id=?;" << channel_id;
-			}
-		}
-		else {
-			db::sql << "DELETE FROM channel_name_edit_timers WHERE channel_id=?;" << channel_id;
-			error_log(fmt::format("Couldn't find the temp VC {0} which is on cooldown from being renamed until {1}. Deleting.", channel_id, timer));
-		}
-	};
-
-	slash::enabled = true;
-
-	if (already_prayed) {
-		return;
+void cfg::init_bot() {
+	if (!db::connection_successful()) {
+		std::cerr << fmt::format("{0} connection to DB failed! imma js crash ts g 💔🥀\nHINT: have you imported your database as database/{1}.db or initialised the database with init_db?", color::rize("ERROR:", "Red"), MODE_NAME) << std::endl;
+		std::exit(1);
 	}
 
-	already_prayed = true;
-
-	std::cout << "Bot ready!\n";
-	log("Bot ready!");
+	std::scoped_lock L(server_mutex, cfg_values_mutex);
 
 	std::cout << "Setting up the guild count updater.\n";
 	log("Setting up the guild count updater.");
@@ -284,14 +144,112 @@ void cfg::pray() {
 			server_count_updater->post_server_count([](const dpptgg::v0::request_completion_t&) {}, curr_guild_count);
 		}
 	};
+	bot->start_timer([set_presence](const dpp::timer h) -> void {
+		set_presence();
+		bot->stop_timer(h);
+	}, 10);
 	set_presence();
-	bot->start_timer([set_presence](const dpp::timer&) -> void {
+	bot->start_timer([set_presence](const dpp::timer) -> void {
 		set_presence();
 	}, 180);
 	// Keep on setting the presence to update the guild count on it.
 
 	std::cout << "Guild count updater set up.\n";
 	log("Guild count updater set up.");
+}
+
+void cfg::init_guild_channels(const dpp::snowflake guild_id, const std::vector <dpp::snowflake>& channels) {
+	{
+		std::lock_guard L(jtc_mutex);
+		db::sql << "SELECT * FROM jtc_vcs WHERE guild_id=?;" + db::line_comment("pray::jtc_vcs") << guild_id.str() >> [&channels](const db::BIGINT channel_id, const db::BIGINT guild_id) {
+			if (std::find(channels.begin(), channels.end(), channel_id) != channels.end()) {
+				jtc_vcs[channel_id] = guild_id;
+				++jtc_vc_amount[guild_id];
+				db::sql << "SELECT * FROM jtc_default_values WHERE channel_id=?;" + db::line_comment("pray::jtc_default_values") << channel_id >> [](const db::BIGINT channel_id, const std::string& name, const db::TINYINT limit, const db::MEDIUMINT bitrate) {
+					if (jtc_vcs.contains(channel_id)) {
+						jtc_default_values[channel_id] = {channel_id, name, cast <int8_t>(limit), cast <int16_t>(bitrate)};
+					}
+					else {
+						db::sql << "DELETE FROM jtc_default_values WHERE channel_id=?;" << channel_id;
+						error_log(fmt::format("Couldn't find the default values for the JTC VC {0}, with the name `{1}`, limit {2}, bitrate {3}. Deleting.", channel_id, name, limit, bitrate));
+					}
+				};
+			}
+			else {
+				db::sql << "DELETE FROM jtc_vcs WHERE channel_id=?;" << channel_id;
+				error_log(fmt::format("Couldn't find the JTC VC {0} in the guild {1}. Deleting.", channel_id, guild_id));
+			}
+		};
+	}
+	{
+		std::lock_guard L(notification_mutex);
+		db::sql << "SELECT * FROM temp_vc_notifications WHERE guild_id=?;" + db::line_comment("pray::temp_vc_notifications") << guild_id.str() >> [&channels](const db::BIGINT channel_id, const db::BIGINT guild_id) {
+			if (std::find(channels.begin(), channels.end(), channel_id) != channels.end()) {
+				temp_vc_notifications[guild_id] = channel_id;
+			}
+			else {
+				db::sql << "DELETE FROM temp_vc_notifications WHERE guild_id=?;" << guild_id;
+				error_log(fmt::format("Couldn't find the temp notification VC {0} in the guild {1}. Deleting.", channel_id, guild_id));
+			}
+		};
+		db::sql << "SELECT * FROM topgg_notifications WHERE guild_id=?;" + db::line_comment("pray::topgg_notifications") << guild_id.str() >> [&channels](const db::BIGINT channel_id, const db::BIGINT guild_id) {
+			if (std::find(channels.begin(), channels.end(), channel_id) != channels.end()) {
+				topgg_notifications[guild_id] = channel_id;
+			}
+			else {
+				db::sql << "DELETE FROM topgg_notifications WHERE guild_id=?;" << guild_id;
+				error_log(fmt::format("Couldn't find the top.gg notifications channel {0} in the guild {1}. Deleting.", channel_id, guild_id));
+			}
+		};
+	}
+	{
+		std::scoped_lock L(temp_vc_mutex, restriction_mutex, ratelimit_mutex);
+		db::sql << "SELECT * FROM temp_vcs WHERE guild_id=?;" + db::line_comment("pray::temp_vcs") << guild_id.str() >> [&channels](const db::BIGINT channel_id, const db::BIGINT guild_id, const db::BIGINT creator_id, const db::BIGINT parent_id) {
+			if (std::find(channels.begin(), channels.end(), channel_id) != channels.end()) {
+				++temp_vc_amount[guild_id];
+				temp_vcs[channel_id] = {create_temp_vc_id(), channel_id, guild_id, creator_id, parent_id};
+				for (const dpp::permission_overwrite& x : dpp::find_channel(channel_id)->permission_overwrites) {
+					if (!temp_vc_is_accessible(x)) {
+						banned[channel_id].insert(x.id);
+					}
+				}
+				db::sql << "SELECT * FROM channel_name_edit_timers WHERE guild_id=?;" + db::line_comment("pray::name_edit_timers") << channel_id >> [](const db::BIGINT channel_id, const time_t timer) {
+					if (temp_vcs.contains(channel_id)) {
+						const auto current_time = cast <time_t>(dpp::utility::time_f());
+						if (current_time < timer) {
+							channel_edits[cet_name][channel_id] = true;
+							channel_edit_timers[cet_name][channel_id] = timer;
+							remove_channel_edit(channel_id, cet_name, timer - current_time);
+						}
+						else {
+							db::sql << "DELETE FROM channel_name_edit_timers WHERE channel_id=?;" << channel_id;
+						}
+					}
+					else {
+						db::sql << "DELETE FROM channel_name_edit_timers WHERE channel_id=?;" << channel_id;
+						error_log(fmt::format("Couldn't find the temp VC {0} which is on cooldown from being renamed until {1}. Deleting.", channel_id, timer));
+					}
+				};
+			}
+			else {
+				db::sql << "DELETE FROM temp_vcs WHERE channel_id=?;" << channel_id;
+				error_log(fmt::format("Couldn't find the temp VC {0} in the guild {1} whose creator is {2} with the parent being {3}. Deleting.", channel_id, guild_id, creator_id, parent_id));
+			}
+		};
+	}
+	if (guild_id == TICKETS_GUILD_ID) {
+		std::lock_guard L(ticket_mutex);
+		db::sql << "SELECT * FROM tickets;" + db::line_comment("pray::tickets") >> [&channels](const db::BIGINT user_id, const db::BIGINT channel_id) {
+			if (std::find(channels.begin(), channels.end(), channel_id) != channels.end()) {
+				tickets[user_id] = channel_id;
+				ck_tickets[channel_id] = user_id;
+			}
+			else {
+				db::sql << "DELETE FROM tickets WHERE user_id=?;" << user_id;
+				error_log(fmt::format("Couldn't find the user {0} with the ticket channel {1}. Deleting.", user_id, channel_id));
+			}
+		};
+	}
 }
 
 void cfg::write_down_slashcommands() {

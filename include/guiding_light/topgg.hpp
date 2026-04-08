@@ -24,7 +24,7 @@ namespace topgg {
 	 * top.gg states that it's always worth 1 except for when it's 2, which is on weekends.
 	 * @return True if the user voted in favour of a guild, false otherwise.
 	 */
-	bool vote(const dpp::snowflake& user_id, int8_t weight);
+	dpp::coroutine <bool> vote(dpp::snowflake user_id, int8_t weight);
 
 	namespace jtc {
 		/**
@@ -32,14 +32,14 @@ namespace topgg {
 		 * @param guild_id The ID of the guild where the JTCs are counted.
 		 * @return The amount of the JTCs.
 		 */
-		int8_t count_allowed_jtcs(const dpp::snowflake& guild_id);
+		int8_t count_allowed_jtcs(dpp::snowflake guild_id);
 
 		/**
 		 * @brief Gets the requirement for the next level in a guild.
 		 * @param guild_id The ID of the guild to get the requirement for.
 		 * @return The requirement for the next level, or 0 if the maximum level has already been reached.
 		 */
-		int get_next_lvl_req(const dpp::snowflake& guild_id);
+		int get_next_lvl_req(dpp::snowflake guild_id);
 	}
 }
 

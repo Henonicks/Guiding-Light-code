@@ -35,15 +35,16 @@ temp_vc_query get_oldest_temp_vc_request();
 void delete_temp_vc_request();
 
 // TODO: document
-void temp_vc_create_msg(const dpp::snowflake& guild_id, const dpp::channel& channel);
-void temp_vc_delete_with_msg(dpp::snowflake channel_id);
-void temp_vc_create(const dpp::voice_state_update_t& event);
+void temp_vc_create_msg(dpp::snowflake guild_id, const dpp::channel& channel);
+dpp::coroutine <> temp_vc_delete_with_msg(dpp::snowflake channel_id);
+dpp::coroutine <> temp_vc_create(const dpp::voice_state_update_t& event);
 bool temp_vc_is_accessible(const dpp::permission& overwrite);
 bool temp_vc_is_accessible(const dpp::permission_overwrite& overwrite);
 bool temp_vc_is_speakable(const dpp::permission& overwrite);
 bool temp_vc_is_speakable(const dpp::permission_overwrite& overwrite);
-dpp::role get_highest_role(dpp::snowflake user_id, dpp::snowflake guild_id);
+dpp::coroutine <dpp::role> get_highest_role(dpp::snowflake user_id, dpp::snowflake guild_id);
 dpp::coroutine <> re_unmute_member(dpp::guild_member member, const dpp::channel& channel);
+bool restlist_updated(const dpp::channel& channel, restrictions_types rest_type);
 bool blocklist_updated(const dpp::channel& channel);
 bool mutelist_updated(const dpp::channel& channel);
 
