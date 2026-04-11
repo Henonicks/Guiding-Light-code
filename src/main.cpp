@@ -57,7 +57,9 @@ int main(const int argc, char** argv) {
 	}
 
 	bot->on_ready([](const dpp::ready_t&) -> void {
-		cfg::init_bot();
+		if (dpp::run_once <struct initialise_bot>()) {
+			cfg::init_bot();
+		}
 	});
 
 	bot->on_button_click([](const dpp::button_click_t& event) {

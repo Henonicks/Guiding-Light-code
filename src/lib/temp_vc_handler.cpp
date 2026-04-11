@@ -133,7 +133,7 @@ dpp::coroutine <> temp_vc_create(const dpp::voice_state_update_t& event) {
 	}
 	log("The user has passed the basic checks. Pushing to the queue.");
 	const temp_id_t curr_id = create_temp_vc_request(user.id, jtc_channel_id, guild_id);
-	bot->queue_work(curr_id, [user, jtc_channel_id, guild_id, curr_id]() -> dpp::job {
+	bot->queue_work(curr_id, std::bind_front([](const dpp::user& user, const dpp::snowflake jtc_channel_id, const dpp::snowflake guild_id, const temp_id_t curr_id) -> dpp::job {
 		const std::string& username = user.username;
 		std::string new_name;
 		dpp::channel new_channel;
@@ -208,7 +208,6 @@ dpp::coroutine <> temp_vc_create(const dpp::voice_state_update_t& event) {
 			co_return;
 		}
 		L3.unlock();
-		std::cout << user.id << '\n';
 		const dpp::guild guild = co_await lookup_guild(guild_id);
 		if (guild.permission_overwrites(co_await lookup_guild_member(guild_id, user.id), current_channel).can(dpp::p_manage_roles)) {
 			const dpp::role self_highest_role = co_await get_highest_role(bot->me.id, guild_id);
@@ -220,42 +219,39 @@ dpp::coroutine <> temp_vc_create(const dpp::voice_state_update_t& event) {
 			new_channel.add_permission_overwrite(bot->me.id, dpp::ot_member, dpp::p_view_channel, 0);
 			new_channel.add_permission_overwrite(user.id, dpp::ot_member, dpp::p_view_channel, 0);
 		}
-		std::cout << user.id << '\n';
 		log(fmt::format("Creating a temporary VC for {}", get_oldest_temp_vc_request().user_id));
-		bot->channel_create(new_channel, [user, current_channel, guild_id, jtc_channel_id](const dpp::confirmation_callback_t& channel_callback) -> dpp::job {
-			std::unique_lock L4(temp_vc_mutex);
-			log("A callback has arrived!");
-			if (error_pingback(channel_callback, current_channel.id, user.id)) {
-				delete_temp_vc_request();
-				log("It happens to be erroneous.");
-				co_return;
-			}
-			++temp_vc_amount[guild_id];
-			const auto channel = channel_callback.get <dpp::channel>();
-			temp_vcs[channel.id] = {get_oldest_temp_vc_request().id, channel.id, channel.guild_id, user.id, jtc_channel_id};
-			L4.unlock();
-			co_await temp_vc_create_owner_msg(channel);
+		const dpp::confirmation_callback_t channel_callback = co_await bot->co_channel_create(new_channel);
+		std::unique_lock L4(temp_vc_mutex);
+		log("A callback has arrived!");
+		if (error_pingback(channel_callback, current_channel.id, user.id)) {
 			delete_temp_vc_request();
-			bot->guild_member_move(channel.id, channel.guild_id, user.id, [channel, guild_id, user, jtc_channel_id](const dpp::confirmation_callback_t& move_callback) -> void {
-				if (error_callback(move_callback)) {
-					log(fmt::format("Above is the reason I couldn't move {} into the new VC, deleting it.", user.id));
-					bot->channel_delete(channel.id, error_callback);
-					return;
-				}
-				std::unique_lock L5(temp_vc_mutex);
-				db::sql << "INSERT INTO temp_vcs VALUES (?, ?, ?, ?);" << channel.id.str() << channel.guild_id.str() << user.id.str() << jtc_channel_id.str();
-				log("Does this guild have a temp vc notification channel?");
-				if (!temp_vc_notifications[guild_id].empty()) {
-					log(fmt::format("Yes, it does, it's {}.", channel.id));
-					temp_vc_create_msg(guild_id, channel);
-				}
-				else {
-					log("It does not.");
-				}
-				log(fmt::format("Finished the temporary VC creation process for {}.", user.id));
-			});
-		});
-	});
+			log("It happens to be erroneous.");
+			co_return;
+		}
+		++temp_vc_amount[guild_id];
+		const auto channel = channel_callback.get <dpp::channel>();
+		temp_vcs[channel.id] = {get_oldest_temp_vc_request().id, channel.id, channel.guild_id, user.id, jtc_channel_id};
+		L4.unlock();
+		co_await temp_vc_create_owner_msg(channel);
+		delete_temp_vc_request();
+		const dpp::confirmation_callback_t& move_callback = co_await bot->co_guild_member_move(channel.id, channel.guild_id, user.id);
+		if (error_callback(move_callback)) {
+			log(fmt::format("Above is the reason I couldn't move {} into the new VC, deleting it.", user.id));
+			bot->channel_delete(channel.id, error_callback);
+			co_return;
+		}
+		std::unique_lock L5(temp_vc_mutex);
+		db::sql << "INSERT INTO temp_vcs VALUES (?, ?, ?, ?);" << channel.id.str() << channel.guild_id.str() << user.id.str() << jtc_channel_id.str();
+		log("Does this guild have a temp vc notification channel?");
+		if (!temp_vc_notifications[guild_id].empty()) {
+			log(fmt::format("Yes, it does, it's {}.", channel.id));
+			temp_vc_create_msg(guild_id, channel);
+		}
+		else {
+			log("It does not.");
+		}
+		log(fmt::format("Finished the temporary VC creation process for {}.", user.id));
+	}, user, jtc_channel_id, guild_id, curr_id));
 }
 
 bool temp_vc_is_accessible(const dpp::permission& overwrite) {

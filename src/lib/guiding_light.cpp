@@ -206,12 +206,10 @@ dpp::coroutine <dpp::emoji> lookup_emoji(const dpp::snowflake emoji_id, const dp
 }
 
 dpp::coroutine <dpp::guild_member> lookup_guild_member(const dpp::snowflake guild_id, const dpp::snowflake user_id) {
-	std::shared_lock L(dpp::get_guild_cache()->get_mutex());
 	try {
 		co_return dpp::find_guild_member(guild_id, user_id);
 	}
 	catch (...) {}
-	L.unlock();
 	const dpp::confirmation_callback_t callback = co_await bot->co_guild_get_member(guild_id, user_id);
 	if (error_callback(callback)) {
 		co_return {};
