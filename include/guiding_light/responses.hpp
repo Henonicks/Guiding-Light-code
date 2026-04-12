@@ -170,7 +170,7 @@ inline constexpr std::array responses_keys = {
 };
 
 //TODO: document
-std::string random_response(const dpp::snowflake& user_id);
+dpp::coroutine <std::string> random_response(dpp::snowflake user_id);
 henifig::value_t response(responses_enum response_id, std::string_view lang = "default", const henifig::value_map& localisation = cfg::responses["LOCALISATION"]);
 dpp::message response_msg(responses_enum response_id, std::string_view lang = "default", const henifig::value_map& localisation = cfg::responses["LOCALISATION"]);
 dpp::message response_emsg(responses_enum response_id, std::string_view lang = "default", const henifig::value_map& localisation = cfg::responses["LOCALISATION"]);

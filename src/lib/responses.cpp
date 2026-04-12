@@ -4,7 +4,7 @@
 #include "guiding_light/cfg.hpp"
 #include "guiding_light/cli.hpp"
 
-std::string random_response(const dpp::snowflake& user_id) {
+dpp::coroutine <std::string> random_response(const dpp::snowflake user_id) {
 	std::random_device rd;
 	std::mt19937 gen(rd());
 
@@ -13,14 +13,14 @@ std::string random_response(const dpp::snowflake& user_id) {
 	std::uniform_int_distribution <> dist(0, PING_RESPONSES.size() - 1);
 	std::string response = PING_RESPONSES[dist(gen)];
 	size_t pos{};
-	const dpp::user* user = dpp::find_user(user_id);
+	const dpp::user user = co_await lookup_user(user_id);
 	while (pos != std::string::npos) {
 		pos = response.find("{username}", pos);
 		if (pos != std::string::npos && response.find("\\{username}\\", pos) == std::string::npos) {
-			response.replace(pos, user->username.size() + 1, user->username);
+			response.replace(pos, user.username.size() + 1, user.username);
 		}
 	}
-	return response;
+	co_return response;
 }
 
 henifig::value_t response(const responses_enum response_id, const std::string_view lang, const henifig::value_map& localisation) {

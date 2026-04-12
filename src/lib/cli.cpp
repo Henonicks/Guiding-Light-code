@@ -79,7 +79,7 @@ const std::unordered_map <std::string, std::function <void(std::vector <std::str
 	}},
 	{"quit", [](const std::vector <std::string>&) {
 		linenoise::SaveHistory(HISTORY_PATH);
-		std::exit(0); // this is a point of no return
+		explode(); // this is a point of no return
 	}},
 	{"switch", [](const std::vector <std::string>& cmd) {
 		std::string requested_mode;

@@ -3,8 +3,12 @@
 
 #define cast static_cast
 
+#include <unordered_set>
+
 #include "no_warns/dpp/dpp.h"
+
 #include <fmt/format.h>
+
 #include "guiding_light/config_values.hpp"
 #include "guiding_light/atomic.hpp"
 
@@ -14,14 +18,17 @@ using guild_snowflake = dpp::snowflake;
 
 inline atomic_ptr <dpp::cluster> bot, bot_dev, bot_release;
 inline std::atomic <bool> bot_dev_is_starting, bot_release_is_starting, *bot_is_starting;
-inline std::atomic <bool> already_prayed;
-
-inline dpp::cluster *server_cluster;
-inline std::thread *topgg_server_thread;
-inline dpp::http_server *topgg_server;
-inline std::recursive_mutex server_mutex;
 
 inline constexpr char DEFAULT_LANG[] = "en";
+
+inline std::unordered_set <guild_snowflake> ready_guilds;
+inline std::condition_variable guild_readiness_cv;
+
+/**
+ * @brief Block a thread to wait for a guild to be ready to have its channels worked on.
+ * @param guild_id The guild to wait the readiness of.
+ */
+void wait_for_guild_readiness(dpp::snowflake guild_id);
 
 /**
  * @brief Get the pointer to the bot for the mode we're on.
@@ -47,16 +54,40 @@ std::string bot_name();
 #define get_rest_list() \
 	auto* list = get_restrictions_list(rest_type)
 
-enum fatality : bool {
-	f_non_fatal,
-	f_fatal,
+enum exec_verdicts : bool {
+	f_success,
+	f_failure,
 };
 
+inline exec_verdicts exec_verdict;
+inline std::atomic <bool> ready_to_explode;
+inline std::recursive_mutex bomb_mutex;
+inline std::condition_variable_any bomb_cv;
+
 /**
- * @brief Dump the database and the logs in the log channel and quit.
- * @param fatal Whether this function was called due to a fatal condition or not. If true, the function will call std::abort().
+ * @brief Blow self up and dump data, finishing execution.
+ * @param failure Whether the program executed successfully or not.
+ */
+void explode(exec_verdicts failure = f_success);
+
+/**
+ * @brief Blow self up and signal the OS about abnormal behaviour.
+ */
+void explode_painfully();
+
+/**
+ * @brief Dump the database and the logs in the log channel and mark ready to explode.
  * @param deadlock Whether the program got stuck in a deadlock or not. If true, the function will stop waiting for the mutexes to be free and will dump instantly.
  */
-void dump_data(bool fatal = false, bool deadlock = false);
+dpp::coroutine <> dump_data(bool deadlock = false);
+
+// TODO: document
+dpp::coroutine <dpp::user> lookup_user(dpp::snowflake user_id);
+dpp::coroutine <dpp::channel> lookup_channel(dpp::snowflake channel_id);
+dpp::coroutine <dpp::role> lookup_role(dpp::snowflake role_id, dpp::snowflake guild_id);
+dpp::coroutine <dpp::guild> lookup_guild(dpp::snowflake guild_id);
+dpp::coroutine <dpp::emoji> lookup_emoji(dpp::snowflake emoji_id);
+dpp::coroutine <dpp::emoji> lookup_emoji(dpp::snowflake emoji_id, dpp::snowflake guild_id);
+dpp::coroutine <dpp::guild_member> lookup_guild_member(dpp::snowflake guild_id, dpp::snowflake user_id);
 
 #endif

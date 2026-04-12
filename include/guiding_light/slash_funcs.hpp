@@ -10,8 +10,6 @@ henifig::value_t get_help_command_page_names(std::string_view lang = "default", 
  * @brief Every function that's used directly in the slashcommand handler.
  */
 namespace slash {
-	inline std::atomic enabled = false;
-
 	inline std::unordered_map <std::string, std::unordered_set <dpp::snowflake>> in_progress = {
 		{"setup", {}},
 		{"ticket", {}}
@@ -55,7 +53,7 @@ namespace slash {
 			 * @param event The slashcommand event object which contains information about the request.
 			 * @param rest_type The type of the list to add the user to. Refer to the rest_types enum.
 			 */
-			void status(const dpp::slashcommand_t& event, restrictions_types rest_type);
+			dpp::coroutine <> status(const dpp::slashcommand_t& event, restrictions_types rest_type);
 		}
 	}
 
@@ -84,7 +82,7 @@ namespace slash {
 		 * @brief Gets the guild in favour of which the user is voting for the bot.
 		 * @param event The slashcommand event object which contains information about the request.
 		*/
-		void guild_get(const dpp::slashcommand_t& event);
+		dpp::coroutine <> guild_get(const dpp::slashcommand_t& event);
 
 		/**
 		 * @brief Sets the guild in favour of which the user is voting for the bot.

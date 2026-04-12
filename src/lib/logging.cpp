@@ -48,41 +48,6 @@ void bot_log(const dpp::log_t& _log) {
 	std::ofstream* other_logs = &(IS_DEV ? other_logs_dev : other_logs_release);
 	*other_logs << fmt::format("[{0}]: {1}", dpp::utility::current_date_time(), _log.message) << std::endl;
 	autodump(other_logs);
-	if (_log.message == "Shards started.") {
-		if (IS_CLI) {
-			return;
-		}
-		if (!db::connection_successful()) {
-			std::cerr << fmt::format("{0} connection to DB failed! imma js crash ts g 💔🥀\nHINT: have you imported your database as database/{1}.db or initialised the database with init_db?", color::rize("ERROR:", "Red"), MODE_NAME) << std::endl;
-			exit(1);
-		}
-		log("Waiting till we receive all the cache...");
-		bot->start_timer([](const dpp::timer& h) -> void {
-			const uint64_t new_guild_amount = dpp::get_guild_count();
-			const uint64_t new_channel_amount = dpp::get_channel_count();
-			const uint64_t new_user_amount = dpp::get_user_count();
-			if (!(new_guild_amount > guild_amount || new_channel_amount > channel_amount || new_user_amount > user_amount)) {
-				if (!move_on) {
-					log("Confirming the absence of cache updates...");
-					move_on = true;
-				}
-				else {
-					log("Done! Doing stuff...");
-					cfg::pray();
-					cfg::write_down_slashcommands();
-					log("Done doing stuff!");
-					bot->stop_timer(h);
-				}
-			}
-			else {
-				move_on = false;
-				guild_amount = new_guild_amount;
-				channel_amount = new_channel_amount;
-				user_amount = new_user_amount;
-				log(fmt::format("Amount of guilds, channels and users: {0}, {1}, {2}", new_guild_amount, new_channel_amount, new_user_amount));
-			}
-		}, CACHE_DELAY);
-	}
 }
 
 void log(const std::string_view message) {

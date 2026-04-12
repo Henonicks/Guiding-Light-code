@@ -36,7 +36,7 @@ int main(const int argc, char** argv) {
 	if (TO_DUMP) {
 		std::cout << "Dumping and exiting.\n";
 		bot->start(dpp::st_return);
-		dump_data(f_non_fatal);
+		dump_data(f_success).sync_wait();
 	}
 
 	if (IS_CLI) {
@@ -56,19 +56,22 @@ int main(const int argc, char** argv) {
 		cli::enter();
 	}
 
+	bot->on_ready([](const dpp::ready_t&) -> void {
+		if (dpp::run_once <struct initialise_bot>()) {
+			cfg::init_bot();
+		}
+	});
+
 	bot->on_button_click([](const dpp::button_click_t& event) {
 		if (IS_CLI) {
 			return;
 		}
 		get_lang();
-		if (!slash::enabled) {
-			event.reply(response_emsg(IM_PREPARING, lang), error_callback);
-			return;
-		}
 		const std::string_view button_id = event.custom_id;
 		// We don't want to handle a button press twice, do we?
 		if (button_id == "temp_ping_toggle") {
-			const dpp::snowflake& user_id = event.command.usr.id;
+			const dpp::snowflake user_id = event.command.usr.id;
+			wait_for_guild_readiness(event.command.guild_id);
 			std::lock_guard L(temp_vc_mutex);
 			if (no_temp_ping[user_id]) {
 				db::sql << "DELETE FROM no_temp_ping WHERE user_id=?;" << user_id.str();
@@ -94,7 +97,6 @@ int main(const int argc, char** argv) {
 			else {
 				const dpp::message& msg = event.command.msg;
 				const uint8_t curr_page = msg.components[0].components[2].custom_id[4] - '1';
-				// TODO: localise
 				dpp::interaction_modal_response search_modal("help_search_modal", response(SELECT_THE_HELP_PAGE_YOU_WANT_TO_VISIT, lang));
 				const std::vector <std::string> pages = get_help_command_page_names(lang);
 				dpp::component search_select_menu = dpp::component()
@@ -132,17 +134,17 @@ int main(const int argc, char** argv) {
 		}
 	});
 
-	bot->on_message_create([](const dpp::message_create_t& event) -> void {
+	bot->on_message_create([](const dpp::message_create_t& event) -> dpp::task <> {
 		if (IS_CLI) {
-			return;
+			co_return;
 		}
-		const dpp::snowflake& user_id = event.msg.author.id;
+		const dpp::snowflake user_id = event.msg.author.id;
 		// We don't want to reply to any of our own messages.
 		if (user_id == bot->me.id) {
-			return;
+			co_return;
 		}
 		const std::string& msg = event.msg.content;
-		const dpp::snowflake& channel_id = event.msg.channel_id;
+		const dpp::snowflake channel_id = event.msg.channel_id;
 		if (channel_id == TOPGG_WEBHOOK_CHANNEL_ID) {
 			const dpp::snowflake voted_user_id = msg.substr(2, msg.size() - bot->me.id.str().size() - 10);
 			const int8_t weight = msg[2 + voted_user_id.str().size() + 2] - '0';
@@ -150,7 +152,7 @@ int main(const int argc, char** argv) {
 			// Where ${user_id} is the ID of the user who voted,
 			// ${weight} is the amount of points the vote is worth
 
-			const bool failure = topgg::vote(voted_user_id, weight);
+			const bool failure = co_await topgg::vote(voted_user_id, weight);
 			std::lock_guard L(topgg::mutex);
 			if (failure && !topgg::no_noguild_reminder[voted_user_id]) {
 				// If there was a failure in granting a guild a vote point
@@ -160,14 +162,14 @@ int main(const int argc, char** argv) {
 				topgg::no_noguild_reminder[voted_user_id] = true;
 				db::sql << "INSERT INTO no_noguild_reminder VALUES (?);" << voted_user_id.str();
 			}
-			return;
+			co_return;
 		}
-		const dpp::snowflake& guild_id = event.msg.guild_id;
+		const dpp::snowflake guild_id = event.msg.guild_id;
 		if (event.msg.is_dm()) {
 			handle_dm_in(event);
 		}
 		else if (event.msg.content.find(fmt::format("<@{}>", bot->me.id)) != std::string::npos) {
-			event.reply(random_response(user_id), true, error_callback);
+			event.reply(co_await random_response(user_id), true, error_callback);
 		}
 		std::lock_guard L2(ticket_mutex);
 		if (guild_id == TICKETS_GUILD_ID) {
@@ -209,8 +211,9 @@ int main(const int argc, char** argv) {
 			return;
 		}
 		const dpp::channel_type type = event.deleted.get_type();
-		const dpp::snowflake& channel_id = event.deleted.id;
-		const dpp::snowflake& guild_id = event.deleted.guild_id;
+		const dpp::snowflake channel_id = event.deleted.id;
+		const dpp::snowflake guild_id = event.deleted.guild_id;
+		wait_for_guild_readiness(guild_id);
 		if (type == dpp::channel_type::CHANNEL_VOICE) {
 			std::scoped_lock L(jtc_mutex, temp_vc_mutex, restriction_mutex);
 			if (!jtc_vcs[channel_id].empty()) {
@@ -260,12 +263,17 @@ int main(const int argc, char** argv) {
 		if (IS_CLI) {
 			return;
 		}
+		bot->queue_work(event.created.id, [event] {
+			cfg::init_guild_channels(event.created.id, event.created.channels);
+			ready_guilds.insert(event.created.id);
+			guild_readiness_cv.notify_all();
+		});
 		guild_log(fmt::format("I have joined a guild. These are its stats:\n"
-			"Name: `{0}`\nID: `{1}`\nMember count: `{2}`"
-			, event.created.name, event.created.id, event.created.member_count
+			"Name: `{0}`\nID: `{1}`\nMember count: `{2}`\n Channel count: `{3}`"
+			, event.created.name, event.created.id, event.created.member_count, event.created.channels.size()
 		));
 	});
-	bot->on_guild_delete([](const dpp::guild_delete_t& event) {
+	bot->on_guild_delete([](const dpp::guild_delete_t& event) -> void {
 		if (IS_CLI) {
 			return;
 		}
@@ -281,14 +289,15 @@ int main(const int argc, char** argv) {
 		}
 		const dpp::snowflake user_id = event.state.user_id;
 		const dpp::snowflake guild_id = event.state.guild_id;
+		wait_for_guild_readiness(guild_id);
 		std::unique_lock temp_lock(temp_vc_mutex);
 		dpp::snowflake channel_id = vc_statuses[user_id][guild_id];
 		const temp_vc curr_temp_vc = temp_vcs[channel_id];
 		if (curr_temp_vc.exists()) {
-			if (dpp::find_channel(channel_id)->get_voice_members().empty()) {
+			if ((co_await lookup_channel(channel_id)).get_voice_members().empty()) {
 				temp_lock.unlock();
-				bot->queue_work(curr_temp_vc.id, [channel_id] {
-					temp_vc_delete_with_msg(channel_id);
+				bot->queue_work(curr_temp_vc.id, [channel_id]() -> dpp::job {
+					co_await temp_vc_delete_with_msg(channel_id);
 				});
 				temp_lock.lock();
 			}
@@ -308,7 +317,7 @@ int main(const int argc, char** argv) {
 			std::unique_lock jtc_lock(jtc_mutex);
 			if (!jtc_vcs[channel_id].empty()) {
 				jtc_lock.unlock();
-				temp_vc_create(event);
+				co_await temp_vc_create(event);
 			}
 			else {
 				jtc_vcs.erase(channel_id);
@@ -321,12 +330,8 @@ int main(const int argc, char** argv) {
 			co_return;
 		}
 		get_lang();
-		if (!slash::enabled) {
-			event.reply(response_emsg(IM_PREPARING, lang), error_callback);
-			co_return;
-		}
-		const dpp::snowflake& guild_id = event.command.guild_id;
-		const dpp::snowflake& user_id = event.command.usr.id;
+		const dpp::snowflake guild_id = event.command.guild_id;
+		const dpp::snowflake user_id = event.command.usr.id;
 		const std::string cmd_name = event.command.get_command_name();
 		const dpp::command_interaction cmd = event.command.get_command_interaction();
 		if (cmd_name == "help") {
@@ -337,7 +342,8 @@ int main(const int argc, char** argv) {
 			if (user_id != MY_ID) {
 				error_log(fmt::format("User {} is checking the logs! Check your perms!", user_id));
 			}
-			const std::string_view file_name = cmd.options[0].name == "dpp" ? "other_logs.log" : cmd.options[0].name == "mine" ? "my_logs.log" : cmd.options[0].name == "guild" ? "guild_logs.log" : "sql_logs.log";
+			std::string file_name = cmd.options[0].name;
+			file_name = file_name == "dpp" ? "other_logs.log" : file_name == "mine" ? "my_logs.log" : file_name == "guild" ? "guild_logs.log" : "sql_logs.log";
 			std::lock_guard L(cfg_values_mutex);
 			const dpp::message message = dpp::message().add_file(file_name, dpp::utility::read_file(fmt::format("{0}/{1}/{2}", logs_directory, MODE_NAME, file_name))).set_flags(dpp::m_ephemeral);
 			event.reply(message, error_callback);
@@ -367,10 +373,11 @@ int main(const int argc, char** argv) {
 			co_return;
 		}
 		else if (cmd_name == "guild") {
-			if (cmd.options[0].name == "get") {
-				slash::topgg::guild_get(event);
+			const std::string& subcommand = cmd.options[0].name;
+			if (subcommand == "get") {
+				co_await slash::topgg::guild_get(event);
 			}
-			else if (cmd.options[0].name == "set") {
+			else if (subcommand == "set") {
 				slash::topgg::guild_set(event);
 			}
 		}
@@ -378,13 +385,14 @@ int main(const int argc, char** argv) {
 			slash::topgg::get_progress(event);
 		}
 		else if (cmd_name == "tempvc") {
-			if (cmd.options[0].name == "set") {
+			const std::string& subcommand = cmd.options[0].name;
+			if (subcommand == "set") {
 				co_await slash::tempvc::set(event);
 			}
-			else if (cmd.options[0].name == "blocklist" || cmd.options[0].name == "mutelist") {
-				const std::string_view suboption = cmd.options[0].options[0].name;
+			else if (subcommand == "blocklist" || subcommand == "mutelist") {
+				const std::string& suboption = cmd.options[0].options[0].name;
 				restrictions_types rest_type;
-				if (cmd_name == "blocklist") {
+				if (subcommand == "blocklist") {
 					rest_type = RRT_BLOCKLIST;
 				}
 				else {
@@ -397,7 +405,7 @@ int main(const int argc, char** argv) {
 					co_await slash::tempvc::list::remove(event, rest_type);
 				}
 				if (suboption == "status") {
-					slash::tempvc::list::status(event, rest_type);
+					co_await slash::tempvc::list::status(event, rest_type);
 				}
 			}
 		}
@@ -415,6 +423,7 @@ int main(const int argc, char** argv) {
 			std::unique_lock L2(slash::in_progress_mutex);
 			slash::in_progress[cmd_name].insert(guild_id);
 			L2.unlock();
+			wait_for_guild_readiness(guild_id);
 			co_await slash::setup(event);
 			std::lock_guard L3(slash::in_progress_mutex);
 			slash::in_progress[cmd_name].erase(guild_id);
@@ -430,10 +439,12 @@ int main(const int argc, char** argv) {
 			std::unique_lock L2(slash::in_progress_mutex);
 			slash::in_progress[cmd_name].insert(user_id);
 			L2.unlock();
-			if (cmd.options[0].name == "create") {
+			wait_for_guild_readiness(guild_id);
+			const std::string& subcommand = cmd.options[0].name;
+			if (subcommand == "create") {
 				co_await slash::ticket::create(event);
 			}
-			else /*if (cmd.options[0].name == "close")*/ {
+			else /*if (subcommand == "close")*/ {
 				slash::ticket::close(event);
 			}
 			std::unique_lock L3(slash::in_progress_mutex);
@@ -442,7 +453,11 @@ int main(const int argc, char** argv) {
 		else if (cmd_name == "reload") {
 			log("Started reloading...");
 			cfg::read_config();
-			cfg::pray();
+			cfg::init_bot();
+			for (const dpp::guild* guild : dpp::get_guild_cache()->get_container() | std::views::values) {
+				cfg::init_guild_channels(guild->id, guild->channels);
+			}
+			cfg::init_db_data();
 			if (!db::connection_successful()) {
 				event.reply(dpp::message("COULDN'T CONNECT TO THE DATABASE! THIS IS A DISASTER! RUN WHILE YOU CAN!").set_flags(dpp::m_ephemeral), error_callback);
 				log("Reload: COULDN'T CONNECT TO THE DATABASE! THIS IS A DISASTER! RUN WHILE YOU CAN!");
@@ -474,35 +489,34 @@ int main(const int argc, char** argv) {
 		}
 	});
 
-	std::thread signal_thread([] {
-		std::unique_lock L(signal_mutex);
-		signal_cv.wait(L, []{ return last_signal != 0; });
-		handle_signal(last_signal);
-	});
-
 	std::signal(SIGINT, [](const int code) -> void {
 		last_signal = code;
-		signal_cv.notify_all();
+		bomb_cv.notify_all();
 	});
 
 	std::signal(SIGTERM, [](const int code) -> void {
 		last_signal = code;
-		signal_cv.notify_all();
+		bomb_cv.notify_all();
 	});
 
 	std::signal(SIGSEGV, [](const int code) -> void {
 		last_signal = code;
-		signal_cv.notify_all();
+		bomb_cv.notify_all();
 	});
 
 	if (!TO_DUMP) {
 		std::cout << "Launching the bot.\n";
 		log("Launching the bot.");
-		bot->start();
+		bot->start(dpp::st_return);
+		std::unique_lock L(bomb_mutex);
+		bomb_cv.wait(L, [] { return last_signal != 0 || ready_to_explode; });
+		handle_signal(last_signal);
+		log("Goodnight!");
+		std::cout << "Goodnight!\n";
 	}
 	else {
 		std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 		std::cout << "It's been a second and there is still no dump. Exiting now.\n";
 	}
-	return 0;
+	return exec_verdict;
 }
