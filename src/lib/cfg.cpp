@@ -124,6 +124,7 @@ void cfg::init_bot() {
 	if (!db::connection_successful()) {
 		std::cerr << fmt::format("{0} connection to DB failed! imma js crash ts g 💔🥀\n{1} have you imported your database as database/{2}.db or initialised the database with init_db?", color::rize("ERROR:", "Red"), color::rize("HINT:", "Yellow"), MODE_NAME) << std::endl;
 		explode(f_failure);
+		return; // TODO
 	}
 
 	std::lock_guard L(cfg_values_mutex);
@@ -213,7 +214,7 @@ void cfg::init_guild_channels(const dpp::snowflake guild_id, const std::vector <
 						banned[channel_id].insert(x.id);
 					}
 				}
-				db::sql << "SELECT * FROM channel_name_edit_timers WHERE guild_id=?;" + db::line_comment("pray::name_edit_timers") << channel_id >> [](const db::BIGINT channel_id, const time_t timer) {
+				db::sql << "SELECT * FROM channel_name_edit_timers WHERE channel_id=?;" + db::line_comment("pray::name_edit_timers") << channel_id >> [](const db::BIGINT channel_id, const time_t timer) {
 					if (temp_vcs.contains(channel_id)) {
 						const auto current_time = cast <time_t>(dpp::utility::time_f());
 						if (current_time < timer) {

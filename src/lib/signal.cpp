@@ -6,6 +6,8 @@
 void handle_signal(const int code) {
 	exec_verdicts f;
 	switch (code) {
+	case 0:
+		return;
 	case SIGINT:
 		log("Ну, все, я пішов спати, бувай, добраніч.");
 		std::cout << "Ну, все, я пішов спати, бувай, добраніч.\n";

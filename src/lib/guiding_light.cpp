@@ -1,9 +1,7 @@
 #include "guiding_light/guiding_light.hpp"
-#include "guiding_light/guiding_light.tpp"
 
 #include "guiding_light/logging.hpp"
 #include "guiding_light/responses.hpp"
-#include "guiding_light/temp_vc_handler.hpp"
 #include "guiding_light/slash_funcs.hpp"
 
 void wait_for_guild_readiness(const dpp::snowflake guild_id) {
@@ -31,8 +29,10 @@ std::string bot_name() {
 
 void prepare_to_explode() {
 	if (!IS_CLI) {
-		dump_data();
+		dump_data().sync_wait();
 	}
+	ready_to_explode = true;
+	bomb_cv.notify_all();
 }
 
 void explode(const exec_verdicts failure) {
@@ -45,17 +45,17 @@ void explode_painfully() {
 	std::abort();
 }
 
-void dump_data(const bool deadlock) {
+dpp::coroutine <> dump_data(const bool deadlock) {
 	if (!deadlock) {
 		std::cout << "Waiting for all the mutexes to be free.\n";
 		log("Waiting for all the mutexes to be free.");
 		std::atomic <bool> lock_passed;
-		std::thread deadlock_prevention([&lock_passed]() -> void {
+		std::thread deadlock_prevention([&lock_passed] {
 			std::this_thread::sleep_for(std::chrono::seconds(5));
-			if (!lock_passed) {
+			if (!ready_to_explode && !lock_passed) {
 				std::cout << "5 seconds in, nothing happened. Impatiently dumping instead.\n";
 				log("5 seconds in, nothing happened. Impatiently dumping instead.");
-				dump_data(true);
+				dump_data(true).sync_wait();
 			}
 		});
 		deadlock_prevention.detach();
@@ -76,26 +76,23 @@ void dump_data(const bool deadlock) {
 		);
 		lock_passed = true;
 	}
-	bot->message_create(
+	const dpp::confirmation_callback_t callback = co_await bot->co_message_create(
 		dpp::message(LOGS_CHANNEL_ID, "Shutting down, dumping.")
 			.add_file(fmt::format("{}.db", MODE_NAME), dpp::utility::read_file(fmt::format("../database/{}.db", MODE_NAME)))
 			.add_file("my_logs.log", dpp::utility::read_file(fmt::format("../logging/bot/{}/my_logs.log", MODE_NAME)))
 			.add_file("other_logs.log", dpp::utility::read_file(fmt::format("../logging/bot/{}/other_logs.log", MODE_NAME)))
 			.add_file("guild_logs.log", dpp::utility::read_file(fmt::format("../logging/bot/{}/guild_logs.log", MODE_NAME)))
 			.add_file("sql_logs.log", dpp::utility::read_file(fmt::format("../logging/bot/{}/sql_logs.log", MODE_NAME)))
-	, [](const dpp::confirmation_callback_t& callback) {
-		if (error_callback(callback)) {
-			log("Couldn't dump on Discord, backing up instead.");
-			std::cout << "Couldn't dump on Discord, backing up instead.\n";
-			for (auto& [logfile, path] : logfile_paths) {
-				if (path.find(MODE_NAME) != std::string::npos) {
-					backup_logfile(logfile_names[logfile], dpp::utility::read_file(path));
-				}
+	);
+	if (error_callback(callback)) {
+		log("Couldn't dump on Discord, backing up instead.");
+		std::cout << "Couldn't dump on Discord, backing up instead.\n";
+		for (auto& [logfile, path] : logfile_paths) {
+			if (path.find(MODE_NAME) != std::string::npos) {
+				backup_logfile(logfile_names[logfile], dpp::utility::read_file(path));
 			}
 		}
-		ready_to_explode = true;
-		bomb_cv.notify_all();
-	});
+	}
 }
 
 dpp::coroutine <dpp::user> lookup_user(const dpp::snowflake user_id) {

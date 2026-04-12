@@ -7,9 +7,6 @@
 #include "guiding_light/signal.hpp"
 
 int main(const int argc, char** argv) {
-	std::set_terminate([] -> void {
-		std::terminate();
-	});
 	cfg::check_sqlite3();
 	// Check if we have sqlite3 installed
 	if (!exec_subcommands(argc, argv)) {
@@ -39,7 +36,7 @@ int main(const int argc, char** argv) {
 	if (TO_DUMP) {
 		std::cout << "Dumping and exiting.\n";
 		bot->start(dpp::st_return);
-		dump_data(f_success);
+		dump_data(f_success).sync_wait();
 	}
 
 	if (IS_CLI) {
@@ -266,10 +263,11 @@ int main(const int argc, char** argv) {
 		if (IS_CLI) {
 			return;
 		}
-		std::lock_guard L(guild_mutex);
-		cfg::init_guild_channels(event.created.id, event.created.channels);
-		ready_guilds.insert(event.created.id);
-		guild_readiness_cv.notify_all();
+		bot->queue_work(event.created.id, [event] {
+			cfg::init_guild_channels(event.created.id, event.created.channels);
+			ready_guilds.insert(event.created.id);
+			guild_readiness_cv.notify_all();
+		});
 		guild_log(fmt::format("I have joined a guild. These are its stats:\n"
 			"Name: `{0}`\nID: `{1}`\nMember count: `{2}`\n Channel count: `{3}`"
 			, event.created.name, event.created.id, event.created.member_count, event.created.channels.size()
@@ -344,7 +342,8 @@ int main(const int argc, char** argv) {
 			if (user_id != MY_ID) {
 				error_log(fmt::format("User {} is checking the logs! Check your perms!", user_id));
 			}
-			const std::string_view file_name = cmd.options[0].name == "dpp" ? "other_logs.log" : cmd.options[0].name == "mine" ? "my_logs.log" : cmd.options[0].name == "guild" ? "guild_logs.log" : "sql_logs.log";
+			std::string file_name = cmd.options[0].name;
+			file_name = file_name == "dpp" ? "other_logs.log" : file_name == "mine" ? "my_logs.log" : file_name == "guild" ? "guild_logs.log" : "sql_logs.log";
 			std::lock_guard L(cfg_values_mutex);
 			const dpp::message message = dpp::message().add_file(file_name, dpp::utility::read_file(fmt::format("{0}/{1}/{2}", logs_directory, MODE_NAME, file_name))).set_flags(dpp::m_ephemeral);
 			event.reply(message, error_callback);
@@ -374,10 +373,11 @@ int main(const int argc, char** argv) {
 			co_return;
 		}
 		else if (cmd_name == "guild") {
-			if (cmd.options[0].name == "get") {
+			const std::string& subcommand = cmd.options[0].name;
+			if (subcommand == "get") {
 				co_await slash::topgg::guild_get(event);
 			}
-			else if (cmd.options[0].name == "set") {
+			else if (subcommand == "set") {
 				slash::topgg::guild_set(event);
 			}
 		}
@@ -385,13 +385,14 @@ int main(const int argc, char** argv) {
 			slash::topgg::get_progress(event);
 		}
 		else if (cmd_name == "tempvc") {
-			if (cmd.options[0].name == "set") {
+			const std::string& subcommand = cmd.options[0].name;
+			if (subcommand == "set") {
 				co_await slash::tempvc::set(event);
 			}
-			else if (cmd.options[0].name == "blocklist" || cmd.options[0].name == "mutelist") {
-				const std::string_view suboption = cmd.options[0].options[0].name;
+			else if (subcommand == "blocklist" || subcommand == "mutelist") {
+				const std::string& suboption = cmd.options[0].options[0].name;
 				restrictions_types rest_type;
-				if (cmd_name == "blocklist") {
+				if (subcommand == "blocklist") {
 					rest_type = RRT_BLOCKLIST;
 				}
 				else {
@@ -439,10 +440,11 @@ int main(const int argc, char** argv) {
 			slash::in_progress[cmd_name].insert(user_id);
 			L2.unlock();
 			wait_for_guild_readiness(guild_id);
-			if (cmd.options[0].name == "create") {
+			const std::string& subcommand = cmd.options[0].name;
+			if (subcommand == "create") {
 				co_await slash::ticket::create(event);
 			}
-			else /*if (cmd.options[0].name == "close")*/ {
+			else /*if (subcommand == "close")*/ {
 				slash::ticket::close(event);
 			}
 			std::unique_lock L3(slash::in_progress_mutex);
@@ -452,7 +454,9 @@ int main(const int argc, char** argv) {
 			log("Started reloading...");
 			cfg::read_config();
 			cfg::init_bot();
-			// TODO: also include init_channels or whatever it's called
+			for (const dpp::guild* guild : dpp::get_guild_cache()->get_container() | std::views::values) {
+				cfg::init_guild_channels(guild->id, guild->channels);
+			}
 			cfg::init_db_data();
 			if (!db::connection_successful()) {
 				event.reply(dpp::message("COULDN'T CONNECT TO THE DATABASE! THIS IS A DISASTER! RUN WHILE YOU CAN!").set_flags(dpp::m_ephemeral), error_callback);
@@ -485,39 +489,30 @@ int main(const int argc, char** argv) {
 		}
 	});
 
-	std::thread signal_thread([] {
-		std::unique_lock L(signal_mutex);
-		signal_cv.wait(L, [] { return last_signal != 0; });
-		handle_signal(last_signal);
-	});
-
-	std::thread bomb([] {
-		std::unique_lock L(bomb_mutex);
-		bomb_cv.wait(L, [] { return ready_to_explode.load(); });
-		log("Goodnight!");
-		std::cout << "Goodnight!\n";
-		delete bot;
-	});
-
 	std::signal(SIGINT, [](const int code) -> void {
 		last_signal = code;
-		signal_cv.notify_all();
+		bomb_cv.notify_all();
 	});
 
 	std::signal(SIGTERM, [](const int code) -> void {
 		last_signal = code;
-		signal_cv.notify_all();
+		bomb_cv.notify_all();
 	});
 
 	std::signal(SIGSEGV, [](const int code) -> void {
 		last_signal = code;
-		signal_cv.notify_all();
+		bomb_cv.notify_all();
 	});
 
 	if (!TO_DUMP) {
 		std::cout << "Launching the bot.\n";
 		log("Launching the bot.");
-		bot->start();
+		bot->start(dpp::st_return);
+		std::unique_lock L(bomb_mutex);
+		bomb_cv.wait(L, [] { return last_signal != 0 || ready_to_explode; });
+		handle_signal(last_signal);
+		log("Goodnight!");
+		std::cout << "Goodnight!\n";
 	}
 	else {
 		std::this_thread::sleep_for(std::chrono::milliseconds(5000));

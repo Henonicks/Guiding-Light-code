@@ -18,4 +18,19 @@ public:
 	}
 };
 
+template <typename T>
+class movable_atomic : public std::atomic <T> {
+public:
+	using std::atomic <T>::atomic;
+	using std::atomic <T>::operator=;
+
+	movable_atomic(movable_atomic&& other) noexcept {
+		this->store(std::move(other));
+	}
+
+	operator T() const {
+		return this->load();
+	}
+};
+
 #endif
