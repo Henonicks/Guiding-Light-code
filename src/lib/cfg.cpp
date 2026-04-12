@@ -25,8 +25,8 @@ dpp::emoji build_emoji(const henifig::value_map& config) {
 void cfg::check_sqlite3() {
 	if (!command_exists("sqlite3")) {
 		std::cerr << fmt::format("{} The sqlite3 executable hasn't been found. Please install sqlite3.\n", color::rize("ERROR:", "Red"));
-		log("ERROR: The sqlite3 executable hasn't been found. Please install sqlite3.");
-		std::exit(1);
+		log("ERROR: The sqlite3 executable wasn't found. Please install sqlite3.");
+		explode(f_failure);
 	}
 }
 
@@ -122,11 +122,11 @@ void cfg::init_db_data() {
 
 void cfg::init_bot() {
 	if (!db::connection_successful()) {
-		std::cerr << fmt::format("{0} connection to DB failed! imma js crash ts g 💔🥀\nHINT: have you imported your database as database/{1}.db or initialised the database with init_db?", color::rize("ERROR:", "Red"), MODE_NAME) << std::endl;
-		std::exit(1);
+		std::cerr << fmt::format("{0} connection to DB failed! imma js crash ts g 💔🥀\n{1} have you imported your database as database/{2}.db or initialised the database with init_db?", color::rize("ERROR:", "Red"), color::rize("HINT:", "Yellow"), MODE_NAME) << std::endl;
+		explode(f_failure);
 	}
 
-	std::scoped_lock L(server_mutex, cfg_values_mutex);
+	std::lock_guard L(cfg_values_mutex);
 
 	std::cout << "Setting up the guild count updater.\n";
 	log("Setting up the guild count updater.");

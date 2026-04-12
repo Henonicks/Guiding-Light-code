@@ -1,4 +1,5 @@
 #include "guiding_light/guiding_light.hpp"
+#include "guiding_light/guiding_light.tpp"
 
 #include "guiding_light/logging.hpp"
 #include "guiding_light/responses.hpp"
@@ -28,17 +29,33 @@ std::string bot_name() {
 	// See README.md if you wonder why these names.
 }
 
-void dump_data(const bool fatal, const bool deadlock) {
+void prepare_to_explode() {
+	if (!IS_CLI) {
+		dump_data();
+	}
+}
+
+void explode(const exec_verdicts failure) {
+	prepare_to_explode();
+	exec_verdict = failure;
+}
+
+void explode_painfully() {
+	prepare_to_explode();
+	std::abort();
+}
+
+void dump_data(const bool deadlock) {
 	if (!deadlock) {
 		std::cout << "Waiting for all the mutexes to be free.\n";
 		log("Waiting for all the mutexes to be free.");
-		bool lock_passed{};
-		std::thread deadlock_prevention([fatal, &lock_passed]() -> void {
+		std::atomic <bool> lock_passed;
+		std::thread deadlock_prevention([&lock_passed]() -> void {
 			std::this_thread::sleep_for(std::chrono::seconds(5));
 			if (!lock_passed) {
 				std::cout << "5 seconds in, nothing happened. Impatiently dumping instead.\n";
 				log("5 seconds in, nothing happened. Impatiently dumping instead.");
-				dump_data(fatal, true);
+				dump_data(true);
 			}
 		});
 		deadlock_prevention.detach();
@@ -46,7 +63,6 @@ void dump_data(const bool fatal, const bool deadlock) {
 			cfg::config_mutex,
 			slashcommands::list_mutex,
 			cfg_values_mutex,
-			server_mutex,
 			jtc_mutex,
 			logfile_mutex,
 			notification_mutex,
@@ -67,7 +83,7 @@ void dump_data(const bool fatal, const bool deadlock) {
 			.add_file("other_logs.log", dpp::utility::read_file(fmt::format("../logging/bot/{}/other_logs.log", MODE_NAME)))
 			.add_file("guild_logs.log", dpp::utility::read_file(fmt::format("../logging/bot/{}/guild_logs.log", MODE_NAME)))
 			.add_file("sql_logs.log", dpp::utility::read_file(fmt::format("../logging/bot/{}/sql_logs.log", MODE_NAME)))
-	, [fatal](const dpp::confirmation_callback_t& callback) {
+	, [](const dpp::confirmation_callback_t& callback) {
 		if (error_callback(callback)) {
 			log("Couldn't dump on Discord, backing up instead.");
 			std::cout << "Couldn't dump on Discord, backing up instead.\n";
@@ -77,14 +93,8 @@ void dump_data(const bool fatal, const bool deadlock) {
 				}
 			}
 		}
-		log("Goodnight!");
-		std::cout << "Goodnight!\n";
-		if (fatal) {
-			std::abort();
-		}
-		else {
-			std::exit(0);
-		}
+		ready_to_explode = true;
+		bomb_cv.notify_all();
 	});
 }
 

@@ -7,6 +7,9 @@
 #include "guiding_light/signal.hpp"
 
 int main(const int argc, char** argv) {
+	std::set_terminate([] -> void {
+		std::terminate();
+	});
 	cfg::check_sqlite3();
 	// Check if we have sqlite3 installed
 	if (!exec_subcommands(argc, argv)) {
@@ -36,7 +39,7 @@ int main(const int argc, char** argv) {
 	if (TO_DUMP) {
 		std::cout << "Dumping and exiting.\n";
 		bot->start(dpp::st_return);
-		dump_data(f_non_fatal);
+		dump_data(f_success);
 	}
 
 	if (IS_CLI) {
@@ -484,8 +487,16 @@ int main(const int argc, char** argv) {
 
 	std::thread signal_thread([] {
 		std::unique_lock L(signal_mutex);
-		signal_cv.wait(L, []{ return last_signal != 0; });
+		signal_cv.wait(L, [] { return last_signal != 0; });
 		handle_signal(last_signal);
+	});
+
+	std::thread bomb([] {
+		std::unique_lock L(bomb_mutex);
+		bomb_cv.wait(L, [] { return ready_to_explode.load(); });
+		log("Goodnight!");
+		std::cout << "Goodnight!\n";
+		delete bot;
 	});
 
 	std::signal(SIGINT, [](const int code) -> void {
@@ -512,5 +523,5 @@ int main(const int argc, char** argv) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 		std::cout << "It's been a second and there is still no dump. Exiting now.\n";
 	}
-	return 0;
+	return exec_verdict;
 }
