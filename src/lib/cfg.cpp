@@ -240,10 +240,9 @@ void cfg::init_guild_channels(const dpp::snowflake guild_id, const std::vector <
 	}
 	if (guild_id == TICKETS_GUILD_ID) {
 		std::lock_guard L(ticket_mutex);
-		db::sql << "SELECT * FROM tickets;" + db::line_comment("pray::tickets") >> [&channels](const db::BIGINT user_id, const db::BIGINT channel_id) {
+		db::sql << "SELECT * FROM tickets;" + db::line_comment("pray::tickets") >> [&channels](const db::BIGINT user_id, const db::BIGINT channel_id, const db::BIGINT dm_channel_id) {
 			if (std::find(channels.begin(), channels.end(), channel_id) != channels.end()) {
-				tickets[user_id] = channel_id;
-				ck_tickets[channel_id] = user_id;
+				tickets[user_id] = ck_tickets[channel_id] = {user_id, channel_id, dm_channel_id};
 			}
 			else {
 				db::sql << "DELETE FROM tickets WHERE user_id=?;" << user_id;

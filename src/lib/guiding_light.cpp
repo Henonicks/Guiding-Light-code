@@ -5,6 +5,9 @@
 #include "guiding_light/slash_funcs.hpp"
 
 void wait_for_guild_readiness(const dpp::snowflake guild_id) {
+	if (guild_id.empty()) {
+		return;
+	}
 	std::mutex wait_mutex;
 	std::unique_lock this_lock(wait_mutex);
 	guild_readiness_cv.wait(this_lock, [guild_id] {

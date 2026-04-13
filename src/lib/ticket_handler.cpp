@@ -16,7 +16,7 @@ void handle_dm_in(const dpp::message_create_t& event) {
 	const dpp::snowflake user_id = event.msg.author.id;
 	log(fmt::format("Received a DM from the user {}.", user_id));
 	std::lock_guard L(ticket_mutex);
-	if (tickets[user_id].empty()) {
+	if (!tickets.contains(user_id)) {
 		log("But they don't have a ticket.");
 		bot->direct_message_create(user_id, dpp::message(
 			fmt::format("To contact the creator of this bot you need to create a ticket. Issue {0} to allow your messages in this "
@@ -27,7 +27,7 @@ void handle_dm_in(const dpp::message_create_t& event) {
 	}
 	dpp::message msg = event.msg;
 	msg.content = fmt::format("From {}: ", event.msg.author.get_mention()) + msg.content;
-	bot->message_create(preserve_attachments(msg).set_channel_id(tickets[user_id]), [event](const dpp::confirmation_callback_t& callback) -> void {
+	bot->message_create(preserve_attachments(msg).set_channel_id(tickets[user_id].channel_id), [event](const dpp::confirmation_callback_t& callback) -> void {
 		if (error_feedback(callback, event, "Failed to send")) {
 			bot->message_add_reaction(event.msg, dpp::unicode_emoji::x, error_callback);
 			return;
@@ -40,7 +40,7 @@ void handle_dm_out(const dpp::message_create_t& event) {
 	dpp::message msg = event.msg;
 	const dpp::snowflake channel_id = msg.channel_id;
 	std::lock_guard L(ticket_mutex);
-	const dpp::snowflake user_id = ck_tickets[channel_id];
+	const dpp::snowflake user_id = ck_tickets[channel_id].user_id;
 	log(fmt::format("Sending a DM to the user {}.", user_id));
 	if (user_id.empty()) {
 		error_log("But their ticket is closed. Are you going to delete the channel at some point?");
