@@ -490,8 +490,8 @@ dpp::coroutine <> slash::ticket::create(const dpp::slashcommand_t& event) {
 	log(fmt::format("User {} is trying to create a ticket.", user_id));
 
 	std::unique_lock L1(ticket_mutex);
-	if (!tickets[user_id].empty()) {
-		log(fmt::format("But there's already the channel {}.", tickets[user_id]));
+	if (tickets.contains(user_id)) {
+		log(fmt::format("But there's already the channel {}.", tickets[user_id].channel_id));
 		event.reply(response_emsg(YOU_ALREADY_HAVE_A_TICKET, lang), error_callback);
 		co_return;
 	}
@@ -511,11 +511,11 @@ dpp::coroutine <> slash::ticket::create(const dpp::slashcommand_t& event) {
 		event.reply(response_emsg(COULDNT_SEND_YOU_A_DM, lang));
 		co_return;
 	}
+	const dpp::snowflake dm_channel_id = dm_callback.get <dpp::message>().channel_id;
 	co_await bot->co_message_create(dpp::message(channel.id, fmt::format("<@{}> is contacting you.", user_id)));
 	std::unique_lock L2(ticket_mutex);
-	tickets[user_id] = channel.id;
-	ck_tickets[channel.id] = user_id;
-	db::sql << "INSERT INTO tickets VALUES (?, ?);" << user_id.str() << channel.id.str();
+	tickets[user_id] = ck_tickets[channel.id] = {user_id, channel.id, dm_channel_id};
+	db::sql << "INSERT INTO tickets VALUES (?, ?, ?);" << user_id.str() << channel.id.str() << dm_channel_id.str();
 	log("Success.");
 	event.reply(response_emsg(A_TICKET_HAS_BEEN_CREATED, lang), error_callback);
 }
@@ -526,15 +526,15 @@ void slash::ticket::close(const dpp::slashcommand_t& event) {
 	log(fmt::format("User {} is trying to close their ticket.", user_id));
 
 	std::lock_guard L(ticket_mutex);
-	if (tickets[user_id].empty()) {
+	if (!tickets.contains(user_id)) {
 		log("But they don't even have one. Like, literally, what are you trying to achieve here?");
 		event.reply(response_emsg(YOU_DONT_HAVE_A_TICKET, lang), error_callback);
 		return;
 	}
-	log(fmt::format("Deleting the ticket channel {}.", tickets[user_id]));
+	log(fmt::format("Deleting the ticket channel {}.", tickets[user_id].channel_id));
 	db::sql << "DELETE FROM tickets WHERE user_id=?;" << user_id.str();
-	bot->channel_delete(tickets[user_id], error_callback);
-	ck_tickets.erase(tickets[user_id]);
+	bot->channel_delete(tickets[user_id].channel_id, error_callback);
+	ck_tickets.erase(tickets[user_id].channel_id);
 	tickets.erase(user_id);
 	event.reply(response_emsg(YOUR_TICKET_HAS_BEEN_CLOSED, lang), error_callback);
 }

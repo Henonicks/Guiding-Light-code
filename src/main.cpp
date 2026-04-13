@@ -17,13 +17,12 @@ int main(const int argc, char** argv) {
 	cfg::read_config();
 	// Write down the values from the config into variables.
 
-	bot_release = new dpp::cluster(BOT_TOKEN,
+	const auto bot_intents =
 		IS_CLI ? dpp::i_default_intents :
-		               dpp::i_guilds | dpp::i_guild_members | dpp::i_guild_voice_states | dpp::i_direct_messages | dpp::i_message_content | dpp::i_guild_webhooks | dpp::i_guild_messages);
-	bot_dev = new dpp::cluster(BOT_TOKEN_DEV,
-		IS_CLI ? dpp::i_default_intents :
-		               dpp::i_guilds | dpp::i_guild_members | dpp::i_guild_voice_states | dpp::i_direct_messages | dpp::i_message_content | dpp::i_guild_webhooks | dpp::i_guild_messages);
-
+		         dpp::i_guilds | dpp::i_guild_members | dpp::i_guild_voice_states | dpp::i_direct_messages | dpp::i_message_content |
+		         	dpp::i_direct_message_typing | dpp::i_guild_message_typing | dpp::i_guild_webhooks | dpp::i_guild_messages;
+	bot_release = new dpp::cluster(BOT_TOKEN, bot_intents);
+	bot_dev = new dpp::cluster(BOT_TOKEN_DEV, bot_intents);
 	// In the CLI mode we can switch between the release and the dev modes and then launch the bots.
 	// To switch between them, we're gonna write their addresses to respective pointers.
 
@@ -54,6 +53,7 @@ int main(const int argc, char** argv) {
 
 	if (IS_CLI) {
 		cli::enter();
+		return 0;
 	}
 
 	bot->on_ready([](const dpp::ready_t&) -> void {
@@ -62,10 +62,19 @@ int main(const int argc, char** argv) {
 		}
 	});
 
-	bot->on_button_click([](const dpp::button_click_t& event) {
-		if (IS_CLI) {
-			return;
+	bot->on_typing_start([](const dpp::typing_start_t& event) {
+		const dpp::snowflake typing_channel_id = event.typing_channel.id;
+		const dpp::snowflake typing_user_id = event.user_id;
+		const dpp::snowflake guild_id = event.typing_guild.id;
+		if (guild_id == 0 && tickets.contains(typing_user_id)) {
+			bot->channel_typing(tickets[typing_user_id].channel_id, error_callback);
 		}
+		else if (guild_id == TICKETS_GUILD_ID && ck_tickets.contains(typing_channel_id)) {
+			bot->channel_typing(ck_tickets[typing_channel_id].dm_channel_id, error_callback);
+		}
+	});
+
+	bot->on_button_click([](const dpp::button_click_t& event) {
 		get_lang();
 		const std::string_view button_id = event.custom_id;
 		// We don't want to handle a button press twice, do we?
@@ -88,7 +97,7 @@ int main(const int argc, char** argv) {
 			}
 			event.reply(response_fmtemsg(NEXT_TIME_THE_PING_WILL_BE, lang,
 				{new_tp_rule == true ? response(OFF, lang) : response(ON, lang)})
-				.set_channel_id(event.command.channel_id), error_callback);
+					.set_channel_id(event.command.channel_id), error_callback);
 		}
 		else if (button_id.starts_with("help")) {
 			if (isdigit(button_id[4])) {
@@ -135,9 +144,6 @@ int main(const int argc, char** argv) {
 	});
 
 	bot->on_message_create([](const dpp::message_create_t& event) -> dpp::task <> {
-		if (IS_CLI) {
-			co_return;
-		}
 		const dpp::snowflake user_id = event.msg.author.id;
 		// We don't want to reply to any of our own messages.
 		if (user_id == bot->me.id) {
@@ -178,9 +184,6 @@ int main(const int argc, char** argv) {
 	});
 
 	bot->on_channel_update([](const dpp::channel_update_t& event) -> void {
-		if (IS_CLI) {
-			return;
-		}
 		std::lock_guard L(temp_vc_mutex);
 		if (!temp_vcs[event.updated.id].channel_id.empty()) {
 			bool bans{}, mutes{};
@@ -207,9 +210,6 @@ int main(const int argc, char** argv) {
 	});
 
 	bot->on_channel_delete([](const dpp::channel_delete_t& event) -> void {
-		if (IS_CLI) {
-			return;
-		}
 		const dpp::channel_type type = event.deleted.get_type();
 		const dpp::snowflake channel_id = event.deleted.id;
 		const dpp::snowflake guild_id = event.deleted.guild_id;
@@ -251,18 +251,15 @@ int main(const int argc, char** argv) {
 				db::sql << "DELETE FROM topgg_notifications WHERE guild_id=?;" << guild_id.str();
 				topgg_notifications.erase(event.deleted.guild_id);
 			}
-			if (!ck_tickets[channel_id].empty()) {
-				db::sql << "DELETE FROM tickets WHERE user_id=?;" << ck_tickets[channel_id].str();
-				tickets.erase(ck_tickets[channel_id]);
+			if (ck_tickets.contains(channel_id)) {
+				db::sql << "DELETE FROM tickets WHERE user_id=?;" << ck_tickets[channel_id].user_id.str();
+				tickets.erase(ck_tickets[channel_id].user_id);
 				ck_tickets.erase(channel_id);
 			}
 		}
 	});
 
 	bot->on_guild_create([](const dpp::guild_create_t& event) -> void {
-		if (IS_CLI) {
-			return;
-		}
 		bot->queue_work(event.created.id, [event] {
 			cfg::init_guild_channels(event.created.id, event.created.channels);
 			ready_guilds.insert(event.created.id);
@@ -284,9 +281,6 @@ int main(const int argc, char** argv) {
 	});
 
 	bot->on_voice_state_update([](const dpp::voice_state_update_t& event) -> dpp::task <> {
-		if (IS_CLI) {
-			co_return;
-		}
 		const dpp::snowflake user_id = event.state.user_id;
 		const dpp::snowflake guild_id = event.state.guild_id;
 		wait_for_guild_readiness(guild_id);
@@ -326,9 +320,6 @@ int main(const int argc, char** argv) {
 	});
 
 	bot->on_slashcommand([](const dpp::slashcommand_t& event) -> dpp::task <> {
-		if (IS_CLI) {
-			co_return;
-		}
 		get_lang();
 		const dpp::snowflake guild_id = event.command.guild_id;
 		const dpp::snowflake user_id = event.command.usr.id;
@@ -439,7 +430,7 @@ int main(const int argc, char** argv) {
 			std::unique_lock L2(slash::in_progress_mutex);
 			slash::in_progress[cmd_name].insert(user_id);
 			L2.unlock();
-			wait_for_guild_readiness(guild_id);
+			wait_for_guild_readiness(TICKETS_GUILD_ID);
 			const std::string& subcommand = cmd.options[0].name;
 			if (subcommand == "create") {
 				co_await slash::ticket::create(event);

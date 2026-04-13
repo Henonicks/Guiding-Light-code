@@ -114,7 +114,7 @@ const std::unordered_map <std::string, std::function <void(std::vector <std::str
 	{"init_db", [](const std::vector <std::string>&) {
 		std::lock_guard L(db::mutex);
 
-		db::errors_pending["init_db"] = true;
+		db::errors_pending.insert("init_db");
 		const std::string comment = db::line_comment("init_db");
 		db::sql << "CREATE TABLE jtc_vcs (channel_id BIGINT PRIMARY KEY, guild_id BIGINT);" + comment;
 		db::sql << "CREATE TABLE temp_vc_notifications (channel_id BIGINT, guild_id BIGINT PRIMARY KEY);" + comment;
@@ -125,8 +125,10 @@ const std::unordered_map <std::string, std::function <void(std::vector <std::str
 		db::sql << "CREATE TABLE no_noguild_reminder (user_id BIGINT PRIMARY KEY);" + comment;
 		db::sql << "CREATE TABLE topgg_notifications (channel_id BIGINT PRIMARY KEY, guild_id BIGINT);" + comment;
 		db::sql << "CREATE TABLE tickets (user_id BIGINT PRIMARY KEY, channel_id BIGINT);" + comment;
+		db::sql << "ALTER TABLE tickets ADD dm_channel_id BIGINT;" + comment;
 		db::sql << "CREATE TABLE temp_vcs (channel_id BIGINT PRIMARY KEY, guild_id BIGINT, creator_id BIGINT, parent_id BIGINT);" + comment;
 		db::sql << "CREATE TABLE channel_name_edit_timers (channel_id BIGINT PRIMARY KEY, timer BIGINT);" + comment;
+		db::errors_pending.erase("init_db");
 	}},
 	{"conv_db", [](const std::vector <std::string>&) {
 		std::lock_guard L(cfg_values_mutex);
@@ -533,7 +535,7 @@ void cli::enter() {
 	if (!db::connection_successful()) {
 		std::cout << fmt::format("{0} Failed to connect to the database in the {1} mode.\n", color::rize("Warning:", "Yellow"), MODE_NAME);
 	}
-	while (true) {
+	while (!ready_to_explode) {
 		std::string line;
 		const bool quit = linenoise::Readline(
 			fmt::format("{} ",

@@ -29,13 +29,13 @@ sqlite::database_binder db::wrapper::operator <<(sqlite::str_ref _query) {
 		return database::operator <<(query);
 	}
 	catch (const sqlite::sqlite_exception& e) {
-		// catch an exception if there is, log it
+		// catch an exception if there is one; log it
 		// if there's a comment, see where we came from
 		std::string function;
 		if (pos != std::string::npos) {
 			std::lock_guard L(mutex);
 			function = _query.substr(pos + 3).data();
-			if (errors_pending[function]) {
+			if (errors_pending.contains(function)) {
 				std::cerr << fmt::format(
 					"SQL errors occurred. Check logging/{0}/{1}/sql_logs.log for more info.\n",
 					IS_CLI ? "cli" : "bot", MODE_NAME

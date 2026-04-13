@@ -1,8 +1,10 @@
 #ifndef DATABASE_H
 #define DATABASE_H
 
-#include <map>
 #include <set>
+#include <unordered_set>
+#include <mutex>
+
 #include "no_warns/sqlite.hpp"
 
 namespace db {
@@ -39,10 +41,10 @@ namespace db {
 		sqlite::database_binder operator <<(sqlite::str_ref _query);
 	};
 
-	// A map with true/false values representing the existence of potential
+	// A set with strings representing the existence of potential
 	// pending errors, caught during an SQL query in functions.
-	inline std::unordered_map <std::string, bool> errors_pending;
-	inline std::mutex mutex;
+	inline std::unordered_set <std::string> errors_pending;
+	inline std::recursive_mutex mutex;
 
 	std::string line_comment(std::string_view comment);
 
