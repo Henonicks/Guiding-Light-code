@@ -127,6 +127,8 @@ void cfg::init_bot() {
 		return; // TODO
 	}
 
+	write_down_slashcommands();
+
 	std::lock_guard L(cfg_values_mutex);
 
 	std::cout << "Setting up the guild count updater.\n";

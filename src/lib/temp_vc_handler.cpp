@@ -55,11 +55,12 @@ dpp::coroutine <> temp_vc_create_owner_msg(const dpp::channel& channel) {
 		.set_author(fmt::format("This VC belongs to {}.", user.username), user.get_url(), user.get_avatar_url())
 		.add_field(
 			"You're able to edit the channel!",
-			"Use a subcommand of the `/set` command to change the name, limit, or bitrate of your channel to whatever value your soul desires. See `/help` (not to be confused with \"seek help\") for more information."
+			fmt::format("Use a subcommand of the `/tempvc` command to change the name, limit, or bitrate of your channel to whatever value your soul desires. "
+			   " You can also use it to restrict users' access to them. See {} (not to be confused with \"seek help\") for more information.", slash::get_mention("help"))
 		)
 		.set_footer(
 			dpp::embed_footer()
-			.set_text("Use the button bellow to toggle the temporary VC creation ping on/off. Have fun!")
+			.set_text("Use the button below to toggle the temporary VC creation ping on/off. Have fun!")
 		);
 	const dpp::message message = dpp::message(channel.id, user.get_mention()).add_embed(temp_ping_embed).add_component(
 		dpp::component().add_component(
