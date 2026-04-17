@@ -444,11 +444,11 @@ int main(const int argc, char** argv) {
 		else if (cmd_name == "reload") {
 			log("Started reloading...");
 			cfg::read_config();
-			cfg::init_bot();
 			for (const dpp::guild* guild : dpp::get_guild_cache()->get_container() | std::views::values) {
 				cfg::init_guild_channels(guild->id, guild->channels);
 			}
 			cfg::init_db_data();
+			cfg::write_down_slashcommands();
 			if (!db::connection_successful()) {
 				event.reply(dpp::message("COULDN'T CONNECT TO THE DATABASE! THIS IS A DISASTER! RUN WHILE YOU CAN!").set_flags(dpp::m_ephemeral), error_callback);
 				log("Reload: COULDN'T CONNECT TO THE DATABASE! THIS IS A DISASTER! RUN WHILE YOU CAN!");
