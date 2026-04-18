@@ -99,6 +99,9 @@ dpp::coroutine <> dump_data(const bool deadlock) {
 }
 
 dpp::coroutine <dpp::user> lookup_user(const dpp::snowflake user_id) {
+	if (user_id.empty()) {
+		co_return {};
+	}
 	std::shared_lock L(dpp::get_user_cache()->get_mutex());
 	dpp::user* res = dpp::find_user(user_id);
 	if (res == nullptr) {
@@ -115,6 +118,9 @@ dpp::coroutine <dpp::user> lookup_user(const dpp::snowflake user_id) {
 }
 
 dpp::coroutine <dpp::channel> lookup_channel(const dpp::snowflake channel_id) {
+	if (channel_id.empty()) {
+		co_return {};
+	}
 	std::shared_lock L(dpp::get_channel_cache()->get_mutex());
 	dpp::channel* res = dpp::find_channel(channel_id);
 	if (res == nullptr) {
@@ -131,6 +137,9 @@ dpp::coroutine <dpp::channel> lookup_channel(const dpp::snowflake channel_id) {
 }
 
 dpp::coroutine <dpp::role> lookup_role(const dpp::snowflake role_id, const dpp::snowflake guild_id) {
+	if (role_id.empty() || guild_id.empty()) {
+		co_return {};
+	}
 	std::shared_lock L(dpp::get_role_cache()->get_mutex());
 	dpp::role* res = dpp::find_role(role_id);
 	if (res == nullptr) {
@@ -154,6 +163,9 @@ dpp::coroutine <dpp::role> lookup_role(const dpp::snowflake role_id, const dpp::
 }
 
 dpp::coroutine <dpp::guild> lookup_guild(const dpp::snowflake guild_id) {
+	if (guild_id.empty()) {
+		co_return {};
+	}
 	std::shared_lock L(dpp::get_guild_cache()->get_mutex());
 	dpp::guild* res = dpp::find_guild(guild_id);
 	if (res == nullptr) {
@@ -170,6 +182,9 @@ dpp::coroutine <dpp::guild> lookup_guild(const dpp::snowflake guild_id) {
 }
 
 dpp::coroutine <dpp::emoji> lookup_emoji(const dpp::snowflake emoji_id) {
+	if (emoji_id.empty()) {
+		co_return {};
+	}
 	std::shared_lock L(dpp::get_emoji_cache()->get_mutex());
 	dpp::emoji* res = dpp::find_emoji(emoji_id);
 	if (res == nullptr) {
@@ -193,6 +208,9 @@ dpp::coroutine <dpp::emoji> lookup_emoji(const dpp::snowflake emoji_id) {
 }
 
 dpp::coroutine <dpp::emoji> lookup_emoji(const dpp::snowflake emoji_id, const dpp::snowflake guild_id) {
+	if (emoji_id.empty() || guild_id.empty()) {
+		co_return {};
+	}
 	std::shared_lock L(dpp::get_emoji_cache()->get_mutex());
 	dpp::emoji* res = dpp::find_emoji(emoji_id);
 	if (res == nullptr) {
@@ -216,13 +234,17 @@ dpp::coroutine <dpp::emoji> lookup_emoji(const dpp::snowflake emoji_id, const dp
 }
 
 dpp::coroutine <dpp::guild_member> lookup_guild_member(const dpp::snowflake guild_id, const dpp::snowflake user_id) {
+	if (guild_id.empty() || user_id.empty()) {
+		co_return {};
+	}
+	dpp::guild_member member{};
 	try {
-		co_return dpp::find_guild_member(guild_id, user_id);
+		member = dpp::find_guild_member(guild_id, user_id);
 	}
 	catch (...) {}
 	const dpp::confirmation_callback_t callback = co_await bot->co_guild_get_member(guild_id, user_id);
-	if (error_callback(callback)) {
-		co_return {};
+	if (!error_callback(callback)) {
+		member = callback.get <dpp::guild_member>();
 	}
-	co_return callback.get <dpp::guild_member>();
+	co_return member;
 }
