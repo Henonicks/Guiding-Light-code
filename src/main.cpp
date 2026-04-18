@@ -284,28 +284,29 @@ int main(const int argc, char** argv) {
 		const dpp::snowflake user_id = event.state.user_id;
 		const dpp::snowflake guild_id = event.state.guild_id;
 		wait_for_guild_readiness(guild_id);
-		std::unique_lock temp_lock(temp_vc_mutex);
+		std::unique_lock L(temp_vc_mutex);
 		dpp::snowflake channel_id = vc_statuses[user_id][guild_id];
 		const temp_vc curr_temp_vc = temp_vcs[channel_id];
+		L.unlock();
 		if (curr_temp_vc.exists()) {
 			if ((co_await lookup_channel(channel_id)).get_voice_members().empty()) {
-				temp_lock.unlock();
-				bot->queue_work(curr_temp_vc.id, [channel_id]() -> dpp::job {
+				bot->queue_work(curr_temp_vc.id, std::bind_front([](const dpp::snowflake channel_id) -> dpp::job {
 					co_await temp_vc_delete_with_msg(channel_id);
-				});
-				temp_lock.lock();
+				}, channel_id));
 			}
 		}
 		else {
+			std::lock_guard L(temp_vc_mutex);
 			temp_vcs.erase(channel_id);
 		}
 		if (!event.state.channel_id.empty()) {
+			std::lock_guard L(temp_vc_mutex);
 			vc_statuses[user_id][guild_id] = event.state.channel_id;
 		}
 		else {
+			std::lock_guard L(temp_vc_mutex);
 			vc_statuses[user_id].erase(guild_id);
 		}
-		temp_lock.unlock();
 		channel_id = event.state.channel_id;
 		if (!channel_id.empty()) {
 			std::unique_lock jtc_lock(jtc_mutex);

@@ -76,14 +76,18 @@ dpp::coroutine <> temp_vc_create_owner_msg(const dpp::channel& channel) {
 }
 
 dpp::coroutine <> temp_vc_delete_with_msg(const dpp::snowflake channel_id) {
-	std::lock_guard L(temp_vc_mutex);
-	const dpp::user user = co_await lookup_user(temp_vcs[channel_id].creator_id);
+	std::unique_lock temp_lock1(temp_vc_mutex);
+	const dpp::snowflake user_id = temp_vcs[channel_id].creator_id;
+	temp_lock1.unlock();
+	const dpp::user user = co_await lookup_user(user_id);
 	const dpp::channel channel = co_await lookup_channel(channel_id);
+	std::unique_lock temp_lock2(temp_vc_mutex);
 	log(fmt::format("`{0}` ({1}) left a temp VC. Guild ID: {2}, channel ID: {3}, channel name: `{4}`, notification channel ID: {5}",
 		user.format_username(), user.id, channel.guild_id, channel.id,
 		channel.name, temp_vc_notifications[channel.guild_id])
 	);
 	const dpp::snowflake notification_channel_id = temp_vc_notifications[channel.guild_id];
+	temp_lock2.unlock();
 	log(fmt::format("Does their server ({}) have a temp vc notification channel though?", channel.guild_id));
 	if (!notification_channel_id.empty()) {
 		log(fmt::format("Yes, it does, it's {}.", channel.id));
