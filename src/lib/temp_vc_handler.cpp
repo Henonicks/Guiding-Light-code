@@ -134,7 +134,7 @@ dpp::coroutine <> temp_vc_create(const dpp::voice_state_update_t& event) {
 	}
 	log("The user has passed the basic checks. Pushing to the queue.");
 	const temp_id_t curr_id = create_temp_vc_request(user.id, jtc_channel_id, guild_id);
-	bot->queue_work(curr_id, std::bind_front([](const dpp::user& user, const dpp::snowflake jtc_channel_id, const dpp::snowflake guild_id, const temp_id_t curr_id) -> dpp::job {
+	bot->queue_work(curr_id, std::bind_front([](const dpp::user user, const dpp::snowflake jtc_channel_id, const dpp::snowflake guild_id, const temp_id_t curr_id) -> dpp::job {
 		const std::string& username = user.username;
 		std::string new_name;
 		dpp::channel new_channel;
@@ -273,7 +273,9 @@ bool temp_vc_is_speakable(const dpp::permission_overwrite& overwrite) {
 
 dpp::coroutine <dpp::role> get_highest_role(const dpp::snowflake user_id, const dpp::snowflake guild_id) {
 	dpp::role res;
-	for (const dpp::snowflake x : (co_await lookup_guild_member(guild_id, user_id)).get_roles()) {
+	const auto member = co_await lookup_guild_member(guild_id, user_id);
+	const auto& roles = member.get_roles();
+	for (const dpp::snowflake x : roles) {
 		res = std::max(res, co_await lookup_role(x, guild_id));
 	}
 	co_return res;
