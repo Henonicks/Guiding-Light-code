@@ -56,6 +56,13 @@ int main(const int argc, char** argv) {
 		return 0;
 	}
 
+	if (!db::connection_successful()) {
+		std::cerr << fmt::format("{0} connection to DB failed! imma js crash ts g 💔🥀\n{1} have you imported your database as database/{2}.db or initialised the database with init_db?", color::rize("ERROR:", "Red"), color::rize("HINT:", "Yellow"), MODE_NAME) << std::endl;
+		return 0;
+	}
+
+	cfg::init_db_data();
+
 	bot->on_ready([](const dpp::ready_t&) -> void {
 		if (dpp::run_once <struct initialise_bot>()) {
 			cfg::init_bot();
@@ -77,26 +84,20 @@ int main(const int argc, char** argv) {
 	bot->on_button_click([](const dpp::button_click_t& event) {
 		get_lang();
 		const std::string_view button_id = event.custom_id;
-		// We don't want to handle a button press twice, do we?
 		if (button_id == "temp_ping_toggle") {
 			const dpp::snowflake user_id = event.command.usr.id;
-			wait_for_guild_readiness(event.command.guild_id);
 			std::lock_guard L(temp_vc_mutex);
-			if (no_temp_ping[user_id]) {
+			const bool allowing_pings = !no_temp_ping[user_id];
+			if (allowing_pings) {
 				db::sql << "DELETE FROM no_temp_ping WHERE user_id=?;" << user_id.str();
-			}
-			else {
-				db::sql << "INSERT INTO no_temp_ping VALUES (?);" << user_id.str();
-			}
-			const bool new_tp_rule = !no_temp_ping[user_id];
-			if (!new_tp_rule) {
 				no_temp_ping.erase(user_id);
 			}
 			else {
-				no_temp_ping[user_id] = new_tp_rule;
+				db::sql << "INSERT INTO no_temp_ping VALUES (?);" << user_id.str();
+				no_temp_ping[user_id] = allowing_pings;
 			}
 			event.reply(response_fmtemsg(NEXT_TIME_THE_PING_WILL_BE, lang,
-				{new_tp_rule == true ? response(OFF, lang) : response(ON, lang)})
+				{!allowing_pings ? response(OFF, lang) : response(ON, lang)})
 					.set_channel_id(event.command.channel_id), error_callback);
 		}
 		else if (button_id.starts_with("help")) {
