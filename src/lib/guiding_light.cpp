@@ -1,8 +1,10 @@
 #include "guiding_light/guiding_light.hpp"
 
-#include "guiding_light/logging.hpp"
-#include "guiding_light/responses.hpp"
-#include "guiding_light/slash_funcs.hpp"
+#include "guiding_light/internal/logging.hpp"
+#include "guiding_light/handlers/responses.hpp"
+#include "guiding_light/handlers/slash_funcs.hpp"
+
+#ifdef GL_BOT_ENVIRONMENT
 
 void wait_for_guild_readiness(const dpp::snowflake guild_id) {
 	if (guild_id.empty()) {
@@ -27,13 +29,17 @@ bool is_running() {
 
 std::string bot_name() {
 	return !IS_DEV ? "Guiding Light" : "Curious Light";
-	// See README.md if you wonder why these names.
+	// See README.md if you're wondering why these names.
 }
 
+#endif
+
 void prepare_to_explode() {
+#ifdef GL_BOT_ENVIRONMENT
 	if (!IS_CLI) {
 		dump_data().sync_wait();
 	}
+#endif
 	ready_to_explode = true;
 	bomb_cv.notify_all();
 }
@@ -47,6 +53,8 @@ void explode_painfully() {
 	prepare_to_explode();
 	std::abort();
 }
+
+#ifdef GL_BOT_ENVIRONMENT
 
 dpp::coroutine <> dump_data(const bool deadlock) {
 	if (!deadlock) {
@@ -63,29 +71,26 @@ dpp::coroutine <> dump_data(const bool deadlock) {
 		});
 		deadlock_prevention.detach();
 		std::scoped_lock L(
-			cfg::config_mutex,
-			slashcommands::list_mutex,
-			cfg_values_mutex,
-			jtc_mutex,
-			logfile_mutex,
-			notification_mutex,
-			ratelimit_mutex,
-			slash::in_progress_mutex,
-			temp_vc_mutex,
-			restriction_mutex,
-			ticket_mutex,
-			topgg::mutex,
-			db::mutex
+			  cfg::config_mutex
+			, slashcommands::list_mutex
+			, cfg_values_mutex
+			, logfile_mutex
+			, slash::in_progress_mutex
+			, temp_vc_mutex
+			, restriction_mutex
+#ifdef GL_USE_LOCAL_DB
+			, db::mutex
+#endif
 		);
 		lock_passed = true;
 	}
 	const dpp::confirmation_callback_t callback = co_await bot->co_message_create(
 		dpp::message(LOGS_CHANNEL_ID, "Shutting down, dumping.")
-			.add_file(fmt::format("{}.db", MODE_NAME), dpp::utility::read_file(fmt::format("../database/{}.db", MODE_NAME)))
-			.add_file("my_logs.log", dpp::utility::read_file(fmt::format("../logging/bot/{}/my_logs.log", MODE_NAME)))
-			.add_file("other_logs.log", dpp::utility::read_file(fmt::format("../logging/bot/{}/other_logs.log", MODE_NAME)))
-			.add_file("guild_logs.log", dpp::utility::read_file(fmt::format("../logging/bot/{}/guild_logs.log", MODE_NAME)))
-			.add_file("sql_logs.log", dpp::utility::read_file(fmt::format("../logging/bot/{}/sql_logs.log", MODE_NAME)))
+			.add_file(std::format("{}.db", MODE_NAME), dpp::utility::read_file(std::format("../database/{}.db", MODE_NAME)))
+			.add_file("my_logs.log", dpp::utility::read_file(std::format("../logging/bot/{}/my_logs.log", MODE_NAME)))
+			.add_file("other_logs.log", dpp::utility::read_file(std::format("../logging/bot/{}/other_logs.log", MODE_NAME)))
+			.add_file("guild_logs.log", dpp::utility::read_file(std::format("../logging/bot/{}/guild_logs.log", MODE_NAME)))
+			.add_file("sql_logs.log", dpp::utility::read_file(std::format("../logging/bot/{}/sql_logs.log", MODE_NAME)))
 	);
 	if (error_callback(callback)) {
 		log("Couldn't dump on Discord, backing up instead.");
@@ -248,3 +253,5 @@ dpp::coroutine <dpp::guild_member> lookup_guild_member(const dpp::snowflake guil
 	}
 	co_return member;
 }
+
+#endif

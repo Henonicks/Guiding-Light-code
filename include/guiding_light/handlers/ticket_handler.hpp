@@ -1,0 +1,25 @@
+#ifndef TICKET_HANDLER_H
+#define TICKET_HANDLER_H
+
+#include "guiding_light/guiding_light.hpp"
+
+/**
+ * @brief Puts attachment links inside the message to preserve them when sharing.
+ * @param msg The message.
+ * @returns The message with the links inserted.
+ */
+dpp::message preserve_attachments(const dpp::message& msg);
+
+/**
+ * @brief Handles a DM from a user.
+ * @param event The event object which contains information about the request.
+ */
+dpp::coroutine <> handle_dm_in(const dpp::message_create_t& event);
+
+/**
+ * @brief Sends a DM.
+ * @param event The event object which contains information about the request.
+ */
+dpp::coroutine <> handle_dm_out(const dpp::message_create_t& event);
+
+#endif
