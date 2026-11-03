@@ -204,15 +204,15 @@
     },
     $"guild" | {
       $"NAME" | "guild",
-      $"DESCRIPTION" | "Get/set the guild you're going to vote in favor of.",
+      $"DESCRIPTION" | "Get/set the guild you're going to vote in favour of.",
       $"OPTIONS" | {
         $"get" | {
           $"NAME" | "get",
-          $"DESCRIPTION" | "Get the guild you're going to vote in favor of. Votes go nowhere by default."
+          $"DESCRIPTION" | "Get the guild you're going to vote in favour of. Votes go nowhere by default."
         },
         $"set" | {
           $"NAME" | "set",
-          $"DESCRIPTION" | "Set the guild you're going to vote in favor of."
+          $"DESCRIPTION" | "Set the guild you're going to vote in favour of."
         }
       }
     },
@@ -274,33 +274,25 @@
           $"NAME" | "jtc_vcs",
           $"DESCRIPTION" | "The table containing JTC VCs."
         },
-        $"temp_vc_notifications" | {
-          $"NAME" | "temp_vc_notifications",
-          $"DESCRIPTION" | "The table containing temporary VC notification channels."
+        $"notification_channels" | {
+          $"NAME" | "notification_channels",
+          $"DESCRIPTION" | "The table containing temporary VC or top.gg notification channels."
         },
-        $"jtc_default_values" | {
-          $"NAME" | "jtc_default_values",
-          $"DESCRIPTION" | "The table containing the default values of the JTCs."
-        },
-        $"no_temp_ping" | {
-          $"NAME" | "no_temp_ping",
+        $"temp_ping_blockers" | {
+          $"NAME" | "temp_ping_blockers",
           $"DESCRIPTION" | "The table containing the IDs of the users who don't want to be auto-pinged in temporary VCs."
         },
         $"topgg_guild_choices" | {
           $"NAME" | "topgg_guild_choices",
           $"DESCRIPTION" | "The table containing the IDs of the guilds that the users have chosen for top.gg."
         },
-        $"topgg_guild_votes_amount" | {
-          $"NAME" | "topgg_guild_votes_amount",
+        $"topgg_guild_vote_amounts" | {
+          $"NAME" | "topgg_guild_vote_amounts",
           $"DESCRIPTION" | "The table containing the amount of votes in favour of the guilds."
         },
-        $"no_noguild_reminder" | {
-          $"NAME" | "no_noguild_reminder",
+        $"noguild_reminder_blockers" | {
+          $"NAME" | "noguild_reminder_blockers",
           $"DESCRIPTION" | "The table containing the user IDs who have been notified that they're not voting for any guilds."
-        },
-        $"topgg_notifications" | {
-          $"NAME" | "topgg_notifications",
-          $"DESCRIPTION" | "The table containing the channels IDs of where it's notified when a user votes for that guild."
         },
         $"tickets" | {
           $"NAME" | "tickets",
@@ -309,10 +301,6 @@
         $"temp_vcs" | {
           $"NAME" | "temp_vcs",
           $"DESCRIPTION" | "The table containing the IDs of temporary VCs."
-        },
-        $"channel_name_edit_timers" | {
-          $"NAME" | "channel_name_edit_timers",
-          $"DESCRIPTION" | "The table containing the timestamps of when a temp VC's name can be changed again."
         }
       }
     },

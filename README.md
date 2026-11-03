@@ -63,20 +63,67 @@ Create a config.hfg in `Guiding_Light_Config`, located above the `build` directo
 # The values below don't need to be included if you don't expect top.gg votes
 /TOPGG_WEBHOOK_CHANNEL_ID\ | "(integer) The ID of the channel for top.gg vote webhook messages"
 /TOPGG_BOT_TOKEN\ | "Your bot's token on top.gg."
+/TOPGG_VOTES_LEVELING[ # The amount of votes required per guild to level up. Each level number represents the amount of allowed JTC voice channels.
+# 001  002  003  004  005  006  007  008  009  010
+
+  000, 025, 040, 065, 100, 145, 180, 215, 240, 285,
+  340, 395, 450, 500, 560, 610, 680, 750, 840, 950
+]\
+# Required if you're using GoR:
+
+/GL_ON_RAILS_API_URL\ | "whateverthehost/guidinglight/api" # Requests are made here when in release mode.
+/GL_ON_RAILS_API_URL_DEV\ | "whateverthehost/guidinglight/api" # Requests are made here when in dev mode.
+/GL_ON_RAILS_TOKEN\ | "Autorisation token for GoR"
+
 ```
 
 ## Setup
 
+### Database
+
+You can choose between a local database in the bot's project files and a new API called Guiding (Light) on Rails (GoR).
+
+#### GoR
+
+Set up the [API](https://github.com/Henonicks/GoR) wherever you're going to host it and place the config values in the config file.
+
+#### Local SQLite3 database
+
+`sqlite3` is required for this to work as `sqlite_modern_cpp` wraps around it. The setup required is discussed further under the CLI mode section. 
+
+### Logs
+
 If you don't have the log files already, they will be created automatically as soon as the program tries to open them.
 Whenever it does, the files are cleared so back them up if you want to.
+
+### CLI mode
+
 Any other setup steps involve you [launching the CLI version of the program](#cli-mode).
-Once done, you need to run commands inside of it. You can get assistance from the `help` command.
-If you don't have the database files already, run init_db.
-If you've used the version of this bot which used text files as a database, run conv_db. Here is what it does step-by-step:
+Once done, you need to run commands inside of it. You can get assistance from the `help` command. One of the required steps of the bot setup is initialising a database. If you're using a local one, you have to do it from here.
+
+#### SQLite3 database
+
+If you want to use a local database beside the bot, make sure you update the `sqlite_modern_cpp` Git submodule:
+
+    git submodule update sqlite_modern_cpp
+
+Then, when running the `cmake` command, make sure to append:
+
+    cmake -DUSE_LOCAL_DB=1
+
+This will tell the compiler to disable any of the GoR stuff and enable the sqlite_modern_cpp part via `#ifdef`s.
+
+If you don't have the database files already, run `init_db`.
+If you've used the version of this bot which used text files as a database, or simply a database with an older model, run `conv_db`. Here is what it does step-by-step:
 
 * Read the text files and add the values to the database.
 * Convert the "infinite" value of the VC user limit from 100 to 0.
 * Convert the default name underscores to spaces.
+* Update the database with some new tables and alter some of the old ones.
+
+`init_db` also runs `conv_db` to ensure your database is up-to-date, though it's recommended to only run `conv_db` if you already have something initialised.
+
+#### Slashcommands
 
 To create the slashcommands that are currently non-existent run `globalcreate ...` and `guildcreate ...`. This creates every single command defined. Do `list slashcommands` to see which commands there are if you only want to create some of them. If you want to delete a command, do `cdelete <command>`. Simply `cdelete` will delete every single command.
 
@@ -100,6 +147,13 @@ Once you're done setting up, you can start the bot.
     ./guidingLight --cli
 
 `--dev` and `--cli` can be combined, although the `switch` command makes it unnecessary.
+
+### Start with the top.gg listener/http server attached to the bot:
+
+    cd build
+    ./guidingLight --topgg
+
+__***NOTE: if you launch the server and the bot with --topgg listening to the same port, you will have issues! Pick one!***__
 
 ## CLI mode
 

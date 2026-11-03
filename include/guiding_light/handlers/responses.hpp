@@ -1,0 +1,205 @@
+#ifndef PING_H
+#define PING_H
+
+#include <no_warns/dpp/dpp.h>
+
+#include "henifig/types.hpp"
+
+#include "guiding_light/internal/cfg.hpp"
+
+enum responses_enum {
+	RESPONSE_NOT_FOUND,
+	YOU_ARE_NOT_IN_A_VC_YOU_CAN_EDIT,
+	THE_NAME_OF_THE_VC_IS_ALREADY,
+	THE_NAME_OF_THE_CHANNEL_HAS_CHANGED_FROM,
+	GUILD_COULD_NOT_BE_FOUND,
+	CHANNEL_COULD_NOT_BE_FOUND,
+	THE_BITRATE_IS_ALREADY,
+	THE_NUMBER_CAN_ONLY_BE_BETWEEN,
+	SET_BITRATE_TO,
+	FOR_VOICE_CHANNELS_ITS_IMPOSSIBLE_TO_MAKE_THE_LIMIT_GREATER,
+	WELL_NOW_WERE_JUST_BEING_SILLY_ARENT_WE,
+	THE_USER_LIMIT_IS_ALREADY,
+	USER_LIMIT_IS_SET_TO,
+	THIS_IS_NOT_A_JTC_VC_I_KNOW_OF,
+	THE_NAME_IS_ALREADY,
+	THE_DEFAULT_NAME_IS_SET_TO,
+	THE_LIMIT_SHOULD_BE_BETWEEN,
+	THE_LIMIT_IS_ALREADY,
+	THE_DEFAULT_LIMIT_IS_SET_TO,
+	THE_DEFAULT_BITRATE_IS_SET_TO,
+	THIS_GUILD_HAS_A_JTC_LIMIT_OF,
+	YOU_CAN_GET_MORE_BY_VOTING_THOUGH,
+	TRIED_TO_CREATE_A_JTC_CHANNEL_BUT_FAILED,
+	CREATED_A_JTC_CHANNEL,
+	THE_CHANNEL_HAS_BEEN_SET_UP,
+	ITS_ALREADY_BEEN_SET_UP,
+	THE_USER_IS_NOTORIN_THE_LIST,
+	NOT,
+	REQUESTED_USER_NOT_FOUND,
+	THE_USER_HAS_ADMIN_ACCESS_TO_THIS_CHANNEL,
+	THE_USER_IS_ALREADY_IN_THE_BLOCKLIST,
+	HEY_THATS_ME_NOT_NICE,
+	THE_USER_WAS_ADDED_TO_THE_RESTLIST,
+	BLOCKLIST_OF_CHANNEL,
+	MUTELIST_OF_CHANNEL,
+	THE_USER_WAS_NOT_IN_THE_BLOCKLIST,
+	THE_USER_WAS_REMOVED_FROM_THE_BLOCKLIST,
+	GUILD_NOT_FOUND_IF_YOUVE_ALREADY_SET_IT,
+	YOURE_VOTING_IN_FAVOUR_OF_THIS_GUILD,
+	HELLO_YOUR_CHOSEN_GUILD_IS,
+	YOUR_CHOSEN_GUILD_IS_ALREADY,
+	YOURE_NOW_VOTING_IN_FAVOUR_OF_THIS_GUILD,
+	SET_YOUR_GUILD_TO,
+	THIS_GUILDS_VOTE_PROGRESS_IS,
+	THIS_IS_THE_ABSOLUTE_MAXIMUM,
+	YOU_ALREADY_HAVE_A_TICKET,
+	COULDNT_CREATE_A_CHANNEL_FOR_THE_TICKET,
+	A_TICKET_HAS_BEEN_CREATED,
+	YOU_DONT_HAVE_A_TICKET,
+	YOUR_TICKET_HAS_BEEN_CLOSED,
+	NEXT_TIME_THE_PING_WILL_BE,
+	OFF,
+	ON,
+	IM_PREPARING,
+	VOTE_HERE,
+	A_CHANNEL_IS_ALREADY_BEING_SET_UP,
+	A_TICKET_IS_ALREADY_BEING_SET_UP,
+	COULDNT_CONNECT_TO_THE_DATABASE,
+	THIS_CHANNEL_HAS_BEEN_RENAMED_WITHIN_THE_LAST_5_MINUTES,
+	CREATING_A_TICKET_FOR_YOU,
+	TICKET_CREATED,
+	COULDNT_SEND_YOU_A_DM,
+	COULDNT_WRITE_THE_RESOURCE_TO_THE_DATABASE,
+	COULDNT_READ_THE_RESOURCE_FROM_THE_DATABASE,
+	SOMETHING_WENT_TERRIBLY_WRONG,
+	SELECT_THE_HELP_PAGE_YOU_WANT_TO_VISIT,
+	SELECT_A_HELP_PAGE,
+	HELP_PAGE,
+	UNDEFINED_COMMAND,
+
+	AUTHOR,
+	DESCRIPTIONS,
+	FOOTER,
+
+	COMMANDS,
+	DESCRIPTION,
+	OPTIONS,
+	NAME,
+
+	CREATE_A_TICKET,
+};
+
+inline constexpr std::array responses_keys = {
+	"RESPONSE_NOT_FOUND",
+	"YOU_ARE_NOT_IN_A_VC_YOU_CAN_EDIT",
+	"THE_NAME_OF_THE_VC_IS_ALREADY",
+	"THE_NAME_OF_THE_CHANNEL_HAS_CHANGED_FROM",
+	"GUILD_COULD_NOT_BE_FOUND",
+	"CHANNEL_COULD_NOT_BE_FOUND",
+	"THE_BITRATE_IS_ALREADY",
+	"THE_NUMBER_CAN_ONLY_BE_BETWEEN",
+	"SET_BITRATE_TO",
+	"FOR_VOICE_CHANNELS_ITS_IMPOSSIBLE_TO_MAKE_THE_LIMIT_GREATER",
+	"WELL_NOW_WERE_JUST_BEING_SILLY_ARENT_WE",
+	"THE_USER_LIMIT_IS_ALREADY",
+	"USER_LIMIT_IS_SET_TO",
+	"THIS_IS_NOT_A_JTC_VC_I_KNOW_OF",
+	"THE_NAME_IS_ALREADY",
+	"THE_DEFAULT_NAME_IS_SET_TO",
+	"THE_LIMIT_SHOULD_BE_BETWEEN",
+	"THE_LIMIT_IS_ALREADY",
+	"THE_DEFAULT_LIMIT_IS_SET_TO",
+	"THE_DEFAULT_BITRATE_IS_SET_TO",
+	"THIS_GUILD_HAS_A_JTC_LIMIT_OF",
+	"YOU_CAN_GET_MORE_BY_VOTING_THOUGH",
+	"TRIED_TO_CREATE_A_JTC_CHANNEL_BUT_FAILED",
+	"CREATED_A_JTC_CHANNEL",
+	"THE_CHANNEL_HAS_BEEN_SET_UP",
+	"ITS_ALREADY_BEEN_SET_UP",
+	"THE_USER_IS_NOTORIN_THE_LIST",
+	"NOT",
+	"REQUESTED_USER_NOT_FOUND",
+	"THE_USER_HAS_ADMIN_ACCESS_TO_THIS_CHANNEL",
+	"THE_USER_IS_ALREADY_IN_THE_BLOCKLIST",
+	"HEY_THATS_ME_NOT_NICE",
+	"THE_USER_WAS_ADDED_TO_THE_RESTLIST",
+	"BLOCKLIST_OF_CHANNEL",
+	"MUTELIST_OF_CHANNEL",
+	"THE_USER_WAS_NOT_IN_THE_BLOCKLIST",
+	"THE_USER_WAS_REMOVED_FROM_THE_BLOCKLIST",
+	"GUILD_NOT_FOUND_IF_YOUVE_ALREADY_SET_IT",
+	"YOURE_VOTING_IN_FAVOUR_OF_THIS_GUILD",
+	"HELLO_YOUR_CHOSEN_GUILD_IS",
+	"YOUR_CHOSEN_GUILD_IS_ALREADY",
+	"YOURE_NOW_VOTING_IN_FAVOUR_OF_THIS_GUILD",
+	"SET_YOUR_GUILD_TO",
+	"THIS_GUILDS_VOTE_PROGRESS_IS",
+	"THIS_IS_THE_ABSOLUTE_MAXIMUM",
+	"YOU_ALREADY_HAVE_A_TICKET",
+	"COULDNT_CREATE_A_CHANNEL_FOR_THE_TICKET",
+	"A_TICKET_HAS_BEEN_CREATED",
+	"YOU_DONT_HAVE_A_TICKET",
+	"YOUR_TICKET_HAS_BEEN_CLOSED",
+	"NEXT_TIME_THE_PING_WILL_BE",
+	"OFF",
+	"ON",
+	"IM_PREPARING",
+	"VOTE_HERE",
+	"A_CHANNEL_IS_ALREADY_BEING_SET_UP",
+	"A_TICKET_IS_ALREADY_BEING_SET_UP",
+	"COULDNT_CONNECT_TO_THE_DATABASE",
+	"THIS_CHANNEL_HAS_BEEN_RENAMED_WITHIN_THE_LAST_5_MINUTES",
+	"CREATING_A_TICKET_FOR_YOU",
+	"TICKET_CREATED",
+	"COULDNT_SEND_YOU_A_DM",
+	"COULDNT_WRITE_THE_RESOURCE_TO_THE_DATABASE",
+	"COULDNT_READ_THE_RESOURCE_FROM_THE_DATABASE",
+	"SOMETHING_WENT_TERRIBLY_WRONG",
+	"SELECT_THE_HELP_PAGE_YOU_WANT_TO_VISIT",
+	"SELECT_A_HELP_PAGE",
+	"HELP_PAGE",
+	"UNDEFINED_COMMAND",
+
+	"AUTHOR",
+	"DESCRIPTIONS",
+	"FOOTER",
+
+	"COMMANDS",
+	"DESCRIPTION",
+	"OPTIONS",
+	"NAME",
+
+	"CREATE_A_TICKET",
+};
+
+//TODO: document
+dpp::coroutine <std::string> random_response(dpp::snowflake user_id);
+henifig::value_t response(responses_enum response_id, std::string_view lang = "default", const henifig::value_map& localisation = cfg::responses["LOCALISATION"]);
+dpp::message response_msg(responses_enum response_id, std::string_view lang = "default", const henifig::value_map& localisation = cfg::responses["LOCALISATION"]);
+dpp::message response_emsg(responses_enum response_id, std::string_view lang = "default", const henifig::value_map& localisation = cfg::responses["LOCALISATION"]);
+std::string response_str(responses_enum response_id, std::string_view lang = "default", const henifig::value_map& localisation = cfg::responses["LOCALISATION"]);
+
+template <typename ...Args>
+std::string response_fmt(const responses_enum response_id, const std::string_view lang = "default", const henifig::value_map& localisation = cfg::responses["LOCALISATION"], const Args&... values) {
+	return std::vformat(response(response_id, lang, localisation), std::make_format_args(values...));
+}
+
+template <typename ...Args>
+std::string response_fmt(const responses_enum response_id, const std::string_view lang = "default", const Args&... values) {
+	return std::vformat(response(response_id, lang, cfg::responses["LOCALISATION"]), std::make_format_args(values...));
+}
+
+template <typename ...Args>
+dpp::message response_fmtmsg(const responses_enum response_id, const std::string_view lang = "default", const Args&... values) {
+	return dpp::message(response_fmt(response_id, lang, std::forward <const Args&>(values)...));
+}
+
+template <typename ...Args>
+dpp::message response_fmtemsg(const responses_enum response_id, const std::string_view lang = "default", const Args&... values) {
+	return dpp::message(response_fmt(response_id, lang, std::forward <const Args&>(values)...)).set_flags(dpp::m_ephemeral);
+}
+henifig::value_map cmd_response(std::string_view name, std::string_view lang = "default", const henifig::value_map& commands = cfg::responses["COMMANDS"]);
+std::string error_response(uint32_t error_code, std::string_view lang = "default", const henifig::value_map& error_descriptions = cfg::responses["LOCALISATION"]["ERROR_DESCRIPTIONS"]);
+
+#endif

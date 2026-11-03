@@ -1,4 +1,4 @@
-# replace 'templatebot' with the name of your bot in the paths
+# replace 'guidingLight' with the name of your bot in the paths
 
 FROM brainboxdotcc/dpp:latest
 

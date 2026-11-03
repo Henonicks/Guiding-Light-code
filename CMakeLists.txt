@@ -11,10 +11,16 @@ endif()
 
 aux_source_directory("src" coresrc)
 aux_source_directory("src/lib" codParts)
-aux_source_directory("src/lib/helpers" helpers)
-add_executable(${BOT_NAME} ${coresrc} ${codParts} ${helpers})
+aux_source_directory("src/lib/resources" resourcecode)
+aux_source_directory("src/lib/database" resourcecode)
+aux_source_directory("src/lib/handlers" handlercode)
+aux_source_directory("src/lib/internal" internalcode)
+aux_source_directory("src/lib/json" jsoncode)
+aux_source_directory("src/lib/generic" genericcode)
+add_executable(${BOT_NAME} ${coresrc} ${codParts} ${resourcecode} ${handlercode} ${internalcode} ${database} ${jsoncode} ${genericcode})
 
-target_compile_definitions(${BOT_NAME} PUBLIC FMT_HEADER_ONLY)
+target_compile_definitions(${BOT_NAME} PRIVATE GL_BOT_ENVIRONMENT)
+target_compile_definitions(${BOT_NAME} PRIVATE GL_EXE_NAME="${BOT_NAME}")
 
 string(ASCII 27 Esc)
 
@@ -26,7 +32,6 @@ set_target_properties(${BOT_NAME} PROPERTIES
 )
 
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
-set(DPP_LIBRARIES dpp)
 find_package(Threads REQUIRED)
 find_package(DPP)
 if(APPLE)
@@ -43,19 +48,27 @@ endif()
 target_include_directories(${BOT_NAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${OPENSSL_INCLUDE_DIR}
+    "http_server/include"
 )
 
-find_package(FMT)
 add_subdirectory(colorize)
 add_subdirectory(cpp-linenoise)
 add_subdirectory(sqlite_modern_cpp)
 add_subdirectory(Henifig)
 add_subdirectory(DPPTGG)
 
-set(SANMAKE_ASAN OFF)
-add_subdirectory(sanmake)
+#set(SANMAKE_ASAN OFF)
+#add_subdirectory(sanmake)
 
-target_compile_options(${BOT_NAME} PRIVATE -Wall -Wextra -Wpedantic -g)
+#target_compile_options(${BOT_NAME} PRIVATE -Wall -Wextra -Wpedantic -g)
+
+if (USE_LOCAL_DB EQUAL 1)
+    message(STATUS "USE_LOCAL_DB is ON. Switching to an sqlite3 database inside the project root.")
+    target_compile_definitions(${BOT_NAME} PUBLIC GL_USE_LOCAL_DB)
+    target_link_libraries(${BOT_NAME} sqlite_modern_cpp)
+else()
+    message(STATUS "USE_LOCAL_DB is OFF. Using the GoR API as the database backend.")
+endif()
 
 target_link_libraries(${BOT_NAME}
 #    tsan
@@ -63,15 +76,11 @@ target_link_libraries(${BOT_NAME}
     ${CMAKE_THREAD_LIBS_INIT}
     ${OPENSSL_CRYPTO_LIBRARY}
     ${OPENSSL_SSL_LIBRARY}
-    sqlite_modern_cpp
     linenoise
     colorize
     henifig
     dpptgg
 )
-
-target_compile_definitions(${BOT_NAME} PUBLIC DPP_CORO)
-target_compile_features(${BOT_NAME} PUBLIC cxx_std_20)
 
 if (DPP_FOUND)
     target_link_libraries(${BOT_NAME} ${DPP_LIBRARIES})
@@ -91,22 +100,4 @@ else()
         FetchContent_MakeAvailable(libdpp)
     endif()
     target_link_libraries(${BOT_NAME} dpp)
-endif()
-
-if (NOT FMT_FOUND)
-    message(WARNING "Could not find libfmt install. Installing in the build directory.")
-    include(FetchContent)
-
-    FetchContent_Declare(
-            libfmt
-            GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-            GIT_TAG master)
-
-    FetchContent_GetProperties(libfmt)
-    if(NOT libfmt_POPULATED)
-        FetchContent_MakeAvailable(libfmt)
-    endif()
-    target_include_directories(${BOT_NAME} PUBLIC
-        ${libfmt_SOURCE_DIR}/include
-    )
 endif()

@@ -7,7 +7,7 @@ cmake-build-debug/
 build/
 config.json
 logging/
-database/
+/database/
 Guiding_Light_Config/
 http_server/config.hfg
 http_server/logging/

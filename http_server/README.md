@@ -23,6 +23,7 @@ Before listening, you need to create a configuration file near this README, call
 ```hfg
 /TOPGG_WEBHOOK_LISTEN_IP\ | "(string) The IP to listen on, 0.0.0.0 binds to every local IP, works for me."
 /TOPGG_WEBHOOK_LISTEN_PORT\ | "(integer) The port to listen on."
+/TOPGG_WEBHOOK_LISTEN_PORT_DEV\ | "(integer) Same thing, used in dev mode (launch the server with --dev)."
 /TOPGG_BOT_WEBHOOK_SECRET\    | "(string) Your bot's webhook secret on top.gg, starting with whs_"
 /TOPGG_SERVER_WEBHOOK_SECRET\ | "(string) Your server's webhook secret on top.gg, starting with whs_"
 /TOPGG_WEBHOOK_LINK\ | "(string) The Discord webhook link to send messages about each vote to."

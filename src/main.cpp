@@ -1,20 +1,32 @@
 #include "guiding_light/guiding_light.hpp"
-#include "guiding_light/ticket_handler.hpp"
-#include "guiding_light/temp_vc_handler.hpp"
-#include "guiding_light/cli.hpp"
-#include "guiding_light/responses.hpp"
-#include "guiding_light/slash_funcs.hpp"
-#include "guiding_light/signal.hpp"
+#include "guiding_light/handlers/ticket_handler.hpp"
+#include "guiding_light/handlers/temp_vc_handler.hpp"
+#include "guiding_light/resources/jtc_vc.hpp"
+#include "guiding_light/resources/channel.hpp"
+#include "guiding_light/internal/cli.hpp"
+#include "guiding_light/internal/cfg.hpp"
+#include "guiding_light/handlers/responses.hpp"
+#include "guiding_light/handlers/slash_funcs.hpp"
+#include "guiding_light/internal/signal.hpp"
+#include "guiding_light/resources/temp_ping_blocker.hpp"
+#include "guiding_light/internal/launch_options.hpp"
+#include "guiding_light/internal/config_values.hpp"
+#include "guiding_light/database/gl_on_rails.hpp"
+#include "guiding_light/resources/noguild_reminder_blocker.hpp"
+#include "guiding_light/handlers/topgg.hpp"
+#include "guiding_light/database/database.hpp"
+#include "guiding_light/database/markdown.hpp"
+#include "guiding_light/generic/table_mapper.hpp"
 
 int main(const int argc, char** argv) {
-	cfg::check_sqlite3();
+	map_field_lists();
 	// Check if we have sqlite3 installed
 	if (!exec_subcommands(argc, argv)) {
-		// Execute any subcommands provided with <path>/guidingLight [subcommands].
-		std::cerr << "Failed to execute some subcommands. Quitting.\n";
+		// Execute any subcommands provided with <path>/GL_EXE_NAME [subcommands].
+		std::cerr << color::rize("Failed to execute some subcommands. Quitting.\n", "Red");
 		exit(1);
 	}
-	cfg::read_config();
+	cfg::read_config("../Guiding_Light_Config/config.hfg");
 	// Write down the values from the config into variables.
 
 	const auto bot_intents =
@@ -51,17 +63,25 @@ int main(const int argc, char** argv) {
 		bot_log(log);
 	});
 
-	if (IS_CLI) {
-		cli::enter();
-		return 0;
-	}
+	if (!TO_DUMP) {
+		dpp::cluster conn_test_cluster("", 0, dpp::NO_SHARDS);
+		conn_test_cluster.start(dpp::st_return);
+		gor::poker temp_poker(GL_ON_RAILS_TOKEN, &conn_test_cluster);
+		gor_client = &temp_poker;
 
-	if (!db::connection_successful()) {
-		std::cerr << fmt::format("{0} connection to DB failed! imma js crash ts g 💔🥀\n{1} have you imported your database as database/{2}.db or initialised the database with init_db?", color::rize("ERROR:", "Red"), color::rize("HINT:", "Yellow"), MODE_NAME) << std::endl;
-		return 0;
-	}
+		if (IS_CLI) {
+			cli::enter();
+			return 0;
+		}
+		if (!db::test_conn(std::format("../database/{}.db", MODE_NAME))) {
+			std::cerr << std::format(
+				"{0} connection to DB failed! imma js crash ts g 💔🥀", color::rize("ERROR:", "Red")
+			) << std::endl;
+			return f_failure;
+		}
 
-	cfg::init_db_data();
+		gor_client = new gor::poker(GL_ON_RAILS_TOKEN, bot);
+	}
 
 	bot->on_ready([](const dpp::ready_t&) -> void {
 		if (dpp::run_once <struct initialise_bot>()) {
@@ -69,35 +89,44 @@ int main(const int argc, char** argv) {
 		}
 	});
 
-	bot->on_typing_start([](const dpp::typing_start_t& event) {
+	bot->on_typing_start([](const dpp::typing_start_t& event)-> dpp::task <> {
 		const dpp::snowflake typing_channel_id = event.typing_channel.id;
 		const dpp::snowflake typing_user_id = event.user_id;
 		const dpp::snowflake guild_id = event.typing_guild.id;
-		if (guild_id == 0 && tickets.contains(typing_user_id)) {
-			bot->channel_typing(tickets[typing_user_id].channel_id, error_callback);
+		if (guild_id.empty()) {
+			const dpp::snowflake send_channel_id = (co_await db::get <ticket_t, "", ticket_t::where_user>(typing_user_id)).channel_id;
+			if (!send_channel_id.empty()) {
+				bot->channel_typing(send_channel_id, error_callback);
+			}
 		}
-		else if (guild_id == TICKETS_GUILD_ID && ck_tickets.contains(typing_channel_id)) {
-			bot->channel_typing(ck_tickets[typing_channel_id].dm_channel_id, error_callback);
+		else if (guild_id == TICKETS_GUILD_ID) {
+			const dpp::snowflake send_channel_id = (co_await db::get <ticket_t, "", ticket_t::where_channel>(typing_channel_id)).channel_id;
+			if (!send_channel_id.empty()) {
+				bot->channel_typing(send_channel_id, error_callback);
+			}
 		}
 	});
 
-	bot->on_button_click([](const dpp::button_click_t& event) {
+	bot->on_button_click([](const dpp::button_click_t& event) -> dpp::task <> {
 		get_lang();
 		const std::string_view button_id = event.custom_id;
 		if (button_id == "temp_ping_toggle") {
 			const dpp::snowflake user_id = event.command.usr.id;
-			std::lock_guard L(temp_vc_mutex);
-			const bool allowing_pings = !no_temp_ping[user_id];
-			if (allowing_pings) {
-				db::sql << "DELETE FROM no_temp_ping WHERE user_id=?;" << user_id.str();
-				no_temp_ping.erase(user_id);
+			const auto blocker = co_await db::get <temp_ping_blocker_t>(user_id);
+			if (!blocker.is_valid()) {
+				event.reply(response_emsg(COULDNT_READ_THE_RESOURCE_FROM_THE_DATABASE, lang), error_callback);
+				co_return;
+			}
+			bool disallowing_pings = blocker.exists();
+			if (disallowing_pings) {
+				co_await db::destroy <temp_ping_blocker_t>(user_id);
 			}
 			else {
-				db::sql << "INSERT INTO no_temp_ping VALUES (?);" << user_id.str();
-				no_temp_ping[user_id] = allowing_pings;
+				co_await db::create <temp_ping_blocker_t>({user_id});
 			}
+			disallowing_pings = !disallowing_pings;
 			event.reply(response_fmtemsg(NEXT_TIME_THE_PING_WILL_BE, lang,
-				{!allowing_pings ? response(OFF, lang) : response(ON, lang)})
+				disallowing_pings ? response(OFF, lang) : response(ON, lang))
 					.set_channel_id(event.command.channel_id), error_callback);
 		}
 		else if (button_id.starts_with("help")) {
@@ -118,8 +147,8 @@ int main(const int argc, char** argv) {
 					if (curr_page != i) {
 						search_select_menu.add_select_option(
 							dpp::select_option()
-								.set_label(fmt::format("{0}. {1}", i + 1, pages[i]))
-								.set_value(fmt::format("help{}", i))
+								.set_label(std::format("{0}. {1}", i + 1, pages[i]))
+								.set_value(std::format("help{}", i))
 						);
 					}
 				}
@@ -153,40 +182,31 @@ int main(const int argc, char** argv) {
 		const std::string& msg = event.msg.content;
 		const dpp::snowflake channel_id = event.msg.channel_id;
 		if (channel_id == TOPGG_WEBHOOK_CHANNEL_ID) {
-			const dpp::snowflake voted_user_id = msg.substr(2, msg.size() - bot->me.id.str().size() - 10);
-			const int8_t weight = msg[2 + voted_user_id.str().size() + 2] - '0';
-			// The vote messages are formatted like this: <@${user_id}> ${weight}>
-			// Where ${user_id} is the ID of the user who voted,
-			// ${weight} is the amount of points the vote is worth
+			if (!ENABLE_TOPGG) {
+				const dpp::snowflake voted_user_id = msg.substr(2, msg.size() - bot->me.id.str().size() - 10);
+				const int8_t weight = msg[2 + voted_user_id.str().size() + 2] - '0';
+				// The vote messages are formatted like this: <@${user_id}> ${weight}>
+				// Where ${user_id} is the ID of the user who voted,
+				// ${weight} is the amount of points the vote is worth
 
-			const bool failure = co_await topgg::vote(voted_user_id, weight);
-			std::lock_guard L(topgg::mutex);
-			if (failure && !topgg::no_noguild_reminder[voted_user_id]) {
-				// If there was a failure in granting a guild a vote point
-				// and the user has not been notified about that before,
-				// notify them.
-				bot->direct_message_create(voted_user_id, dpp::message("You have just voted and missed out on the chance to vote in favor of a guild! Choosing a guild with `/guild set` and voting for me on top.gg grants it guild points which can then be turned into JTC VCs!"), error_callback);
-				topgg::no_noguild_reminder[voted_user_id] = true;
-				db::sql << "INSERT INTO no_noguild_reminder VALUES (?);" << voted_user_id.str();
+				co_await topgg::vote(voted_user_id, weight);
 			}
 			co_return;
 		}
 		const dpp::snowflake guild_id = event.msg.guild_id;
 		if (event.msg.is_dm()) {
-			handle_dm_in(event);
+			co_await handle_dm_in(event);
 		}
-		else if (event.msg.content.find(fmt::format("<@{}>", bot->me.id)) != std::string::npos) {
+		else if (event.msg.content.find(std::format("<@{}>", bot->me.id)) != std::string::npos) {
 			event.reply(co_await random_response(user_id), true, error_callback);
 		}
-		std::lock_guard L2(ticket_mutex);
 		if (guild_id == TICKETS_GUILD_ID) {
-			handle_dm_out(event);
+			co_await handle_dm_out(event);
 		}
 	});
 
-	bot->on_channel_update([](const dpp::channel_update_t& event) -> void {
-		std::lock_guard L(temp_vc_mutex);
-		if (!temp_vcs[event.updated.id].channel_id.empty()) {
+	bot->on_channel_update([](const dpp::channel_update_t& event) -> dpp::task <> {
+		if ((co_await db::get <temp_vc_t>(event.updated.id)).exists()) {
 			bool bans{}, mutes{};
 			if (blocklist_updated(event.updated)) {
 				bans = true;
@@ -210,63 +230,25 @@ int main(const int argc, char** argv) {
 		}
 	});
 
-	bot->on_channel_delete([](const dpp::channel_delete_t& event) -> void {
+	bot->on_channel_delete([](const dpp::channel_delete_t& event) -> dpp::task <> {
 		const dpp::channel_type type = event.deleted.get_type();
 		const dpp::snowflake channel_id = event.deleted.id;
-		const dpp::snowflake guild_id = event.deleted.guild_id;
-		wait_for_guild_readiness(guild_id);
+		co_await db::destroy <channel_t>(channel_id);
 		if (type == dpp::channel_type::CHANNEL_VOICE) {
-			std::scoped_lock L(jtc_mutex, temp_vc_mutex, restriction_mutex);
-			if (!jtc_vcs[channel_id].empty()) {
-				jtc_default_values.erase(channel_id);
-				jtc_vcs.erase(channel_id);
-				if (jtc_vc_amount[guild_id] == 1) {
-					jtc_vc_amount.erase(guild_id);
-				}
-				else {
-					--jtc_vc_amount[guild_id];
-				}
-				db::sql << "DELETE FROM jtc_vcs WHERE channel_id=?;" << channel_id.str();
-				db::sql << "DELETE FROM jtc_default_values WHERE channel_id=?;" << channel_id.str();
-			}
-			if (!temp_vcs[channel_id].channel_id.empty()) {
-				banned.erase(channel_id);
-				muted.erase(channel_id);
-				if (temp_vc_amount[guild_id] == 1) {
-					temp_vc_amount.erase(guild_id);
-				}
-				else {
-					--temp_vc_amount[guild_id];
-				}
-				temp_vcs.erase(channel_id);
-				db::sql << "DELETE FROM temp_vcs WHERE channel_id=?;" << channel_id.str();
-			}
-		}
-		else {
-			std::scoped_lock L(notification_mutex, ticket_mutex);
-			if (!temp_vc_notifications[guild_id].empty()) {
-				db::sql << "DELETE FROM temp_vc_notifications WHERE guild_id=?;" << guild_id.str();
-				temp_vc_notifications.erase(event.deleted.guild_id);
-			}
-			if (!topgg_notifications[guild_id].empty()) {
-				db::sql << "DELETE FROM topgg_notifications WHERE guild_id=?;" << guild_id.str();
-				topgg_notifications.erase(event.deleted.guild_id);
-			}
-			if (ck_tickets.contains(channel_id)) {
-				db::sql << "DELETE FROM tickets WHERE user_id=?;" << ck_tickets[channel_id].user_id.str();
-				tickets.erase(ck_tickets[channel_id].user_id);
-				ck_tickets.erase(channel_id);
-			}
+			std::lock_guard L(restriction_mutex);
+			banned.erase(channel_id);
+			muted.erase(channel_id);
 		}
 	});
 
 	bot->on_guild_create([](const dpp::guild_create_t& event) -> void {
-		bot->queue_work(event.created.id, [event] {
-			cfg::init_guild_channels(event.created.id, event.created.channels);
+		bot->queue_work(event.created.id, std::bind_front([](const dpp::guild_create_t& event) -> dpp::job {
+			co_await cfg::init_restriction_lists(event.created.channels);
+			std::lock_guard L(ready_mutex);
 			ready_guilds.insert(event.created.id);
 			guild_readiness_cv.notify_all();
-		});
-		guild_log(fmt::format("I have joined a guild. These are its stats:\n"
+		}, event));
+		guild_log(std::format("I have joined a guild. These are its stats:\n"
 			"Name: `{0}`\nID: `{1}`\nMember count: `{2}`\n Channel count: `{3}`"
 			, event.created.name, event.created.id, event.created.member_count, event.created.channels.size()
 		));
@@ -275,10 +257,20 @@ int main(const int argc, char** argv) {
 		if (IS_CLI) {
 			return;
 		}
-		guild_log(fmt::format("I have left a guild. These are its stats:\n"
+		guild_log(std::format("I have left a guild. These are its stats:\n"
 			"Name: `{0}`\nID: `{1}`\nMember count: `{2}`"
 			, event.deleted.name, event.deleted.id, event.deleted.member_count
 		));
+		{
+			std::scoped_lock L(
+				jtc_vc_t::keep_mutex,
+				temp_vc_t::keep_mutex,
+				notification_channel_t::keep_mutex
+			);
+			jtc_vc_t::kept_guilds.erase(event.deleted.id);
+			temp_vc_t::kept_guilds.erase(event.deleted.id);
+			notification_channel_t::kept_guilds.erase(event.deleted.id);
+		}
 	});
 
 	bot->on_voice_state_update([](const dpp::voice_state_update_t& event) -> dpp::task <> {
@@ -286,37 +278,31 @@ int main(const int argc, char** argv) {
 		const dpp::snowflake guild_id = event.state.guild_id;
 		wait_for_guild_readiness(guild_id);
 		std::unique_lock L(temp_vc_mutex);
-		dpp::snowflake channel_id = vc_statuses[user_id][guild_id];
-		const temp_vc curr_temp_vc = temp_vcs[channel_id];
+		dpp::snowflake user_channel_id = vc_statuses[user_id][guild_id];
+		// The user was in this channel before they switched to another one.
 		L.unlock();
-		if (curr_temp_vc.exists()) {
-			if ((co_await lookup_channel(channel_id)).get_voice_members().empty()) {
-				bot->queue_work(curr_temp_vc.id, std::bind_front([](const dpp::snowflake channel_id) -> dpp::job {
-					co_await temp_vc_delete_with_msg(channel_id);
-				}, channel_id));
-			}
-		}
-		else {
-			std::lock_guard L(temp_vc_mutex);
-			temp_vcs.erase(channel_id);
-		}
 		if (!event.state.channel_id.empty()) {
 			std::lock_guard L(temp_vc_mutex);
 			vc_statuses[user_id][guild_id] = event.state.channel_id;
 		}
 		else {
+			const auto curr_temp_vc = co_await db::get <temp_vc_t>(user_channel_id);
+			if (curr_temp_vc.exists()) {
+				if ((co_await lookup_channel(user_channel_id)).get_voice_members().empty()) {
+					bot->queue_work(create_temp_vc_id(), std::bind_front([](const dpp::snowflake channel_id) -> dpp::job {
+						co_await temp_vc_delete_with_msg(channel_id);
+					}, user_channel_id));
+				}
+			}
 			std::lock_guard L(temp_vc_mutex);
 			vc_statuses[user_id].erase(guild_id);
 		}
-		channel_id = event.state.channel_id;
-		if (!channel_id.empty()) {
-			std::unique_lock jtc_lock(jtc_mutex);
-			if (!jtc_vcs[channel_id].empty()) {
-				jtc_lock.unlock();
+		user_channel_id = event.state.channel_id;
+		if (!user_channel_id.empty()) {
+			const jtc_vc_t jtc_vc = co_await db::get <jtc_vc_t>(user_channel_id);
+			if (jtc_vc.exists()) {
+				log(std::format("DEBUG: entering temp_vc_create for user {}.", user_id));
 				co_await temp_vc_create(event);
-			}
-			else {
-				jtc_vcs.erase(channel_id);
 			}
 		}
 	});
@@ -328,41 +314,31 @@ int main(const int argc, char** argv) {
 		const std::string cmd_name = event.command.get_command_name();
 		const dpp::command_interaction cmd = event.command.get_command_interaction();
 		if (cmd_name == "help") {
-			log(fmt::format("Provide the user {} with some help, NOW!", user_id));
+			log(std::format("Provide the user {} with some help, NOW!", user_id));
 			event.reply(cfg::help_message(lang), error_callback);
 		}
 		else if (cmd_name == "logs") {
 			if (user_id != MY_ID) {
-				error_log(fmt::format("User {} is checking the logs! Check your perms!", user_id));
+				error_log(std::format("User {} is checking the logs! Check your perms!", user_id));
 			}
 			std::string file_name = cmd.options[0].name;
 			file_name = file_name == "dpp" ? "other_logs.log" : file_name == "mine" ? "my_logs.log" : file_name == "guild" ? "guild_logs.log" : "sql_logs.log";
 			std::lock_guard L(cfg_values_mutex);
-			const dpp::message message = dpp::message().add_file(file_name, dpp::utility::read_file(fmt::format("{0}/{1}/{2}", logs_directory, MODE_NAME, file_name))).set_flags(dpp::m_ephemeral);
+			const dpp::message message = dpp::message().add_file(file_name, dpp::utility::read_file(std::format("{0}/{1}/{2}", logs_directory, MODE_NAME, file_name))).set_flags(dpp::m_ephemeral);
 			event.reply(message, error_callback);
 		}
 		else if (cmd_name == "select") {
-			if (user_id != MY_ID) {
-				error_log(fmt::format("User {} is selecting! Check your perms!", user_id));
+			const std::string table_name = cmd.options[0].name;
+			const auto markdown = co_await markdown_t::generate_md(table_name);
+			if (!markdown.is_valid()) {
+				event.reply(dpp::message("Error").set_flags(dpp::m_ephemeral));
+				co_return;
 			}
-			std::string table_name = cmd.options[0].name;
-			for (char& x : table_name) {
-				if (x == '-') {
-					x = '_';
-				}
-			}
-			std::lock_guard L(cfg_values_mutex);
-			const std::filesystem::path select_path(fmt::format("{0}/{1}", db::SELECT_LOCATION, MODE_NAME));
-			if (!std::filesystem::exists(select_path)) {
-				std::filesystem::create_directories(select_path);
-			}
-			system(fmt::format(R"(sqlite3 ../database/{0}.db '.mode markdown' ".output ../database/select/{0}/{1}.md" "SELECT * FROM {1}";)", MODE_NAME, table_name).c_str());
-			const dpp::message message = dpp::message().add_file("db.md", dpp::utility::read_file(fmt::format("../database/select/{0}/{1}.md", MODE_NAME, table_name))).set_flags(dpp::m_ephemeral);
-			event.reply(message, error_callback);
+			event.reply(dpp::message().add_file(std::format("{}.md", table_name), markdown.content).set_flags(dpp::m_ephemeral));
 		}
 		else if (cmd_name == "vote") {
-			log(fmt::format("User {} wants to vote, it seems!", user_id));
-			event.reply(response_fmtemsg(VOTE_HERE, lang, {bot->me.id.str(), slash::get_mention("help")}), error_callback);
+			log(std::format("User {} wants to vote, it seems!", user_id));
+			event.reply(response_fmtemsg(VOTE_HERE, lang, bot->me.id.str(), slash::get_mention("help")), error_callback);
 			co_return;
 		}
 		else if (cmd_name == "guild") {
@@ -371,11 +347,11 @@ int main(const int argc, char** argv) {
 				co_await slash::topgg::guild_get(event);
 			}
 			else if (subcommand == "set") {
-				slash::topgg::guild_set(event);
+				co_await slash::topgg::guild_set(event);
 			}
 		}
 		else if (cmd_name == "get") {
-			slash::topgg::get_progress(event);
+			co_await slash::topgg::get_progress(event);
 		}
 		else if (cmd_name == "tempvc") {
 			const std::string& subcommand = cmd.options[0].name;
@@ -407,51 +383,55 @@ int main(const int argc, char** argv) {
 		}
 		else if (cmd_name == "setup") {
 			std::shared_lock L1(slash::in_progress_mutex);
-			const bool creation_status = slash::in_progress[cmd_name].contains(guild_id);
-			if (creation_status) {
+			const bool currently_creating = slash::in_progress[cmd_name].contains(guild_id);
+			if (currently_creating) {
 				event.reply(response_emsg(A_CHANNEL_IS_ALREADY_BEING_SET_UP, lang), error_callback);
 				co_return;
 			}
-			L1.unlock();
-			std::unique_lock L2(slash::in_progress_mutex);
 			slash::in_progress[cmd_name].insert(guild_id);
-			L2.unlock();
-			wait_for_guild_readiness(guild_id);
-			co_await slash::setup(event);
-			std::lock_guard L3(slash::in_progress_mutex);
+			L1.unlock();
+			try {
+				event.thinking(true);
+				wait_for_guild_readiness(guild_id);
+				co_await slash::setup(event);
+			}
+			catch (const std::exception& e) {
+				event.edit_original_response(response_emsg(SOMETHING_WENT_TERRIBLY_WRONG, lang), error_callback);
+				error_log(std::format("Uncaught exception while setting up a JTC-related channel: {}", e.what()));
+			}
+			std::lock_guard L2(slash::in_progress_mutex);
 			slash::in_progress[cmd_name].erase(guild_id);
 		}
 		else if (cmd_name == "ticket") {
 			std::shared_lock L1(slash::in_progress_mutex);
-			const bool management_status = slash::in_progress[cmd_name].contains(user_id);
-			if (management_status) {
+			const bool currently_managing = slash::in_progress[cmd_name].contains(user_id);
+			if (currently_managing) {
 				event.reply(response_emsg(A_TICKET_IS_ALREADY_BEING_SET_UP, lang), error_callback);
 				co_return;
 			}
-			L1.unlock();
-			std::unique_lock L2(slash::in_progress_mutex);
 			slash::in_progress[cmd_name].insert(user_id);
-			L2.unlock();
-			wait_for_guild_readiness(TICKETS_GUILD_ID);
-			const std::string& subcommand = cmd.options[0].name;
-			if (subcommand == "create") {
-				co_await slash::ticket::create(event);
+			L1.unlock();
+			try {
+				const std::string& subcommand = cmd.options[0].name;
+				if (subcommand == "create") {
+					co_await slash::ticket::create(event);
+				}
+				else /*if (subcommand == "close")*/ {
+					co_await slash::ticket::close(event);
+				}
 			}
-			else /*if (subcommand == "close")*/ {
-				slash::ticket::close(event);
+			catch (const std::exception& e) {
+				event.edit_original_response(response_emsg(SOMETHING_WENT_TERRIBLY_WRONG, lang), error_callback);
+				error_log(std::format("Uncaught exception while managing a ticket: {}", e.what()));
 			}
-			std::unique_lock L3(slash::in_progress_mutex);
+			std::unique_lock L2(slash::in_progress_mutex);
 			slash::in_progress[cmd_name].erase(user_id);
 		}
 		else if (cmd_name == "reload") {
 			log("Started reloading...");
-			cfg::read_config();
-			for (const dpp::guild* guild : dpp::get_guild_cache()->get_container() | std::views::values) {
-				cfg::init_guild_channels(guild->id, guild->channels);
-			}
-			cfg::init_db_data();
+			cfg::read_config("../Guiding_Light_Config/config.hfg");
 			cfg::write_down_slashcommands();
-			if (!db::connection_successful()) {
+			if (!db::test_conn(std::format("../database/{}.db", MODE_NAME))) {
 				event.reply(dpp::message("COULDN'T CONNECT TO THE DATABASE! THIS IS A DISASTER! RUN WHILE YOU CAN!").set_flags(dpp::m_ephemeral), error_callback);
 				log("Reload: COULDN'T CONNECT TO THE DATABASE! THIS IS A DISASTER! RUN WHILE YOU CAN!");
 				co_return;
@@ -463,13 +443,13 @@ int main(const int argc, char** argv) {
 			std::queue <temp_vc_query> copy;
 			{
 				std::lock_guard L(temp_vc_mutex);
-				copy = temp_vcs_queue;
+				copy = temp_vc_queue;
 			}
 			std::stringstream response;
-			response << fmt::format("dumping the {} queries\n", copy.size());
+			response << std::format("dumping the {} queries\n", copy.size());
 			while (!copy.empty()) {
 				const temp_vc_query& q = copy.front();
-				response << q.id << " {\n"
+				response << q.id - LOWEST_QUERY_ID << " {\n"
 				         << "channel ID: " << q.channel_id << '\n'
 				         << "guild ID: " << q.guild_id << '\n'
 				         << "user ID: " << q.user_id << "\n}\n";
@@ -506,10 +486,6 @@ int main(const int argc, char** argv) {
 		handle_signal(last_signal);
 		log("Goodnight!");
 		std::cout << "Goodnight!\n";
-	}
-	else {
-		std::this_thread::sleep_for(std::chrono::milliseconds(5000));
-		std::cout << "It's been a second and there is still no dump. Exiting now.\n";
 	}
 	return exec_verdict;
 }

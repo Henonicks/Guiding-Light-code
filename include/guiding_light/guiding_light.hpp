@@ -3,25 +3,28 @@
 
 #define cast static_cast
 
+#include "guiding_light/helpers/atomic.hpp"
+
 #include <unordered_set>
 
 #include "no_warns/dpp/dpp.h"
-
-#include <fmt/format.h>
-
-#include "guiding_light/config_values.hpp"
-#include "guiding_light/atomic.hpp"
 
 using user_snowflake = dpp::snowflake;
 using channel_snowflake = dpp::snowflake;
 using guild_snowflake = dpp::snowflake;
 
+namespace gor {
+	class poker;
+}
+
 inline atomic_ptr <dpp::cluster> bot, bot_dev, bot_release;
+inline gor::poker* gor_client;
 inline std::atomic <bool> bot_dev_is_starting, bot_release_is_starting, *bot_is_starting;
 
 inline constexpr char DEFAULT_LANG[] = "en";
 
 inline std::unordered_set <guild_snowflake> ready_guilds;
+inline std::mutex ready_mutex;
 inline std::condition_variable guild_readiness_cv;
 
 /**
@@ -66,7 +69,7 @@ inline std::condition_variable_any bomb_cv;
 
 /**
  * @brief Blow self up and dump data, finishing execution.
- * @param failure Whether the program executed successfully or not.
+ * @param failure Whether the program executed unsuccessfully or not.
  */
 void explode(exec_verdicts failure = f_success);
 
@@ -82,6 +85,7 @@ void explode_painfully();
 dpp::coroutine <> dump_data(bool deadlock = false);
 
 // TODO: document
+// TODO: ^^^
 dpp::coroutine <dpp::user> lookup_user(dpp::snowflake user_id);
 dpp::coroutine <dpp::channel> lookup_channel(dpp::snowflake channel_id);
 dpp::coroutine <dpp::role> lookup_role(dpp::snowflake role_id, dpp::snowflake guild_id);

@@ -1,9 +1,6 @@
 [submodule "colorize"]
 	path = colorize
 	url = https://github.com/fengwang/colorize
-[submodule "sqlite_modern_cpp"]
-	path = sqlite_modern_cpp
-	url = https://github.com/Henonicks/sqlite_modern_cpp
 [submodule "cpp-linenoise"]
 	path = cpp-linenoise
 	url = https://github.com/Henonicks/cpp-linenoise
@@ -16,3 +13,6 @@
 [submodule "sanmake"]
 	path = sanmake
 	url = https://gitlab.com/niansa/sanmake.git
+[submodule "sqlite_modern_cpp"]
+	path = sqlite_modern_cpp
+	url = https://github.com/Henonicks/sqlite_modern_cpp

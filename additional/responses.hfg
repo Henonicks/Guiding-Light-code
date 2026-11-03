@@ -529,6 +529,12 @@
       "Couldn't send you a DM. Make sure they are open.",
     $"CREATE_A_TICKET" |
       "Please, create a ticket if you need help resolving this issue.",
+    $"COULDNT_WRITE_THE_RESOURCE_TO_THE_DATABASE" |
+      "Couldn't write the resource to the database. Try again later.",
+    $"COULDNT_READ_THE_RESOURCE_FROM_THE_DATABASE" |
+      "Couldn't read the resource from the database. Try again later.",
+    $"SOMETHING_WENT_TERRIBLY_WRONG" |
+      "Something went terribly wrong. Please, contact me and I will deal with this as soon as possible.",
     $"SELECT_THE_HELP_PAGE_YOU_WANT_TO_VISIT" |
       "Select the page you want to visit.",
     $"SELECT_A_HELP_PAGE" |
@@ -669,6 +675,12 @@
       "Не вдалося надіслати Вам приватне повідомлення. Переконайтеся, що вони відкриті.",
     $"CREATE_A_TICKET" |
       "Будь ласка, створіть тікет якщо вам потрібна допомога в розв'язанні цієї проблеми.",
+    $"COULDNT_WRITE_THE_RESOURCE_TO_THE_DATABASE" |
+      "Не вдалося записати ресурс до бази даних. Спробуйте ще раз пізніше.",
+    $"COULDNT_READ_THE_RESOURCE_FROM_THE_DATABASE" |
+      "Не вдалося прочитати ресурс із бази даних. Спробуйте ще раз пізніше.",
+    $"SOMETHING_WENT_TERRIBLY_WRONG" |
+      "Щось пішло жахливо не так. Будь ласка, повідомте мені про це і я з цим розберуся якомога швидше.",
     $"SELECT_THE_HELP_PAGE_YOU_WANT_TO_VISIT" |
       "Виберіть сторінку довідки, яку хочете відвідати.",
     $"SELECT_A_HELP_PAGE" |
